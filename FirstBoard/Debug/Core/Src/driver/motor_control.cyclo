@@ -1,0 +1,9 @@
+../Core/Src/driver/motor_control.c:4:21:saturate_volt	3
+../Core/Src/driver/motor_control.c:11:21:volt_to_duty_percent	1
+../Core/Src/driver/motor_control.c:17:19:duty_percent_to_pulse	1
+../Core/Src/driver/motor_control.c:23:6:MotorControl_Init	1
+../Core/Src/driver/motor_control.c:58:6:MotorControl_SetReferenceRPM	1
+../Core/Src/driver/motor_control.c:63:6:MotorControl_SelectSlow	2
+../Core/Src/driver/motor_control.c:68:7:MotorControl_ComputeU	2
+../Core/Src/driver/motor_control.c:87:5:MotorControl_Actuate	8
+../Core/Src/driver/motor_control.c:102:5:MotorControl_Update	1

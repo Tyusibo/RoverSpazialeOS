@@ -1,0 +1,12 @@
+../Core/Src/stub/uart_functions.c:16:6:setHandler	16	static
+../Core/Src/stub/uart_functions.c:23:9:checkRTR	8	static
+../Core/Src/stub/uart_functions.c:27:6:UART_TransmitIT	16	static
+../Core/Src/stub/uart_functions.c:59:6:setRTR	8	static
+../Core/Src/stub/uart_functions.c:63:6:resetRTR	8	static
+../Core/Src/stub/uart_functions.c:67:6:UART_ReceiveIT	16	static
+../Core/Src/stub/uart_functions.c:76:9:hasReceived	4	static
+../Core/Src/stub/uart_functions.c:80:6:UART_ReceiveAck	8	static
+../Core/Src/stub/uart_functions.c:85:9:UART_CheckAck	4	static
+../Core/Src/stub/uart_functions.c:89:6:UART_SendAck	8	static
+../Core/Src/stub/uart_functions.c:93:6:UART_SendNack	8	static
+../Core/Src/stub/uart_functions.c:97:6:HAL_UART_RxCpltCallback	16	static

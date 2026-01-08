@@ -1,0 +1,5 @@
+../Core/Src/test/communication_test.c:19:13:toggle_continua_only	8	static
+../Core/Src/test/communication_test.c:23:13:toggle_continua_and_remotecontroller	24	static
+../Core/Src/test/communication_test.c:33:6:CommunicationTest_Init	16	static
+../Core/Src/test/communication_test.c:44:6:CommunicationTest_Task	16	static
+../Core/Src/test/communication_test.c:76:6:HAL_GPIO_EXTI_Callback	16	static

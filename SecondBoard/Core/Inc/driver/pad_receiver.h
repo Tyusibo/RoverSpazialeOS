@@ -1,0 +1,6 @@
+#ifndef INC_DRIVER_PAD_RECEIVER_H_
+#define INC_DRIVER_PAD_RECEIVER_H_
+
+
+
+#endif /* INC_DRIVER_PAD_RECEIVER_H_ */

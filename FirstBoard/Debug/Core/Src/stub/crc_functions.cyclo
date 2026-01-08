@@ -1,0 +1,2 @@
+../Core/Src/stub/crc_functions.c:9:6:computeCRC	1
+../Core/Src/stub/crc_functions.c:16:9:compareCRC	2

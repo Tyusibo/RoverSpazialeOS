@@ -1,0 +1,2 @@
+../Core/Src/driver_init/sonar_init.c:8:6:Sonar_InitAll	3
+../Core/Src/driver_init/sonar_init.c:17:6:StartSonarTimer	1

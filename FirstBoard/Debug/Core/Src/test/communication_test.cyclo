@@ -1,0 +1,4 @@
+../Core/Src/test/communication_test.c:24:13:toggle_continua	2
+../Core/Src/test/communication_test.c:30:6:CommunicationTest_Init	1
+../Core/Src/test/communication_test.c:44:6:CommunicationTest_Task	8
+../Core/Src/test/communication_test.c:87:6:HAL_GPIO_EXTI_Callback	5

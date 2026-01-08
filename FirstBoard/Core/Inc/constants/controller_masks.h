@@ -1,0 +1,8 @@
+#ifndef CONTROLLER_MASKS_H
+#define CONTROLLER_MASKS_H
+
+#define BRAKING_HARD_MASK    4u
+#define BRAKING_SMOOTH_MASK  2u
+#define WHITE_LED_MASK       32u
+
+#endif /* CONTROLLER_MASKS_H */
