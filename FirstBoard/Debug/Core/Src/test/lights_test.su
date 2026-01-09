@@ -1,3 +1,0 @@
-../Core/Src/test/lights_test.c:9:6:led_test_set	16	static
-../Core/Src/test/lights_test.c:43:6:led_test_toggle	16	static
-../Core/Src/test/lights_test.c:65:6:led_test_all	8	static

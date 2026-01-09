@@ -1,5 +1,0 @@
-../Core/Src/bus/deserialize.c:6:5:deserializeLocalStateB1	4
-../Core/Src/bus/deserialize.c:28:5:deserializeLocalStateB2	4
-../Core/Src/bus/deserialize.c:50:5:deserializeGlobalState	6
-../Core/Src/bus/deserialize.c:67:20:unpackLedsByte	3
-../Core/Src/bus/deserialize.c:80:5:deserializeDecision	4

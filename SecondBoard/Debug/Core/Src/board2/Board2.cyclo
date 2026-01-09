@@ -1,9 +1,0 @@
-../Core/Src/board2/Board2.c:94:13:Board2_ExchangeLocalState	27
-../Core/Src/board2/Board2.c:249:28:Board2_evaluateLed	4
-../Core/Src/board2/Board2.c:270:24:Board2_computeUserAction	7
-../Core/Src/board2/Board2.c:293:24:Board2_continueBraking	4
-../Core/Src/board2/Board2.c:314:13:Board2_actuatorSelection	3
-../Core/Src/board2/Board2.c:331:13:Board2_ExchangeGlobalState	28
-../Core/Src/board2/Board2.c:493:6:Board2_step	42
-../Core/Src/board2/Board2.c:796:6:Board2_initialize	1
-../Core/Src/board2/Board2.c:813:6:Board2_terminate	1

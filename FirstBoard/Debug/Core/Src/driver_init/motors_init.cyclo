@@ -1,3 +1,0 @@
-../Core/Src/driver_init/motors_init.c:23:6:Motors_InitAll	2
-../Core/Src/driver_init/motors_init.c:39:6:Motors_StartAllPwm	2
-../Core/Src/driver_init/motors_init.c:47:6:Motors_SetDefaultCcr	7

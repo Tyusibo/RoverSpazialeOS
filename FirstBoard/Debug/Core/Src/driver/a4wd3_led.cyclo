@@ -1,7 +1,0 @@
-../Core/Src/driver/a4wd3_led.c:26:6:A4WD3_Init	1
-../Core/Src/driver/a4wd3_led.c:50:6:A4WD3_Red_Set	1
-../Core/Src/driver/a4wd3_led.c:60:6:A4WD3_Red_Toggle	1
-../Core/Src/driver/a4wd3_led.c:70:6:A4WD3_White_Set	1
-../Core/Src/driver/a4wd3_led.c:80:6:A4WD3_White_Toggle	1
-../Core/Src/driver/a4wd3_led.c:89:6:A4WD3_All_Off	1
-../Core/Src/driver/a4wd3_led.c:98:6:A4WD3_All_On	1

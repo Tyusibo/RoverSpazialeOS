@@ -1,5 +1,0 @@
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/FirstBoard/Core/Inc/driver/encoder.h:31:21:Encoder_GetSpeedRPM	16	static
-../Core/Src/test/motors_test.c:39:13:print_motor_line	32	static
-../Core/Src/test/motors_test.c:56:13:stop_all	40	static
-../Core/Src/test/motors_test.c:79:13:run_case	80	static
-../Core/Src/test/motors_test.c:127:6:MotorsTest_RunDefaultSequenceBlocking	16	static

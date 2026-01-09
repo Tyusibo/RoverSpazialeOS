@@ -1,5 +1,0 @@
-../Core/Src/bus/deserialize.c:6:5:deserializeLocalStateB1	32	static
-../Core/Src/bus/deserialize.c:28:5:deserializeLocalStateB2	32	static
-../Core/Src/bus/deserialize.c:50:5:deserializeGlobalState	32	static
-../Core/Src/bus/deserialize.c:67:20:unpackLedsByte	16	static
-../Core/Src/bus/deserialize.c:80:5:deserializeDecision	32	static

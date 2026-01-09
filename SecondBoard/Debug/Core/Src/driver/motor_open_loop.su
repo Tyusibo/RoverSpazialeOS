@@ -1,8 +1,0 @@
-../Core/Src/driver/motor_open_loop.c:4:21:clampf	24	static
-../Core/Src/driver/motor_open_loop.c:11:21:volt_to_duty_percent	24	static
-../Core/Src/driver/motor_open_loop.c:19:19:duty_percent_to_pulse	32	static
-../Core/Src/driver/motor_open_loop.c:25:6:MotorOpenLoop_Init	64	static
-../Core/Src/driver/motor_open_loop.c:55:6:MotorOpenLoop_SetReferenceCmd	16	static
-../Core/Src/driver/motor_open_loop.c:61:7:MotorOpenLoop_ComputeVolt	24	static
-../Core/Src/driver/motor_open_loop.c:80:5:MotorOpenLoop_ActuateVolt	48	static
-../Core/Src/driver/motor_open_loop.c:107:5:MotorOpenLoop_Update	24	static
