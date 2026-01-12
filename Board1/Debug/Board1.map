@@ -67,7 +67,7 @@ C:/ST/STM32CubeIDE_1.18.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.external
 C:/ST/STM32CubeIDE_1.18.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7e-m+fp/hard\libgcc.a(_arm_addsubsf3.o)
                               ./Core/Src/driver/motor_control.o (__aeabi_ul2f)
 C:/ST/STM32CubeIDE_1.18.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7e-m+fp/hard\libgcc.a(_aeabi_uldivmod.o)
-                              ./Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart.o (__aeabi_uldivmod)
+                              ./Core/Src/wcet_estimation.c/DWT.o (__aeabi_uldivmod)
 C:/ST/STM32CubeIDE_1.18.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7e-m+fp/hard\libgcc.a(_udivmoddi4.o)
                               C:/ST/STM32CubeIDE_1.18.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7e-m+fp/hard\libgcc.a(_aeabi_uldivmod.o) (__udivmoddi4)
 C:/ST/STM32CubeIDE_1.18.0/STM32CubeIDE/plugins/com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.13.3.rel1.win32_1.0.0.202411081344/tools/bin/../lib/gcc/arm-none-eabi/13.3.1/thumb/v7e-m+fp/hard\libgcc.a(_dvmd_tls.o)
@@ -2795,6 +2795,155 @@ Discarded input sections
  .debug_frame   0x00000000      0x508 ./Core/Src/test/print.o
  .ARM.attributes
                 0x00000000       0x34 ./Core/Src/test/print.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .group         0x00000000        0xc ./Core/Src/wcet_estimation.c/DWT.o
+ .text          0x00000000        0x0 ./Core/Src/wcet_estimation.c/DWT.o
+ .data          0x00000000        0x0 ./Core/Src/wcet_estimation.c/DWT.o
+ .bss           0x00000000        0x0 ./Core/Src/wcet_estimation.c/DWT.o
+ .text.DWT_Init
+                0x00000000       0x34 ./Core/Src/wcet_estimation.c/DWT.o
+ .text.DWT_CyclesToUs_u32
+                0x00000000       0xd8 ./Core/Src/wcet_estimation.c/DWT.o
+ .rodata        0x00000000       0x11 ./Core/Src/wcet_estimation.c/DWT.o
+ .text.DWT_PrintCyclesAndUs
+                0x00000000       0x6c ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_info    0x00000000      0x33b ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_abbrev  0x00000000      0x177 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_aranges
+                0x00000000       0x30 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_rnglists
+                0x00000000       0x20 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x34e ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0xad8 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x22 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x8e ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x51 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x103 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x6a ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x1df ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x2e ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x28 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x1c ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x22 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0xfb ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000     0x1011 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x11f ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000    0x18b8c ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x6d ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x161 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000     0x3558 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x190 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x5c ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000     0x171f ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x600 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x1b6 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x34a ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x53c ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x18b ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x43 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x23d ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0xc7 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x4c ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x211 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x45c ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x11c ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x122 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x3d1 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0xc0b ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x718 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x693 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0xa6 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x358 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x61 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x2a ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x43 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x34 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x16 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x3c ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x370 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x10 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x16 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x4a ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x34 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x10 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x58 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x8e ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x1c ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x185 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x16 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x16 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000      0x146 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x16 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x20 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0x6a ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_macro   0x00000000       0xfa ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_line    0x00000000      0xace ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_str     0x00000000    0xf76a8 ./Core/Src/wcet_estimation.c/DWT.o
+ .comment       0x00000000       0x44 ./Core/Src/wcet_estimation.c/DWT.o
+ .debug_frame   0x00000000       0x84 ./Core/Src/wcet_estimation.c/DWT.o
+ .ARM.attributes
+                0x00000000       0x34 ./Core/Src/wcet_estimation.c/DWT.o
  .text          0x00000000       0x14 ./Core/Startup/startup_stm32g474retx.o
  .data          0x00000000        0x0 ./Core/Startup/startup_stm32g474retx.o
  .bss           0x00000000        0x0 ./Core/Startup/startup_stm32g474retx.o
@@ -5675,6 +5824,7 @@ LOAD ./Core/Src/stub/uart_functions.o
 LOAD ./Core/Src/test/lights_test.o
 LOAD ./Core/Src/test/motors_test.o
 LOAD ./Core/Src/test/print.o
+LOAD ./Core/Src/wcet_estimation.c/DWT.o
 LOAD ./Core/Startup/startup_stm32g474retx.o
 LOAD ./Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.o
 LOAD ./Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_cortex.o

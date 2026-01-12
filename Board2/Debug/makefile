@@ -11,6 +11,7 @@ RM := rm -rf
 -include sources.mk
 -include Drivers/STM32G4xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
+-include Core/Src/wcet_estimation/subdir.mk
 -include Core/Src/test/subdir.mk
 -include Core/Src/stub/subdir.mk
 -include Core/Src/driver_init/subdir.mk

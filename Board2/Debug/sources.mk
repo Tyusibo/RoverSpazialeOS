@@ -30,6 +30,7 @@ Core/Src/driver \
 Core/Src/driver_init \
 Core/Src/stub \
 Core/Src/test \
+Core/Src/wcet_estimation \
 Core/Startup \
 Drivers/STM32G4xx_HAL_Driver/Src \
 
