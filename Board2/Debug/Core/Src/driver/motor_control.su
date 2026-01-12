@@ -1,0 +1,12 @@
+../Core/Src/driver/motor_control.c:10:21:map_linear	32	static
+../Core/Src/driver/motor_control.c:15:21:saturate_volt	16	static
+../Core/Src/driver/motor_control.c:22:21:volt_to_duty_percent	24	static
+../Core/Src/driver/motor_control.c:32:19:duty_percent_to_pulse	32	static
+../Core/Src/driver/motor_control.c:38:6:MotorControl_Init	104	static
+../Core/Src/driver/motor_control.c:83:6:MotorControl_SetReferenceRPM	16	static
+../Core/Src/driver/motor_control.c:88:6:MotorControl_SelectSlow	16	static
+../Core/Src/driver/motor_control.c:93:7:MotorControl_ComputeU	40	static
+../Core/Src/driver/motor_control.c:113:12:recalibrate_pulse	24	static
+../Core/Src/driver/motor_control.c:123:5:MotorControl_Actuate	40	static
+../Core/Src/driver/motor_control.c:141:5:MotorControl_Update	24	static
+../Core/Src/driver/motor_control.c:147:6:MotorControl_OpenLoopActuate	24	static

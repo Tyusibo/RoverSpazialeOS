@@ -1,0 +1,9 @@
+../Core/Src/board2/Board2.c:94:13:Board2_ExchangeLocalState	16	static
+../Core/Src/board2/Board2.c:249:28:Board2_evaluateLed	24	static
+../Core/Src/board2/Board2.c:272:24:Board2_computeUserAction	24	static
+../Core/Src/board2/Board2.c:295:24:Board2_continueBraking	24	static
+../Core/Src/board2/Board2.c:316:13:Board2_actuatorSelection	24	static
+../Core/Src/board2/Board2.c:333:13:Board2_ExchangeGlobalState	8	static
+../Core/Src/board2/Board2.c:495:6:Board2_step	56	static
+../Core/Src/board2/Board2.c:804:6:Board2_initialize	8	static
+../Core/Src/board2/Board2.c:821:6:Board2_terminate	4	static

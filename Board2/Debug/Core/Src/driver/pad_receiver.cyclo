@@ -1,0 +1,5 @@
+../Core/Src/driver/pad_receiver.c:16:6:HAL_I2C_MasterRxCpltCallback	2
+../Core/Src/driver/pad_receiver.c:24:6:HAL_I2C_ErrorCallback	2
+../Core/Src/driver/pad_receiver.c:31:6:PadReceiver_Request	3
+../Core/Src/driver/pad_receiver.c:43:9:PadReceiver_IsDone	1
+../Core/Src/driver/pad_receiver.c:47:6:PadReceiver_Read	1

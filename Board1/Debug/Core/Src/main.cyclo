@@ -1,0 +1,4 @@
+C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board1/Core/Inc/driver/encoder.h:31:21:Encoder_GetSpeedRPM	1
+../Core/Src/main.c:98:5:main	16
+../Core/Src/main.c:360:6:SystemClock_Config	3
+../Core/Src/main.c:404:6:Error_Handler	1

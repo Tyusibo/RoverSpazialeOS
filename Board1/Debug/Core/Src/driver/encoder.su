@@ -1,0 +1,2 @@
+../Core/Src/driver/encoder.c:4:6:Encoder_Init	40	static
+../Core/Src/driver/encoder.c:16:9:Encoder_Update	104	static

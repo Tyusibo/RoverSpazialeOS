@@ -1,20 +1,21 @@
 /* USER CODE BEGIN Header */
+/* PROVA COD GEN B1 */
 /**
-  ******************************************************************************
-  * @file           : main.c
-  * @brief          : Main program body
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file           : main.c
+ * @brief          : Main program body
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -25,7 +26,24 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "Board1.h"
 
+// UART Handlers for communication inter board and debugging
+#include "uart_functions.h"
+#include "print.h"
+
+// Test
+#include "what2test.h"
+
+// Driver lights
+#include "lights_init.h"   // #include "a4wd3_led.h"
+#include "lights_test.h"
+
+// Driver motors
+#include "encoders_init.h"   // #include "encoders.h"
+#include "motors_init.h"     // #include "motors_control.h"
+// both #include "motor_constants.h"
+#include "motors_test.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,6 +53,19 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define Board1_IN_Execution            ((uint8_T)3U)
+
+/* --- CONFIGURAZIONE DEBUG --- */
+// 1 per abilitare le stampe, 0 per disabilitarle
+#define VERBOSE_DEBUG 0
+
+#if VERBOSE_DEBUG == 1
+	#define PRINT_DBG(msg) printMsg(msg)
+#else
+	#define PRINT_DBG(msg) ((void)0)
+#endif
+/* ---------------------------- */
 
 /* USER CODE END PD */
 
@@ -46,13 +77,13 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+volatile uint8_t rx_debug_byte;      // Buffer ricezione
+volatile uint8_t flow_control_flag = 0; // 1 = Comando ricevuto
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -101,16 +132,224 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
+	// --- 1. CONFIGURAZIONE PERIFERICHE ---
+	setComunicationHandler(&hlpuart1);
+
+#if VERBOSE_DEBUG
+
+	setPrinterHandler(&huart2); // Imposta UART per debug/print
+	clearScreen();
+
+#endif
+	PRINT_DBG("BEGIN B1 INIT...\r\n");
+
+	// Init Modello Simulink
+	Board1_U.continua = 0;
+	Board1_initialize();
+
+	led_init();
+
+	// Init Encoder
+	Encoders_InitAll();
+	Encoders_StartAll();
+
+	// Init Motori
+	Motors_InitAll();
+	Motors_StartAllPwm();
+	Motors_SetDefaultCcr((uint32_t) 727);
+
+	//HAL_TIM_Base_Start_IT(&htim6);  // Per la control law
+
+	// --- 2. VARIABILI DI CONFIGURAZIONE TEST ---
+	uint8_t use_real_sensors = 0;
+
+	// 0 = Continuo (gestito con Interrupt per Stop), 1 = Step-by-Step (Bloccante)
+	uint8_t blocking_step_mode = 0;
+
+	// Reset Flag interrupt
+	flow_control_flag = 0;
+
+	// --- 3. SELEZIONE TEST ---
+	switch (WHAT_TO_TEST) {
+	case TEST_LUCI:
+		led_test_set();
+		//led_test_toggle();
+		//led_test_all();
+		break;
+
+	case TEST_MOTORI:
+		float setPoint_test = 50.0f;
+		test_open_loop(setPoint_test);
+		// test_closed_loop(setPoint_test);
+		break;
+
+		// --- WITH SENSORS ---
+	case TEST_COMMUNICATION_BYTE_RESTART_WITH_SENSORS:
+		use_real_sensors = 1;
+		blocking_step_mode = 1;
+		PRINT_DBG("MODE: RESTART (SENSORS)\r\n");
+		break;
+
+	case TEST_COMMUNICATION_BYTE_STOP_WITH_SENSORS:
+		use_real_sensors = 1;
+		blocking_step_mode = 0;
+		PRINT_DBG("MODE: RUN/STOP (SENSORS)\r\n");
+#if VERBOSE_DEBUG
+
+		// AVVIA RICEZIONE INTERRUPT per gestire lo Stop asincrono su UART2 (Printer)
+		HAL_UART_Receive_IT(getPrinterHandler(), (uint8_t*) &rx_debug_byte, 1);
+
+#endif
+		break;
+
+		// --- WITHOUT SENSORS ---
+	case TEST_COMMUNICATION_BYTE_RESTART_WITHOUT_SENSORS:
+		use_real_sensors = 0;
+		blocking_step_mode = 1;
+		PRINT_DBG("MODE: RESTART (NO SENS)\r\n");
+		break;
+
+	case TEST_COMMUNICATION_BYTE_STOP_WITHOUT_SENSORS:
+		use_real_sensors = 0;
+		blocking_step_mode = 0;
+		PRINT_DBG("MODE: RUN/STOP (NO SENS)\r\n");
+		// AVVIA RICEZIONE INTERRUPT per gestire lo Stop asincrono su UART2 (Printer)
+#if VERBOSE_DEBUG
+
+		HAL_UART_Receive_IT(getPrinterHandler(), (uint8_t*) &rx_debug_byte, 1);
+
+#endif
+		break;
+
+	default:
+		break;
+	}
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
+	while (1) {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+
+		// 1. INPUT (Sensori o Dummy)
+		if (use_real_sensors) {
+			float current_speed[4];
+			for (int i = 0; i < 4; i++) {
+				Encoder_Update(&encoders[i]);
+				current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+			}
+			Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
+							current_speed[2], current_speed[3] };
+			Board1_U.temperature = (Temperature) 35.5f;
+			Board1_U.batteryLevel = (BatteryLevel) 12.0f;
+		} else {
+			Board1_U.speed = (BUS_Speed ) { 32.3f, 32.3, 32.3, 32.3 };
+			Board1_U.temperature = (Temperature) 32.3;
+			Board1_U.batteryLevel = (BatteryLevel) 32.3;
+		}
+
+		// 2. LOGICA DI CONTROLLO FLUSSO
+		// Per "Byte Stop", controlliamo se dobbiamo FERMARCI
+		if (blocking_step_mode == 0) { //se sono nella mod in cui devo premere per bloccarmi
+			//HAL_Delay(TIME_TO_WAIT_BEFORE_RESTART);
+			if (flow_control_flag == 1) { // se ho ricevuto un byte mi metto in pausa
+				// Eravamo in corsa, è arrivato un byte -> PAUSA
+				PRINT_DBG("--- PAUSED (Send Byte to Resume) ---\r\n");
+
+				// Ferma Motori per sicurezza visuale. WTF???
+				// for(int i=0; i<4; i++) MotorControl_HardStop(&motors[i]);
+
+				flow_control_flag = 0; // Reset flag
+
+				// Aspetta prossimo byte per ripartire (busy wait sul flag aggiornato dalla ISR)
+				while (flow_control_flag == 0) {
+					//HAL_Delay(50); // Piccolo delay per non saturare CPU inutilmente
+				}
+
+				PRINT_DBG("--- RESUMED ---\r\n");
+				flow_control_flag = 0; // Reset flag per tornare a correre finché non ne arriva un altro
+			}
+		}
+
+		PRINT_DBG("INIZIO COMUNICAZIONE B1 \r\n");
+
+		// 3. MODEL STEP
+		do {
+			Board1_step();
+		} while (Board1_DW.is_ExchangeDecision != Board1_IN_Execution);
+
+		// 4. ATTUAZIONE MOTORI
+		for (int i = 0; i < 4; i++) {
+			float ref =
+					(i == 0 || i == 3) ?
+							Board1_Y.setPoint.leftAxis :
+							Board1_Y.setPoint.rightAxis;
+			// ref = 30;
+			if (ref != 0) {
+				MotorControl_SetReferenceRPM(&motors[i], ref);
+				MotorControl_OpenLoopActuate(&motors[i]);
+			} else {
+				Motors_SetDefaultCcr((uint32_t) 708);
+
+			}
+
+		}
+
+		// 5. LED
+		A4WD3_White_Set(&led_left, Board1_DW.board1Decision.leds.white.left);
+		A4WD3_White_Set(&led_right, Board1_DW.board1Decision.leds.white.right);
+
+		// 6. Gestione LED debug per emergenze
+
+		// Se la SA non è NONE sta rilevando qualcosa che impedisce di eseguire l'azione
+		if (Board1_DW.board1Decision.safeAction != SA_NONE) {
+			// Subito accendo il led
+			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+			// Avvio il timer che fa il toggle con la ISR
+			if (htim7.State == HAL_TIM_STATE_READY) {
+				HAL_TIM_Base_Start_IT(&htim7);
+			}
+		}
+
+		// Se la SA non è NONE non sta rilevando qualcosa che impedisce di eseguire l'azione
+		// Però può comunque star eseguendo un azione di emergenza iniziata
+		if (Board1_DW.board1Decision.safeAction == SA_NONE) {
+			// Subito spengo il led
+			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
+			// Fermo il timer che fa il toggle con la ISR
+			if (htim7.Instance->CR1 & TIM_CR1_CEN) {
+				HAL_TIM_Base_Stop_IT(&htim7);
+			}
+		}
+
+		// 7. Per permettere al modello di ripartire
+		Board1_U.continua = (Board1_U.continua == 0) ? 1 : 0;
+
+#if VERBOSE_DEBUG
+		printGlobalState(&(Board1_B.board1GlobalState));
+		printDecision(&(Board1_DW.board1Decision));
+#else
+		/* Senza stampe il ciclo è troppo veloce e potrebbe causare:
+		 1. Timeout prematuri nel protocollo se basati su contatori di step
+		 2. Flooding della UART verso l'altra board
+		 Inseriamo un delay per simulare il tempo di stampa. */
+		//HAL_Delay(TIME_TO_WAIT_BEFORE_RESTART);
+#endif
+
+		// 5. ATTESA (Solo per modalità RESTART)
+		if (blocking_step_mode == 1) {
+			// Modalità Passo-Passo: il byte serve per AVANZARE
+
+#if VERBOSE_DEBUG
+
+			uint8_t dummy;
+			HAL_UART_Receive(getPrinterHandler(), &dummy, 1, HAL_MAX_DELAY);
+
+#endif
+		}
+	}
   /* USER CODE END 3 */
 }
 
@@ -165,11 +404,10 @@ void SystemClock_Config(void)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  /* User can add his own implementation to report the HAL error return state */
-  __disable_irq();
-  while (1)
-  {
-  }
+	/* User can add his own implementation to report the HAL error return state */
+	__disable_irq();
+	while (1) {
+	}
   /* USER CODE END Error_Handler_Debug */
 }
 #ifdef USE_FULL_ASSERT

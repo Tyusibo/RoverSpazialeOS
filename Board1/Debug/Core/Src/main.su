@@ -1,0 +1,4 @@
+C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board1/Core/Inc/driver/encoder.h:31:21:Encoder_GetSpeedRPM	16	static
+../Core/Src/main.c:98:5:main	80	static
+../Core/Src/main.c:360:6:SystemClock_Config	88	static
+../Core/Src/main.c:404:6:Error_Handler	4	static,ignoring_inline_asm

@@ -1,0 +1,12 @@
+../Core/Src/stub/uart_functions.c:28:6:setComunicationHandler	1
+../Core/Src/stub/uart_functions.c:32:22:getComunicationHandler	1
+../Core/Src/stub/uart_functions.c:39:9:checkRTR	1
+../Core/Src/stub/uart_functions.c:43:6:UART_TransmitIT	1
+../Core/Src/stub/uart_functions.c:51:6:setRTR	1
+../Core/Src/stub/uart_functions.c:55:6:resetRTR	1
+../Core/Src/stub/uart_functions.c:59:6:UART_ReceiveIT	2
+../Core/Src/stub/uart_functions.c:69:9:hasReceived	1
+../Core/Src/stub/uart_functions.c:73:6:UART_ReceiveAck	1
+../Core/Src/stub/uart_functions.c:78:9:UART_CheckAck	1
+../Core/Src/stub/uart_functions.c:82:6:UART_SendAck	1
+../Core/Src/stub/uart_functions.c:86:6:UART_SendNack	1

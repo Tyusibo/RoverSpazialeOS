@@ -1,0 +1,4 @@
+C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board1/Core/Inc/driver/encoder.h:31:21:Encoder_GetSpeedRPM	16	static
+../Core/Src/test/motors_test.c:16:13:print_speeds	16	static
+../Core/Src/test/motors_test.c:26:6:test_open_loop	24	static
+../Core/Src/test/motors_test.c:50:6:test_closed_loop	56	static
