@@ -29,4 +29,11 @@ uint32_t DWT_CyclesToUs_u32(uint32_t cycles);
 /* Stampa con la tua print.h (cicli + us) */
 void DWT_PrintCyclesAndUs(const char *tag, uint32_t cycles);
 
+/* Test di funzionamento */
+//uint32_t t0 = DWT_Begin();
+///* codice da misurare */
+//uint32_t cycles = DWT_End(t0);
+//
+//DWT_PrintCyclesAndUs("CTRL", cycles);
+
 #endif /* INC_WCET_ESTIMATION_DWT_H_ */
