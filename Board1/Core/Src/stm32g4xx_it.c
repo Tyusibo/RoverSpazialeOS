@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    stm32g4xx_it.c
-  * @brief   Interrupt Service Routines.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    stm32g4xx_it.c
+ * @brief   Interrupt Service Routines.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -22,6 +22,8 @@
 #include "stm32g4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "uart_functions.h"
+#include "print.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,6 +33,18 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define Board1_IN_Execution            ((uint8_T)3U)
+
+/* --- CONFIGURAZIONE DEBUG --- */
+// 1 per abilitare le stampe, 0 per disabilitarle
+#define VERBOSE_DEBUG 0
+
+#if VERBOSE_DEBUG == 1
+#define PRINT_DBG(msg) printMsg(msg)
+#else
+    #define PRINT_DBG(msg) ((void)0)
+#endif
+/* ---------------------------- */
 
 /* USER CODE END PD */
 
@@ -75,9 +89,8 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-   while (1)
-  {
-  }
+	while (1) {
+	}
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -258,5 +271,91 @@ void LPUART1_IRQHandler(void)
 }
 
 /* USER CODE BEGIN 1 */
+
+extern volatile uint8_t rx_debug_byte;
+extern volatile uint8_t flow_control_flag;
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	UART_HandleTypeDef *h = getComunicationHandler();
+	if (h != NULL && huart->Instance == h->Instance) {
+		PRINT_DBG("B2 Received\n\r");
+		if (receivedFlag == 0) {
+			receivedFlag = 1;
+		}
+		return;
+	}
+
+	// Verifica che l'interrupt arrivi dalla UART di debug (Printer)
+	h = getPrinterHandler();
+	if (h != NULL && huart->Instance == h->Instance) {
+		if (flow_control_flag == 0) {
+			flow_control_flag = 1;
+		}
+
+		// Ri-arma l'interrupt per il prossimo byte
+		HAL_UART_Receive_IT(h, (uint8_t*) &rx_debug_byte, 1);
+
+		return;
+	}
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+//	float current_speed[4];
+//
+//	if (htim->Instance == TIM6) {
+//		for (int i = 0; i < 4; i++) {
+//
+//			Encoder_Update(&encoders[i]);
+//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+//
+//			MotorControl_Update(&motors[i], current_speed[i]);
+//		}
+//
+//		Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
+//						current_speed[2], current_speed[3] };
+//	}
+
+	if (htim->Instance == TIM7) {
+		HAL_GPIO_TogglePin(LedDebug_GPIO_Port, LedDebug_Pin);
+	}
+}
+
+#include "lights_init.h"
+#include "Board1.h"
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+
+	if (huart->Instance == LPUART1) {
+
+		uint32_t err = huart->ErrorCode;
+
+		printMsg("UART ERROR: ");
+
+		if (err & HAL_UART_ERROR_ORE) {
+			printMsg("ORE ");
+		}
+		if (err & HAL_UART_ERROR_FE) {
+			printMsg("FE ");
+		}
+		if (err & HAL_UART_ERROR_NE) {
+			printMsg("NE ");
+		}
+		if (err & HAL_UART_ERROR_PE) {
+			printMsg("PE ");
+		}
+
+		printMsg("\r\n");
+
+		// --- recovery minimo indispensabile ---
+		__HAL_UART_CLEAR_OREFLAG(huart);
+		__HAL_UART_CLEAR_FEFLAG(huart);
+		__HAL_UART_CLEAR_NEFLAG(huart);
+		__HAL_UART_CLEAR_PEFLAG(huart);
+
+		HAL_UART_AbortReceive_IT(huart);
+
+	}
+}
 
 /* USER CODE END 1 */

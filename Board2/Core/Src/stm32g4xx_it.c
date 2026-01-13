@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
-  ******************************************************************************
-  * @file    stm32g4xx_it.c
-  * @brief   Interrupt Service Routines.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2026 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
+ ******************************************************************************
+ * @file    stm32g4xx_it.c
+ * @brief   Interrupt Service Routines.
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2025 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
@@ -22,6 +22,9 @@
 #include "stm32g4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "hcsr04.h"
+#include "print.h"
+#include "uart_functions.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -31,7 +34,16 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+/* --- CONFIGURAZIONE DEBUG --- */
+// 1 per abilitare le stampe, 0 per disabilitarle
+#define VERBOSE_DEBUG 0
 
+#if VERBOSE_DEBUG == 1
+#define PRINT_DBG(msg) printMsg(msg)
+#else
+    #define PRINT_DBG(msg) ((void)0)
+#endif
+/* ---------------------------- */
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -77,9 +89,8 @@ void NMI_Handler(void)
 
   /* USER CODE END NonMaskableInt_IRQn 0 */
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
-   while (1)
-  {
-  }
+	while (1) {
+	}
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
@@ -317,4 +328,121 @@ void I2C3_ER_IRQHandler(void)
 
 /* USER CODE BEGIN 1 */
 
+extern hcsr04_t sonarLeft;
+extern hcsr04_t sonarFront;
+extern hcsr04_t sonarRight;
+
+/* INTERRUPT CALLBACK FROM SONAR WITHOUT DEBUGGING */
+//void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
+//	if (htim->Instance != TIM2)
+//		return;
+//
+//	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
+//		(void) hcsr04_read_distance(&sonarLeft);
+//	} else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
+//		(void) hcsr04_read_distance(&sonarFront);
+//	} else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
+//		(void) hcsr04_read_distance(&sonarRight);
+//	}
+//}
+/* Variabili definite in main.c */
+extern volatile uint8_t sonarLeft_done;
+extern volatile uint8_t sonarFront_done;
+extern volatile uint8_t sonarRight_done;
+
+/* INTERRUPT CALLBACK FROM SONAR FOR DEBUGGING */
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
+	if (htim->Instance != TIM2)
+		return;
+
+	// Logica esistente: se il driver finisce la cattura (falling edge), alziamo il flag
+	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3) {
+		uint8_t before = sonarLeft.capture_flag;
+		(void) hcsr04_read_distance(&sonarLeft); // La macchina a stati avanza
+		if (before == 1 && sonarLeft.capture_flag == 0) // Falling edge rilevato e calcolo finito
+			sonarLeft_done = 1;
+
+	} else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
+		uint8_t before = sonarFront.capture_flag;
+		(void) hcsr04_read_distance(&sonarFront);
+		if (before == 1 && sonarFront.capture_flag == 0)
+			sonarFront_done = 1;
+
+	} else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
+		uint8_t before = sonarRight.capture_flag;
+		(void) hcsr04_read_distance(&sonarRight);
+		if (before == 1 && sonarRight.capture_flag == 0)
+			sonarRight_done = 1;
+	}
+}
+#include "sonar_test.h"
+
+extern volatile uint8_t rx_debug_byte;
+extern volatile uint8_t flow_control_flag;
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
+	UART_HandleTypeDef *h = getComunicationHandler();
+	if (h != NULL && huart->Instance == h->Instance) {
+		PRINT_DBG("B2 Received\n\r");
+		if (receivedFlag == 0) {
+			receivedFlag = 1;
+		}
+		return;
+	}
+
+	// Verifica che l'interrupt arrivi dalla UART di debug (Printer)
+	h = getPrinterHandler();
+	if (h != NULL && huart->Instance == h->Instance) {
+		if (flow_control_flag == 0) {
+			flow_control_flag = 1;
+		}
+
+		// Ri-arma l'interrupt per il prossimo byte
+		HAL_UART_Receive_IT(h, (uint8_t*) &rx_debug_byte, 1);
+
+		return;
+	}
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+
+	if (huart->Instance == LPUART1) {
+
+		uint32_t err = huart->ErrorCode;
+
+		PRINT_DBG("UART ERROR: ");
+
+		if (err & HAL_UART_ERROR_ORE) {
+			PRINT_DBG("ORE ");
+		}
+		if (err & HAL_UART_ERROR_FE) {
+			PRINT_DBG("FE ");
+		}
+		if (err & HAL_UART_ERROR_NE) {
+			PRINT_DBG("NE ");
+		}
+		if (err & HAL_UART_ERROR_PE) {
+			PRINT_DBG("PE ");
+		}
+
+		PRINT_DBG("\r\n");
+
+		// --- recovery minimo indispensabile ---
+		__HAL_UART_CLEAR_OREFLAG(huart);
+		__HAL_UART_CLEAR_FEFLAG(huart);
+		__HAL_UART_CLEAR_NEFLAG(huart);
+		__HAL_UART_CLEAR_PEFLAG(huart);
+
+		HAL_UART_AbortReceive_IT(huart);
+	}
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+
+	if (htim->Instance == TIM7) {
+		HAL_GPIO_TogglePin(LedDebug_GPIO_Port, LedDebug_Pin);
+	}
+
+}
 /* USER CODE END 1 */
