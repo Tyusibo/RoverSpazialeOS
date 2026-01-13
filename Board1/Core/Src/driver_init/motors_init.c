@@ -1,8 +1,10 @@
 #include "motors_init.h"
 #include "stm32g4xx_hal.h"
+#include "usart.h" 
 
-// PWM timer (definito in tim.c / CubeMX)
-extern TIM_HandleTypeDef htim1;
+// Handle UART definiti in usart.c
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart3;
 
 MotorControl motors[N_MOTORS];
 
@@ -22,9 +24,13 @@ static Coefficients slowGains[N_MOTORS] = {
 
 void Motors_InitAll(void)
 {
-    uint32_t pwm_ch[N_MOTORS] = {
-        TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4
-    };
+    // Configurazione UART per i 4 motori:
+    // Motori 1 e 2 -> USART1 (Sabertooth A)
+    // Motori 3 e 4 -> USART3 (Sabertooth B)
+    UART_HandleTypeDef* uarts[N_MOTORS] = { &huart3, &huart3, &huart1, &huart1 };
+    
+    // ID Motore sulla Sabertooth (1 o 2)
+    uint8_t sabertooth_ids[N_MOTORS] = { 2, 1, 2, 1 };
 
     // Vettore dei guadagni statici definito in motor_constants.h
     float dc_gains[N_MOTORS] = {
@@ -37,28 +43,14 @@ void Motors_InitAll(void)
     for (int i = 0; i < N_MOTORS; i++)
     {
         MotorControl_Init(&motors[i],
-                          &htim1, pwm_ch[i],
+                          uarts[i],          // UART Handle
+                          128,               // Indirizzo Sabertooth (default 128)
+                          sabertooth_ids[i], // Motore 1 o 2
                           TS, MIN_VOLT, MAX_VOLT,
-                          IN_MIN, IN_MAX, OUT_MIN, OUT_MAX,
                           dc_gains[i],
-                          PULSE_THEO_MIN, PULSE_THEO_MAX,
-                          PULSE_REAL_MIN, PULSE_REAL_MAX,
                           fastGains[i], slowGains[i]);
-    }
-}
 
-void Motors_StartAllPwm(void)
-{
-    for (int i = 0; i < N_MOTORS; i++)
-    {
-        HAL_TIM_PWM_Start(motors[i].htim_pwm, motors[i].pwm_channel);
-    }
-}
-
-void Motors_SetDefaultCcr(uint32_t ccr)
-{
-    for (int i = 0; i < N_MOTORS; i++)
-    {
-        __HAL_TIM_SET_COMPARE(motors[i].htim_pwm, motors[i].pwm_channel, ccr);
+        // Stop iniziale per sicurezza
+        MotorControl_Actuate(&motors[i], 0.0f);
     }
 }

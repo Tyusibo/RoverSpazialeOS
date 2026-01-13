@@ -10,7 +10,7 @@
 #include "motor_control.h"
 
 #define PRINT_INTERVAL_MS 500
-#define CONTROL_TOLERANCE 5.0f  // RPM difference to consider "at target"
+#define CONTROL_TOLERANCE 5.0f   // RPM difference to consider "at target"
 #define MAX_SETTLE_TIME_MS 10000 // Timeout for closed loop settling
 
 static void print_speeds(void) {
@@ -23,27 +23,35 @@ static void print_speeds(void) {
     printMsg("] RPM\r\n");
 }
 
+/* 
+   FIX: Sabertooth ha un timeout (watchdog).
+   Se non inviamo comandi continuamente, i motori si fermano dopo ~100ms.
+   Quindi MotorControl_OpenLoopActuate va chiamato nel loop while.
+*/
 void test_open_loop(float ref) {
     printMsg("=== START TEST OPEN LOOP (Ref=");
     printFloat(ref, 2);
     printMsg(") ===\r\n");
+    printMsg("VERIFICA: Se Ref > 0, la SPEED deve essere POSITIVA. Se e' negativa, invertire encoder o motore.\r\n");
 
-    // 1. Applica Open Loop
-    for (int i = 0; i < N_MOTORS; i++) {
-        // Imposta il riferimento (che OpenLoopActuate userà come target volt/duty o rpm-open-loop)
-        MotorControl_SetReferenceRPM(&motors[i], ref); 
-        MotorControl_OpenLoopActuate(&motors[i]);
-    }
+    uint32_t last_print = 0;
 
-    // 2. Loop di stampa
+    // Loop infinito per mantenere il watchdog attivo
     while (1) {
-        // Aggiorna encoder per leggere la velocità reale
         for (int i = 0; i < N_MOTORS; i++) {
+            MotorControl_SetReferenceRPM(&motors[i], ref); 
+            MotorControl_OpenLoopActuate(&motors[i]);
+            
             Encoder_Update(&encoders[i]);
         }
         
-        print_speeds();
-        HAL_Delay(PRINT_INTERVAL_MS);
+        // Stampa periodica
+        if (HAL_GetTick() - last_print > PRINT_INTERVAL_MS) {
+            print_speeds();
+            last_print = HAL_GetTick();
+        }
+        
+        HAL_Delay(20); // Refresh rate ~50Hz
     }
 }
 
@@ -51,67 +59,35 @@ void test_closed_loop(float ref) {
     printMsg("=== START TEST CLOSED LOOP (Ref=");
     printFloat(ref, 2);
     printMsg(") ===\r\n");
+    printMsg("VERIFICA: I motori devono mantenere la velocita' costante pari a Ref.\r\n");
 
-    // 1. Setup Riferimento
-    for (int i = 0; i < N_MOTORS; i++) {
-        MotorControl_SetReferenceRPM(&motors[i], ref);
-    }
+    uint32_t last_print = 0;
+    const uint32_t LOOP_PERIOD_MS = 20; // 50Hz nominali
 
-    uint32_t t_start = HAL_GetTick();
-    uint8_t at_steady_state = 0;
-
-    // 2. Loop di Controllo fino a regime
-    printMsg("--- Controlling... ---\r\n");
-    while (!at_steady_state) {
-        uint32_t t_now = HAL_GetTick();
-        
-        // Timeout
-        if ((t_now - t_start) > MAX_SETTLE_TIME_MS) {
-            printMsg("--- Timeout waiting for steady state ---\r\n");
-            break;
-        }
-
-        // Simula il passo di campionamento
-        uint32_t dt_ms = (uint32_t)(motors[0].Ts * 1000.0f);
-        if (dt_ms == 0) dt_ms = 1;
-
-        // Check convergenza
-        int check_ok = 1;
-
-        for (int i = 0; i < N_MOTORS; i++) {
-            Encoder_Update(&encoders[i]);
-            float spd = Encoder_GetSpeedRPM(&encoders[i]);
-            
-            // Calcola e applica U
-            float u = MotorControl_ComputeU(&motors[i], spd);
-            MotorControl_Actuate(&motors[i], u);
-
-            // Verifica errore
-            if (fabs(motors[i].reference_rpm - spd) > CONTROL_TOLERANCE) {
-                check_ok = 0;
-            }
-        }
-
-        if (check_ok) {
-            // Se siamo stabili (nota: qui controlliamo un solo campione, 
-            // per robustezza servirebbe un contatore, ma per ora va bene così)
-            printMsg("--- Steady State Reached ---\r\n");
-            at_steady_state = 1;
-        }
-
-        HAL_Delay(dt_ms);
-    }
-
-    // 3. Loop di Stampa a regime (U costante)
-    // Il controllore non viene più chiamato, la U resta quella dell'ultima iterazione
-    printMsg("--- Holding Last U & Printing Speeds ---\r\n");
+    // Loop infinito per mantenere il watchdog attivo
     while (1) {
-        // Basta aggiornare gli encoder per misurare, non attuiamo più
+        uint32_t loop_start = HAL_GetTick();
+
         for (int i = 0; i < N_MOTORS; i++) {
+            // 1. Aggiorno encoder e leggo velocità attuale (Feedback)
             Encoder_Update(&encoders[i]);
+            float current_rpm = Encoder_GetSpeedRPM(&encoders[i]);
+
+            // 2. Imposto riferimento e eseguo controllo Closed Loop
+            MotorControl_SetReferenceRPM(&motors[i], ref); 
+            MotorControl_Update(&motors[i], current_rpm);
         }
         
-        print_speeds();
-        HAL_Delay(PRINT_INTERVAL_MS);
+        // Stampa periodica
+        if (HAL_GetTick() - last_print > PRINT_INTERVAL_MS) {
+            print_speeds();
+            last_print = HAL_GetTick();
+        }
+        
+        // Attesa dinamica: dorme solo per il tempo rimanente ai 20ms
+        uint32_t elapsed = HAL_GetTick() - loop_start;
+        if (elapsed < LOOP_PERIOD_MS) {
+            HAL_Delay(LOOP_PERIOD_MS - elapsed); 
+        }
     }
 }

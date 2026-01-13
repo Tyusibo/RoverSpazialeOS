@@ -58,7 +58,7 @@
 
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 0
+#define VERBOSE_DEBUG 1
 
 #if VERBOSE_DEBUG == 1
 	#define PRINT_DBG(msg) printMsg(msg)
@@ -123,15 +123,15 @@ int main(void)
   MX_LPUART1_UART_Init();
   MX_USART2_UART_Init();
   MX_CRC_Init();
-  MX_TIM1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM8_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
+  MX_USART1_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
 	// --- 1. CONFIGURAZIONE PERIFERICHE ---
 	setComunicationHandler(&hlpuart1);
 
@@ -153,14 +153,12 @@ int main(void)
 	Encoders_InitAll();
 	Encoders_StartAll();
 
-	// Init Motori
-	Motors_InitAll();
-	Motors_StartAllPwm();
-	Motors_SetDefaultCcr((uint32_t) 727);
+	// Init Motori (Include anche lo stop iniziale via UART)
+    Motors_InitAll();
 
-	//HAL_TIM_Base_Start_IT(&htim6);  // Per la control law
+    //HAL_TIM_Base_Start_IT(&htim6);  // Per la control law
 
-	// --- 2. VARIABILI DI CONFIGURAZIONE TEST ---
+    // --- 2. VARIABILI DI CONFIGURAZIONE TEST ---
 	uint8_t use_real_sensors = 0;
 
 	// 0 = Continuo (gestito con Interrupt per Stop), 1 = Step-by-Step (Bloccante)
@@ -178,9 +176,9 @@ int main(void)
 		break;
 
 	case TEST_MOTORI:
-		float setPoint_test = 50.0f;
+		float setPoint_test = -20.0f;
 		test_open_loop(setPoint_test);
-		// test_closed_loop(setPoint_test);
+		//test_closed_loop(setPoint_test);
 		break;
 
 		// --- WITH SENSORS ---
@@ -291,7 +289,7 @@ int main(void)
 				MotorControl_SetReferenceRPM(&motors[i], ref);
 				MotorControl_OpenLoopActuate(&motors[i]);
 			} else {
-				Motors_SetDefaultCcr((uint32_t) 708);
+				MotorControl_SetReferenceRPM(&motors[i], 0);
 
 			}
 
@@ -394,6 +392,38 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+// Funzione di utilità per cambiare baudrate ST al volo
+void Reinit_UART_Baudrate(UART_HandleTypeDef *huart, uint32_t baudrate) {
+    huart->Init.BaudRate = baudrate;
+    if (HAL_UART_Init(huart) != HAL_OK) {
+        Error_Handler();
+    }
+}
+
+void Motors_SetPermanentBaudRate_38400(UART_HandleTypeDef *huart, uint8_t address) {
+    // 1. Configuriamo STM32 a 9600 (default Sabertooth)
+    Reinit_UART_Baudrate(huart, 9600);
+    HAL_Delay(100);
+
+    // 2. Inviamo comando: Address, CMD=15, Value=4 (38400), Checksum
+    uint8_t command = 15;
+    uint8_t value = 4; // 4 = 38400 baud
+    uint8_t checksum = (address + command + value) & 0x7F;
+    
+    uint8_t packet[4] = { address, command, value, checksum };
+    HAL_UART_Transmit(huart, packet, 4, 100);
+    
+    HAL_Delay(200); // Tempo alla Sabertooth per scrivere EEPROM e cambiare baud
+
+    // 3. Ora riconfiguriamo STM32 a 38400 per poter parlare
+    Reinit_UART_Baudrate(huart, 38400); 
+    
+    // Opzionale: inviare 0xAA per risincronizzare nel dubbio
+    uint8_t sync = 0xAA;
+    HAL_UART_Transmit(huart, &sync, 1, 10);
+    HAL_Delay(100);
+}
 
 /* USER CODE END 4 */
 
