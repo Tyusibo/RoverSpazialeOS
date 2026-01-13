@@ -14,6 +14,7 @@ typedef struct {
 	uint32_t start_counter;
 	uint32_t end_counter;
 	float distance;
+	uint8_t rx_done; // Flag aggiunto
 } hcsr04_t;
 
 typedef enum {
@@ -25,5 +26,6 @@ int8_t hcsr04_init(hcsr04_t *sensor, GPIO_TypeDef *trigger,
 		uint16_t echo_channel);
 int8_t hcsr04_trigger(hcsr04_t *sensor);
 int8_t hcsr04_read_distance(hcsr04_t *sensor); // To be called in the callback of the TIMER
+uint8_t hcsr04_is_done(hcsr04_t *sensor); // Nuova funzione
 
 #endif /* INC_HCSR04_H_ */

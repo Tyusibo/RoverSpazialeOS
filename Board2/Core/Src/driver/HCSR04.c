@@ -45,6 +45,7 @@ int8_t hcsr04_init(hcsr04_t *sensor,
     sensor->start_counter = 0;
     sensor->end_counter   = 0;
     sensor->distance      = 0.0f;
+    sensor->rx_done       = 0; // Init flag
 
     // Trigger pin low
     HAL_GPIO_WritePin(sensor->gpio_port_sensor, sensor->gpio_pin_sensor, GPIO_PIN_RESET);
@@ -65,6 +66,7 @@ int8_t hcsr04_trigger(hcsr04_t *sensor)
 
     // Prepare state for a fresh measurement
     sensor->capture_flag = 0;
+    sensor->rx_done = 0; // Reset flag prima di ogni misura
     __HAL_TIM_SET_CAPTUREPOLARITY(sensor->echo_tim, sensor->echo_channel, TIM_INPUTCHANNELPOLARITY_RISING);
 
     // 10us pulse on TRIG (TIM2 @ 16MHz => 160 ticks)
@@ -114,6 +116,8 @@ int8_t hcsr04_read_distance(hcsr04_t *sensor)
         if (sensor->distance > (float)DISTANCE_LIMIT) sensor->distance = (float)DISTANCE_LIMIT;
         if (sensor->distance < 0.0f) sensor->distance = 0.0f;
 
+        sensor->rx_done = 1; // Misura completata
+
         // Restore for next measurement
         __HAL_TIM_SET_CAPTUREPOLARITY(sensor->echo_tim, sensor->echo_channel, TIM_INPUTCHANNELPOLARITY_RISING);
 
@@ -128,4 +132,9 @@ int8_t hcsr04_read_distance(hcsr04_t *sensor)
         sensor->capture_flag = 0;
         return HCSR04_ERR;
     }
+}
+
+uint8_t hcsr04_is_done(hcsr04_t *sensor) {
+    if (!sensor) return 0;
+    return sensor->rx_done;
 }

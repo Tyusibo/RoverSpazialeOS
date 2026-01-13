@@ -3,9 +3,14 @@
 
 #include "sonar_init.h"
 
-extern uint8_t dummyReceiveSonar;
-extern uint8_t flagReceiveSonar;
-// Loop infinito di test sonar (trigger -> wait done -> print -> delay 1s -> repeat)
-void SonarTest(void);
+
+// Esegue una lettura sequenziale (Left -> Wait -> Front -> Wait -> Right -> Wait)
+void testSonarSeq(void);
+
+// Esegue una lettura parallela (Trigger All -> Wait All)
+void testSonarParal(void);
+
+// Loop infinito di test sonar
+void SonarTest(uint8_t mode);
 
 #endif /* INC_TEST_SONAR_TEST_H_ */

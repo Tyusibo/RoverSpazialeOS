@@ -50,6 +50,9 @@
 
 // Driver motors
 #include "motors_init.h"  // #include "motors_control.h" e #include "motor_constants.h"
+
+// DWT
+#include "DWT.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -76,13 +79,11 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 // ROBA DI SONAR
-volatile uint8_t sonarLeft_done = 0;
-volatile uint8_t sonarFront_done = 0;
-volatile uint8_t sonarRight_done = 0;
+// Variabili globali rimosse: ora il flag è dentro la struct hcsr04_t
 
-// Rimuovo static inline per renderla visibile agli altri file (come sonar_test.c)
+// Verifica se tutti i sonar hanno completato la lettura
 uint8_t all_sonar_done(void) {
-	return (sonarLeft_done && sonarFront_done && sonarRight_done);
+    return (hcsr04_is_done(&sonarLeft) && hcsr04_is_done(&sonarFront) && hcsr04_is_done(&sonarRight));
 }
 /* USER CODE END PM */
 
@@ -194,7 +195,7 @@ int main(void)
 	// --- 3. SELEZIONE TEST ---
 	switch (WHAT_TO_TEST) {
 	case TEST_SONAR:
-		SonarTest();
+		SonarTest(SONAR_MODE);
 		break;
 	case TEST_GYROSCOPE:
 		GyroscopeTest();
@@ -288,22 +289,22 @@ int main(void)
                 uint32_t startTick;
 
                 // 1. LEFT
-                sonarLeft_done = 0;
+                // sonarLeft_done = 0; // Non serve più, gestito da hcsr04_trigger
                 hcsr04_trigger(&sonarLeft);
                 startTick = HAL_GetTick();
-                while (!sonarLeft_done && (HAL_GetTick() - startTick < SONAR_TIMEOUT));
+                while (!hcsr04_is_done(&sonarLeft) && (HAL_GetTick() - startTick < SONAR_TIMEOUT));
 
                 // 2. FRONT
-                sonarFront_done = 0;
+                // sonarFront_done = 0; // Non serve più
                 hcsr04_trigger(&sonarFront);
                 startTick = HAL_GetTick();
-                while (!sonarFront_done && (HAL_GetTick() - startTick < SONAR_TIMEOUT));
+                while (!hcsr04_is_done(&sonarFront) && (HAL_GetTick() - startTick < SONAR_TIMEOUT));
 
                 // 3. RIGHT
-                sonarRight_done = 0;
+                // sonarRight_done = 0; // Non serve più
                 hcsr04_trigger(&sonarRight);
                 startTick = HAL_GetTick();
-                while (!sonarRight_done && (HAL_GetTick() - startTick < SONAR_TIMEOUT));
+                while (!hcsr04_is_done(&sonarRight) && (HAL_GetTick() - startTick < SONAR_TIMEOUT));
 
                 Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance,
                                 sonarFront.distance, sonarRight.distance };
