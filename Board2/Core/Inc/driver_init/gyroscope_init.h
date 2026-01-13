@@ -1,0 +1,9 @@
+#ifndef SRC_DRIVER_INIT_GYROSCOPE_INIT_H_
+#define SRC_DRIVER_INIT_GYROSCOPE_INIT_H_
+
+#include "mpu6050.h"
+
+extern MPU6050_t MPU6050;
+
+
+#endif /* SRC_DRIVER_INIT_GYROSCOPE_INIT_H_ */
