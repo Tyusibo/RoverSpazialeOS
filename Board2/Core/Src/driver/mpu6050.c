@@ -280,62 +280,25 @@ double Kalman_getAngle(Kalman_t *Kalman, double newAngle, double newRate, double
 static uint8_t yaw_buffer[2];           // Buffer per i dati grezzi I2C
 static MPU6050_Yaw_t *pYawStruct = NULL; // Puntatore alla struct correntemente in uso
 
-// Funzione polling esistente (la puoi lasciare o rimuovere)
-void MPU6050_Read_Yaw(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct)
-{
-    uint8_t Rec_Data[2];
-
-    // Legge solo 2 BYTE dal registro Z del giroscopio
-    HAL_I2C_Mem_Read(I2Cx, MPU6050_ADDR, GYRO_ZOUT_H_REG, 1, Rec_Data, 2, i2c_timeout);
-
-    DataStruct->Gyro_Z_RAW = (int16_t)(Rec_Data[0] << 8 | Rec_Data[1]);
-
-    // Conversione RAW in dps (gradi/s) -> FS_SEL=0 => 131.0
-    DataStruct->Gz = DataStruct->Gyro_Z_RAW / 131.0 - gyroZ_bias; 
-
-    // Calcolo dt
-    double dt = (double)(HAL_GetTick() - timer) / 1000;
-    timer = HAL_GetTick();
-
-    // Integrazione sull'accumulatore double interno (preserva i decimali)
-    DataStruct->_YawAcc += DataStruct->Gz * dt;
-
-    // Normalizzazione rigorosa tra 0.0 e 360.0 per conversione sicura in uint16
-    if (DataStruct->_YawAcc >= 360.0) {
-        DataStruct->_YawAcc -= 360.0;
-    } else if (DataStruct->_YawAcc < 0.0) {
-        DataStruct->_YawAcc += 360.0;
-    }
-
-    // Casting finale all'output uint16 richiesto (troncamento)
-    DataStruct->KalmanAngleZ = (uint16_t)(DataStruct->_YawAcc);
-}
-
 // ---------------------------------------------------------
 // IMPLEMENTAZIONE LETTURA TRAMITE INTERRUPT
 // ---------------------------------------------------------
 
 /**
  * @brief Avvia la lettura dello Yaw in modalità Interrupt.
- *        Non blocca il processore. I calcoli avvengono nella Callback.
  */
 void MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct)
 {
-    // Salviamo il puntatore alla struct per usarlo nella callback
     pYawStruct = DataStruct;
-
-    // Avvia la lettura di 2 byte dal registro Z in modalità interrupt
-    // I dati verranno salvati in 'yaw_buffer'
     HAL_I2C_Mem_Read_IT(I2Cx, MPU6050_ADDR, GYRO_ZOUT_H_REG, 1, yaw_buffer, 2);
 }
 
 /**
- * @brief Questa funzione DEVE essere chiamata dall'utente all'interno
- *        di HAL_I2C_MemRxCpltCallback() nel file main.c o i2c.c
+ * @brief Funzione di elaborazione dati chiamata dalla callback globale HAL.
+ *        Ora è una funzione pubblica della libreria, ma non è una callback HAL diretta.
  */
-void MPU6050_Yaw_RxCpltCallback(I2C_HandleTypeDef *I2Cx)
+void MPU6050_Process_Yaw_IT_Data(void)
 {
-    // Verifica di sicurezza (opzionale: controllare se I2Cx->Instance == I2C_MPU)
     if (pYawStruct != NULL)
     {
         // 1. Ricostruzione dato RAW dal buffer
@@ -345,20 +308,21 @@ void MPU6050_Yaw_RxCpltCallback(I2C_HandleTypeDef *I2Cx)
         pYawStruct->Gz = pYawStruct->Gyro_Z_RAW / 131.0 - gyroZ_bias;
 
         // 3. Calcolo DT
+        // Nota: Assicurati che 'timer' sia accessibile o gestito correttamente se static
         double dt = (double)(HAL_GetTick() - timer) / 1000;
         timer = HAL_GetTick();
 
-        // 4. Integrazione sull'accumulatore double
+        // 4. Integrazione
         pYawStruct->_YawAcc += pYawStruct->Gz * dt;
 
-        // 5. Normalizzazione 0-360
+        // 5. Normalizzazione
         if (pYawStruct->_YawAcc >= 360.0) {
             pYawStruct->_YawAcc -= 360.0;
         } else if (pYawStruct->_YawAcc < 0.0) {
             pYawStruct->_YawAcc += 360.0;
         }
 
-        // 6. Output finale uint16
+        // 6. Output
         pYawStruct->KalmanAngleZ = (uint16_t)(pYawStruct->_YawAcc);
     }
 }

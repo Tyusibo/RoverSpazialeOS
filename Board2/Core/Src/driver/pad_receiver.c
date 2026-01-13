@@ -12,23 +12,21 @@ static PacketData rx_buffer;   // Buffer di ricezione
 static PacketData valid_data;  // Ultimo dato valido
 static volatile uint8_t rx_active = 0; // Flag stato ricezione
 
-// Callback ricezione completata
-void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
-    if (hi2c->Instance == I2C1) {
-        valid_data = rx_buffer; // Aggiorna dato valido
-        rx_active = 0;          // Segnala fine
-    }
+// Rimuovi o commenta HAL_I2C_MasterRxCpltCallback
+// Rimuovi o commenta HAL_I2C_ErrorCallback
+
+// Nuova funzione pubblica chiamata dalla callback globale
+void PadReceiver_RxCpltCallback(void) {
+    valid_data = rx_buffer; // Aggiorna dato valido
+    rx_active = 0;          // Segnala fine
 }
 
-// Callback errore
-void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c) {
-    if (hi2c->Instance == I2C1) {
-        // In caso di errore NON aggiorniamo valid_data (mantiene ultimo valore)
-        rx_active = 0;          // Segnala fine (per sbloccare il main)
-    }
+// Nuova funzione pubblica chiamata dalla callback di errore globale
+void PadReceiver_ErrorCallback(void) {
+    rx_active = 0;          // Segnala fine (per sbloccare il main)
 }
 
-void PadReceiver_Request(void) {
+void PadReceiver_Request() {
     if (HAL_I2C_GetState(&hi2c1) == HAL_I2C_STATE_READY) {
         rx_active = 1;
         // Avvia ricezione interrupt (Indirizzo 0x60)

@@ -3,6 +3,8 @@
 
 #include "bus/sensors.h"
 
+extern volatile uint8_t rx_pad_done;
+
 // Avvia la richiesta di ricezione dati via Interrupt (non bloccante)
 void PadReceiver_Request(void);
 

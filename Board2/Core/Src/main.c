@@ -108,20 +108,6 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-// Callback per gestire il completamento della ricezione I2C
-void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
-{
-    // Verifica che l'interrupt provenga dal bus del giroscopio (I2C3)
-    if (hi2c->Instance == I2C3)
-    {
-        // Chiama la funzione di elaborazione dati del driver
-        MPU6050_Yaw_RxCpltCallback(hi2c);
-        
-        // Segnala al main loop che i dati sono pronti
-        gyro_done = 1;
-    }
-}
-
 /* USER CODE END 0 */
 
 /**
@@ -278,7 +264,6 @@ int main(void)
             // --- JOYSTICK ---
             // Avvia ricezione e attendi completamento
             PadReceiver_Request();
-            uint32_t startTickPad = HAL_GetTick();
             while (!PadReceiver_IsDone()); // attesa attiva
             PadReceiver_Read(&Board2_U.remoteController);
 

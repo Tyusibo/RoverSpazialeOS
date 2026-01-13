@@ -20,6 +20,14 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32g4xx_it.h"
+#include "driver/mpu6050.h"    // Includi i tuoi driver
+#include "driver/pad_receiver.h"
+
+// Fai extern delle handle se sono definite in main.c o i2c.c
+extern I2C_HandleTypeDef hi2c1; 
+// Se l'MPU è su un'altra I2C, ad esempio hi2c2, aggiungila qui
+// extern I2C_HandleTypeDef hi2c2; 
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "hcsr04.h"
@@ -445,4 +453,52 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	}
 
 }
+
+//nuov
+/**
+  * @brief  Rx Transfer completed callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
+  *                the configuration information for the specified I2C.
+  * @retval None
+  */
+void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  // Gestione Pad Receiver (Master Receive) su I2C1 (esempio)
+  if (hi2c->Instance == I2C1) {
+    PadReceiver_RxCpltCallback();
+  }
+}
+
+/**
+  * @brief  Memory Rx Transfer completed callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
+  *                the configuration information for the specified I2C.
+  * @retval None
+  */
+void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+  // Gestione MPU6050 (Mem Read) su I2C_MPU (sostituire con l'istanza corretta, es. I2C2 o I2C1)
+  // Nota: MPU6050 usa I2C Mem Read, quindi va qui, NON in MasterRxCpltCallback
+  
+  // Esempio: se MPU è su I2C1 insieme al Pad, devi distinguere o usare handle diverse
+  // Se MPU è su I2C2:
+  // if (hi2c->Instance == I2C2) { ... }
+  
+  // Supponendo sia l'istanza corretta per l'MPU:
+  MPU6050_Process_Yaw_IT_Data();
+}
+
+/**
+  * @brief  I2C Error callback.
+  * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
+  *                the configuration information for the specified I2C.
+  * @retval None
+  */
+void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
+{
+  if (hi2c->Instance == I2C1) {
+    PadReceiver_ErrorCallback();
+  }
+}
+
 /* USER CODE END 1 */

@@ -4,17 +4,21 @@
 #include "driver/pad_receiver.h"
 
 // Test joystick: lettura via driver -> stampa -> delay -> repeat
-void JoystickTest(void)
-{
-    while (1) {
+void JoystickTest(void) {
+	while (1) {
 
-        // Ricezione dati dal gamepad tramite driver
-        PadReceiver_Update(&Board2_U.remoteController);
+		// 1. Richiesta lettura (non bloccante)
+		PadReceiver_Request();
+		// 2. Attesa attiva completamento
+		while (!PadReceiver_IsDone())
+			;
+		// 3. Lettura dati
+		BUS_RemoteController rc_data;
+		PadReceiver_Read(&rc_data);
+		// Stampa valori
+		printRemoteController(&rc_data);
 
-        // Stampa valori joystick
-        printRemoteController(&Board2_U.remoteController);
-
-        // Attesa 1 secondo (test bloccante)
-        HAL_Delay(1000);
-    }
+		// Attesa 1 secondo (test bloccante)
+		HAL_Delay(1000);
+	}
 }

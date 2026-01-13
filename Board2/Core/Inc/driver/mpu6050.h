@@ -78,6 +78,7 @@ void MPU6050_Read_Yaw(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct);
 // *** NUOVI PROTOTIPI PER INTERRUPT ***
 // Avvia la lettura dello Yaw in modalità Interrupt (Non-Blocking)
 void MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct);
+void MPU6050_Process_Yaw_IT_Data(void); // Nuova funzione pubblica
 
 // Funzione da chiamare dentro HAL_I2C_MemRxCpltCallback nel main.c o i2c.c
 void MPU6050_Yaw_RxCpltCallback(I2C_HandleTypeDef *I2Cx);
