@@ -11,7 +11,7 @@ RM := rm -rf
 -include sources.mk
 -include Drivers/STM32G4xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
--include Core/Src/wcet_estimation.c/subdir.mk
+-include Core/Src/wcet_estimation/subdir.mk
 -include Core/Src/test/subdir.mk
 -include Core/Src/stub/subdir.mk
 -include Core/Src/driver_init/subdir.mk
@@ -69,7 +69,7 @@ main-build: Board1.elf secondary-outputs
 
 # Tool invocations
 Board1.elf Board1.map: $(OBJS) $(USER_OBJS) C:\Users\andre\Desktop\ProgettiCUBE\RoverSpazialeOS\Board1\STM32G474RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Board1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\andre\Desktop\ProgettiCUBE\RoverSpazialeOS\Board1\STM32G474RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Board1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+	arm-none-eabi-gcc -o "Board1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\andre\Desktop\ProgettiCUBE\RoverSpazialeOS\Board1\STM32G474RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Board1.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -u _scanf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
