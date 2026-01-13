@@ -29,8 +29,8 @@ typedef float Gyroscope;
 
 /* RemoteController */
 typedef struct {
-    int16_t  x_lever;
     int16_t  y_lever;
+    int16_t  x_lever;
     uint16_t buttons;
 } BUS_RemoteController;
 

@@ -176,9 +176,9 @@ int main(void)
 		break;
 
 	case TEST_MOTORI:
-		float setPoint_test = -20.0f;
-		test_open_loop(setPoint_test);
-		//test_closed_loop(setPoint_test);
+		float setPoint_test = 0.0f;
+		//test_open_loop(setPoint_test);
+		test_closed_loop(setPoint_test);
 		break;
 
 		// --- WITH SENSORS ---
@@ -278,22 +278,17 @@ int main(void)
 			Board1_step();
 		} while (Board1_DW.is_ExchangeDecision != Board1_IN_Execution);
 
-		// 4. ATTUAZIONE MOTORI
-		for (int i = 0; i < 4; i++) {
-			float ref =
-					(i == 0 || i == 3) ?
-							Board1_Y.setPoint.leftAxis :
-							Board1_Y.setPoint.rightAxis;
-			// ref = 30;
-			if (ref != 0) {
-				MotorControl_SetReferenceRPM(&motors[i], ref);
-				MotorControl_OpenLoopActuate(&motors[i]);
-			} else {
-				MotorControl_SetReferenceRPM(&motors[i], 0);
+        // 4. ATTUAZIONE MOTORI
+        for (int i = 0; i < 4; i++) {
+            float ref =
+                    (i == 0 || i == 3) ?
+                            Board1_Y.setPoint.leftAxis :
+                            Board1_Y.setPoint.rightAxis;
 
-			}
-
-		}
+            MotorControl_SetReferenceRPM(&motors[i], ref);
+            float speed = Encoder_GetSpeedRPM(&encoders[i]);
+            MotorControl_Update(&motors[i], speed);
+        }
 
 		// 5. LED
 		A4WD3_White_Set(&led_left, Board1_DW.board1Decision.leds.white.left);
