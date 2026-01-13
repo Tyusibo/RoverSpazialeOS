@@ -8,8 +8,6 @@
 #ifndef INC_GY521_H_
 #define INC_GY521_H_
 
-#endif /* INC_GY521_H_ */
-
 #include <stdint.h>
 #include "i2c.h"
 
@@ -62,25 +60,40 @@ typedef struct
     double P[2][2];
 } Kalman_t;
 
+// --- Function Prototypes ---
+
 uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx);
 
 void MPU6050_Read_Accel(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
-
 void MPU6050_Read_Gyro(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
-
 void MPU6050_Read_Temp(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
-
 void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct);
-
-// Prototipo della nuova funzione
 void MPU6050_Read_Yaw(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct);
 
-// *** NUOVI PROTOTIPI PER INTERRUPT ***
-// Avvia la lettura dello Yaw in modalità Interrupt (Non-Blocking)
-void MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct);
-void MPU6050_Process_Yaw_IT_Data(void); // Nuova funzione pubblica
-
-// Funzione da chiamare dentro HAL_I2C_MemRxCpltCallback nel main.c o i2c.c
-void MPU6050_Yaw_RxCpltCallback(I2C_HandleTypeDef *I2Cx);
-
 double Kalman_getAngle(Kalman_t *Kalman, double newAngle, double newRate, double dt);
+
+// *** GESTIONE ASINCRONA / INTERRUPT (Logica PadReceiver) ***
+/**
+ * @brief Avvia la lettura dello Yaw in modalità Interrupt (Non-Blocking).
+ * @return 1 se avviata con successo, 0 se occupato o errore.
+ */
+uint8_t MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct);
+
+/**
+ * @brief Da chiamare dentro HAL_I2C_MemRxCpltCallback (o RxCpltCallback) nel main.c 
+ *        per elaborare i dati appena ricevuti.
+ */
+void MPU6050_Process_Yaw_IT_Data(void);
+
+/**
+ * @brief Da chiamare nella HAL_I2C_ErrorCallback per gestire errori e sbloccare il bus.
+ */
+void MPU6050_Error_Callback(void);
+
+/**
+ * @brief Restituisce lo stato dell'operazione.
+ * @return 1 se completato/idle (RxDone), 0 se in corso.
+ */
+uint8_t MPU6050_IsDone(void);
+
+#endif /* INC_GY521_H_ */

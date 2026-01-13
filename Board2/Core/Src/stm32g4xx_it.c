@@ -477,15 +477,13 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
   */
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-  // Gestione MPU6050 (Mem Read) su I2C_MPU (sostituire con l'istanza corretta, es. I2C2 o I2C1)
-  // Nota: MPU6050 usa I2C Mem Read, quindi va qui, NON in MasterRxCpltCallback
-  
-  // Esempio: se MPU è su I2C1 insieme al Pad, devi distinguere o usare handle diverse
-  // Se MPU è su I2C2:
-  // if (hi2c->Instance == I2C2) { ... }
-  
-  // Supponendo sia l'istanza corretta per l'MPU:
-  MPU6050_Process_Yaw_IT_Data();
+	printMsg("MPU6050 I2C Mem Rx Complete\r\n");
+
+	if (hi2c->Instance == I2C3) {
+
+
+		MPU6050_Process_Yaw_IT_Data();
+	}
 }
 
 /**

@@ -148,6 +148,8 @@ int main(void)
   MX_I2C3_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
+	//init DWT
+	DWT_Init();
 
 	// --- 1. CONFIGURAZIONE PERIFERICHE ---
 	setComunicationHandler(&hlpuart1);
