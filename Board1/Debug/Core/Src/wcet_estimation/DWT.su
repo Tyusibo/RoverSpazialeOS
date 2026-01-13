@@ -1,3 +1,0 @@
-../Core/Src/wcet_estimation/DWT.c:17:6:DWT_Init	4	static
-../Core/Src/wcet_estimation/DWT.c:42:10:DWT_CyclesToUs_u32	96	static
-../Core/Src/wcet_estimation/DWT.c:61:6:DWT_PrintCyclesAndUs	24	static

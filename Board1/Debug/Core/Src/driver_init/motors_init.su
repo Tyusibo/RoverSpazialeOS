@@ -1,3 +1,0 @@
-../Core/Src/driver_init/motors_init.c:23:6:Motors_InitAll	56	static
-../Core/Src/driver_init/motors_init.c:50:6:Motors_StartAllPwm	16	static
-../Core/Src/driver_init/motors_init.c:58:6:Motors_SetDefaultCcr	24	static
