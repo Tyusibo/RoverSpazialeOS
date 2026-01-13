@@ -340,48 +340,26 @@ extern hcsr04_t sonarLeft;
 extern hcsr04_t sonarFront;
 extern hcsr04_t sonarRight;
 
-/* INTERRUPT CALLBACK FROM SONAR WITHOUT DEBUGGING */
-//void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
-//	if (htim->Instance != TIM2)
-//		return;
-//
-//	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {
-//		(void) hcsr04_read_distance(&sonarLeft);
-//	} else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
-//		(void) hcsr04_read_distance(&sonarFront);
-//	} else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
-//		(void) hcsr04_read_distance(&sonarRight);
-//	}
-//}
+
 /* Variabili definite in main.c */
-extern volatile uint8_t sonarLeft_done;
-extern volatile uint8_t sonarFront_done;
-extern volatile uint8_t sonarRight_done;
 
-/* INTERRUPT CALLBACK FROM SONAR FOR DEBUGGING */
+/* INTERRUPT CALLBACK FROM SONAR */
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
-	if (htim->Instance != TIM2)
-		return;
+    if (htim->Instance != TIM2)
+        return;
 
-	// Logica esistente: se il driver finisce la cattura (falling edge), alziamo il flag
-	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3) {
-		uint8_t before = sonarLeft.capture_flag;
-		(void) hcsr04_read_distance(&sonarLeft); // La macchina a stati avanza
-		if (before == 1 && sonarLeft.capture_flag == 0) // Falling edge rilevato e calcolo finito
-			sonarLeft_done = 1;
+    // La funzione hcsr04_read_distance aggiorna internamente lo stato
+    // e setta rx_done = 1 quando ha finito (falling edge).
+    
+    if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3) {
+        hcsr04_read_distance(&sonarLeft);
 
-	} else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
-		uint8_t before = sonarFront.capture_flag;
-		(void) hcsr04_read_distance(&sonarFront);
-		if (before == 1 && sonarFront.capture_flag == 0)
-			sonarFront_done = 1;
+    } else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
+        hcsr04_read_distance(&sonarFront);
 
-	} else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
-		uint8_t before = sonarRight.capture_flag;
-		(void) hcsr04_read_distance(&sonarRight);
-		if (before == 1 && sonarRight.capture_flag == 0)
-			sonarRight_done = 1;
-	}
+    } else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
+        hcsr04_read_distance(&sonarRight);
+    }
 }
 #include "sonar_test.h"
 
@@ -401,15 +379,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	// Verifica che l'interrupt arrivi dalla UART di debug (Printer)
 	h = getPrinterHandler();
 	if (h != NULL && huart->Instance == h->Instance) {
-		if (flow_control_flag == 0) {
-			flow_control_flag = 1;
-		}
+        
+        // Imposto il flag per segnalare che è arrivato un byte.
+        // Lo faccio incondizionatamente così il main/test loop può
+        // consumarlo (mettendo a 0) e attenderne uno nuovo (che lo rimetterà a 1).
+        flow_control_flag = 1;
+        
 
-		// Ri-arma l'interrupt per il prossimo byte
-		HAL_UART_Receive_IT(h, (uint8_t*) &rx_debug_byte, 1);
+        // Ri-arma l'interrupt per il prossimo byte
+        HAL_UART_Receive_IT(h, (uint8_t*) &rx_debug_byte, 1);
 
-		return;
-	}
+        return;
+    }
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
@@ -477,15 +458,13 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
   */
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-  // Gestione MPU6050 (Mem Read) su I2C_MPU (sostituire con l'istanza corretta, es. I2C2 o I2C1)
-  // Nota: MPU6050 usa I2C Mem Read, quindi va qui, NON in MasterRxCpltCallback
-  
-  // Esempio: se MPU è su I2C1 insieme al Pad, devi distinguere o usare handle diverse
-  // Se MPU è su I2C2:
-  // if (hi2c->Instance == I2C2) { ... }
-  
-  // Supponendo sia l'istanza corretta per l'MPU:
-  MPU6050_Process_Yaw_IT_Data();
+	printMsg("MPU6050 I2C Mem Rx Complete\r\n");
+
+	if (hi2c->Instance == I2C3) {
+
+
+		MPU6050_Process_Yaw_IT_Data();
+	}
 }
 
 /**
