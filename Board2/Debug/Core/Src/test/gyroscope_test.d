@@ -1,7 +1,7 @@
 Core/Src/test/gyroscope_test.o: ../Core/Src/test/gyroscope_test.c \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/gyroscope_test.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/gyroscope_init.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/mpu6050.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/gyroscope_test.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/gyroscope_init.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/mpu6050.h \
  ../Core/Inc/i2c.h ../Core/Inc/main.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
  ../Core/Inc/stm32g4xx_hal_conf.h \
@@ -36,16 +36,16 @@ Core/Src/test/gyroscope_test.o: ../Core/Src/test/gyroscope_test.c \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/print.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/states.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/print.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/states.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h \
  ../Core/Inc/usart.h
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/gyroscope_test.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/gyroscope_init.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/mpu6050.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/gyroscope_test.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/gyroscope_init.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/mpu6050.h:
 ../Core/Inc/i2c.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
@@ -81,10 +81,10 @@ C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/mpu60
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/print.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/states.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/print.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/states.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h:
 ../Core/Inc/usart.h:

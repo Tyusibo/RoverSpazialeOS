@@ -34,36 +34,36 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
  ../Core/Inc/crc.h ../Core/Inc/main.h ../Core/Inc/i2c.h \
  ../Core/Inc/usart.h ../Core/Inc/tim.h ../Core/Inc/gpio.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/board2/Board2.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/board2/Board2.h \
  ../Core/Inc/rtwtypes.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/board2/Board2_types.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/states.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/constants/controller_masks.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/serialize.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/deserialize.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/stub/uart_functions.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/stub/crc_functions.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/print.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/what2test.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/sonar_init.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/constants/sonar_constants.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/sonar_test.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/gyroscope_init.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/mpu6050.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/gyroscope_test.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/joystick_test.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/board2/Board2_types.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/states.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/constants/controller_masks.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/serialize.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/deserialize.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/stub/uart_functions.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/stub/crc_functions.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/print.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/what2test.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/sonar_init.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/constants/sonar_constants.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/sonar_test.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/gyroscope_init.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/mpu6050.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/gyroscope_test.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/joystick_test.h \
  ../Core/Inc/driver/pad_receiver.h ../Core/Inc/bus/sensors.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/motors_init.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/motor_control.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/constants/motor_constants.h
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/motors_init.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/motor_control.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/constants/motor_constants.h
 ../Core/Inc/main.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
 ../Core/Inc/stm32g4xx_hal_conf.h:
@@ -104,34 +104,34 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Core/Inc/usart.h:
 ../Core/Inc/tim.h:
 ../Core/Inc/gpio.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/board2/Board2.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/board2/Board2.h:
 ../Core/Inc/rtwtypes.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/board2/Board2_types.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/states.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/constants/controller_masks.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/serialize.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/deserialize.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/stub/uart_functions.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/stub/crc_functions.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/print.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/what2test.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/sonar_init.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/constants/sonar_constants.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/sonar_test.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/gyroscope_init.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/mpu6050.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/gyroscope_test.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/joystick_test.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/board2/Board2_types.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/states.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/constants/controller_masks.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/serialize.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/deserialize.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/stub/uart_functions.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/stub/crc_functions.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/print.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/what2test.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/sonar_init.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/constants/sonar_constants.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/sonar_test.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/gyroscope_init.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/mpu6050.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/gyroscope_test.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/joystick_test.h:
 ../Core/Inc/driver/pad_receiver.h:
 ../Core/Inc/bus/sensors.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/motors_init.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/motor_control.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/constants/motor_constants.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/motors_init.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/motor_control.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/constants/motor_constants.h:

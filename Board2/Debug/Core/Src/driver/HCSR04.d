@@ -1,5 +1,5 @@
 Core/Src/driver/HCSR04.o: ../Core/Src/driver/HCSR04.c \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
  ../Core/Inc/stm32g4xx_hal_conf.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h \
@@ -33,7 +33,7 @@ Core/Src/driver/HCSR04.o: ../Core/Src/driver/HCSR04.c \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
 ../Core/Inc/stm32g4xx_hal_conf.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h:

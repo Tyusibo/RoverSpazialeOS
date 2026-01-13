@@ -1,7 +1,7 @@
 Core/Src/test/sonar_test.o: ../Core/Src/test/sonar_test.c \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/sonar_test.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/sonar_init.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/sonar_test.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/sonar_init.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
  ../Core/Inc/stm32g4xx_hal_conf.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h \
@@ -35,17 +35,17 @@ Core/Src/test/sonar_test.o: ../Core/Src/test/sonar_test.c \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/constants/sonar_constants.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/print.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/states.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/constants/sonar_constants.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/print.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/states.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h \
  ../Core/Inc/usart.h ../Core/Inc/main.h ../Core/Inc/tim.h
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/sonar_test.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/sonar_init.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/sonar_test.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/sonar_init.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR04.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
 ../Core/Inc/stm32g4xx_hal_conf.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h:
@@ -79,13 +79,13 @@ C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/HCSR0
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/constants/sonar_constants.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/print.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/states.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/constants/sonar_constants.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/print.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/states.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h:
 ../Core/Inc/usart.h:
 ../Core/Inc/main.h:
 ../Core/Inc/tim.h:

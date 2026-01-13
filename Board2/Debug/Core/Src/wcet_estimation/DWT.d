@@ -1,5 +1,5 @@
 Core/Src/wcet_estimation/DWT.o: ../Core/Src/wcet_estimation/DWT.c \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/wcet_estimation/DWT.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/wcet_estimation/DWT.h \
  ../Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g4xx.h \
  ../Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g474xx.h \
  ../Drivers/CMSIS/Include/core_cm4.h \
@@ -33,14 +33,14 @@ Core/Src/wcet_estimation/DWT.o: ../Core/Src/wcet_estimation/DWT.c \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/print.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/states.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/print.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/states.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h \
  ../Core/Inc/usart.h ../Core/Inc/main.h
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/wcet_estimation/DWT.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/wcet_estimation/DWT.h:
 ../Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g4xx.h:
 ../Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g474xx.h:
 ../Drivers/CMSIS/Include/core_cm4.h:
@@ -74,11 +74,11 @@ C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/wcet_estimat
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/test/print.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/states.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/test/print.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/frame_size.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/decision.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/enums.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/states.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/bus/sensors.h:
 ../Core/Inc/usart.h:
 ../Core/Inc/main.h:

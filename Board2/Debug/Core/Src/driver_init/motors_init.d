@@ -1,6 +1,6 @@
 Core/Src/driver_init/motors_init.o: ../Core/Src/driver_init/motors_init.c \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/motors_init.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/motor_control.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/motors_init.h \
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/motor_control.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h \
  ../Core/Inc/stm32g4xx_hal_conf.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h \
@@ -34,9 +34,9 @@ Core/Src/driver_init/motors_init.o: ../Core/Src/driver_init/motors_init.c \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h \
  ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h \
- C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/constants/motor_constants.h
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver_init/motors_init.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/motor_control.h:
+ C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/constants/motor_constants.h
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver_init/motors_init.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/driver/motor_control.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h:
 ../Core/Inc/stm32g4xx_hal_conf.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_rcc.h:
@@ -70,4 +70,4 @@ C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/driver/motor
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h:
 ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h:
-C:/Users/andre/Desktop/ProgettiCUBE/RoverSpazialeOS/Board2/Core/Inc/constants/motor_constants.h:
+C:/Users/giuse/Desktop/RoverSpazialeOS/Board2/Core/Inc/constants/motor_constants.h:
