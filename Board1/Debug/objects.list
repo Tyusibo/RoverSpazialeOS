@@ -24,7 +24,7 @@
 "./Core/Src/test/lights_test.o"
 "./Core/Src/test/motors_test.o"
 "./Core/Src/test/print.o"
-"./Core/Src/wcet_estimation.c/DWT.o"
+"./Core/Src/wcet_estimation/DWT.o"
 "./Core/Startup/startup_stm32g474retx.o"
 "./Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.o"
 "./Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_cortex.o"
