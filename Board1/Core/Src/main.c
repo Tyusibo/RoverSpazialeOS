@@ -176,9 +176,9 @@ int main(void)
 		break;
 
 	case TEST_MOTORI:
-		float setPoint_test = 0.0f;
-		//test_open_loop(setPoint_test);
-		test_closed_loop(setPoint_test);
+		float setPoint_test = 20.0f;
+		test_open_loop(setPoint_test);
+		//test_closed_loop(setPoint_test);
 		break;
 
 		// --- WITH SENSORS ---
@@ -279,6 +279,13 @@ int main(void)
 		} while (Board1_DW.is_ExchangeDecision != Board1_IN_Execution);
 
 		// 4. ATTUAZIONE MOTORI
+		MotorControl* m_ptrs[4] = {
+			&motors.front_left,
+			&motors.front_right,
+			&motors.rear_right,
+			&motors.rear_left
+		};
+
 		for (int i = 0; i < 4; i++) {
 			float ref =
 					(i == 0 || i == 3) ?
@@ -286,11 +293,11 @@ int main(void)
 							Board1_Y.setPoint.rightAxis;
 			// ref = 30;
 			if (ref != 0) {
-				MotorControl_SetReferenceRPM(&motors[i], ref);
-				MotorControl_OpenLoopActuate(&motors[i]);
+				MotorControl_SetReferenceRPM(m_ptrs[i], ref);
+				MotorControl_OpenLoopActuate(m_ptrs[i]);
 			} else {
-				MotorControl_SetReferenceRPM(&motors[i], 0);
-				MotorControl_OpenLoopActuate(&motors[i]);
+				MotorControl_SetReferenceRPM(m_ptrs[i], 0);
+				MotorControl_OpenLoopActuate(m_ptrs[i]);
 
 			}
 

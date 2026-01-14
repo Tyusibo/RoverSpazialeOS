@@ -36,11 +36,18 @@ void test_open_loop(float ref) {
 
     uint32_t last_print = 0;
 
+    MotorControl* m_ptrs[N_MOTORS] = {
+        &motors.front_left,
+        &motors.front_right,
+        &motors.rear_right,
+        &motors.rear_left
+    };
+
     // Loop infinito per mantenere il watchdog attivo
     while (1) {
         for (int i = 0; i < N_MOTORS; i++) {
-            MotorControl_SetReferenceRPM(&motors[i], ref); 
-            MotorControl_OpenLoopActuate(&motors[i]);
+            MotorControl_SetReferenceRPM(m_ptrs[i], ref); 
+            MotorControl_OpenLoopActuate(m_ptrs[i]);
             
             Encoder_Update(&encoders[i]);
         }
@@ -64,6 +71,13 @@ void test_closed_loop(float ref) {
     uint32_t last_print = 0;
     const uint32_t LOOP_PERIOD_MS = 20; // 50Hz nominali
 
+    MotorControl* m_ptrs[N_MOTORS] = {
+        &motors.front_left,
+        &motors.front_right,
+        &motors.rear_right,
+        &motors.rear_left
+    };
+
     // Loop infinito per mantenere il watchdog attivo
     while (1) {
         uint32_t loop_start = HAL_GetTick();
@@ -74,8 +88,8 @@ void test_closed_loop(float ref) {
             float current_rpm = Encoder_GetSpeedRPM(&encoders[i]);
 
             // 2. Imposto riferimento e eseguo controllo Closed Loop
-            MotorControl_SetReferenceRPM(&motors[i], ref); 
-            MotorControl_Update(&motors[i], current_rpm);
+            MotorControl_SetReferenceRPM(m_ptrs[i], ref); 
+            MotorControl_Update(m_ptrs[i], current_rpm);
         }
         
         // Stampa periodica

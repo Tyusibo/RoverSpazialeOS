@@ -6,7 +6,7 @@
 extern UART_HandleTypeDef huart1;
 extern UART_HandleTypeDef huart3;
 
-MotorControl motors[N_MOTORS];
+RoverMotors motors;
 
 static Coefficients fastGains[N_MOTORS] = {
     { .k_err = 0.097f, .k_last_err = -0.083f },
@@ -40,9 +40,16 @@ void Motors_InitAll(void)
         DC_GAIN_MOT4
     };
 
+    MotorControl* m_ptrs[N_MOTORS] = {
+        &motors.front_left,
+        &motors.front_right,
+        &motors.rear_right,
+        &motors.rear_left
+    };
+
     for (int i = 0; i < N_MOTORS; i++)
     {
-        MotorControl_Init(&motors[i],
+        MotorControl_Init(m_ptrs[i],
                           uarts[i],          // UART Handle
                           128,               // Indirizzo Sabertooth (default 128)
                           sabertooth_ids[i], // Motore 1 o 2
@@ -51,6 +58,6 @@ void Motors_InitAll(void)
                           fastGains[i], slowGains[i]);
 
         // Stop iniziale per sicurezza
-        MotorControl_Actuate(&motors[i], 0.0f);
+        MotorControl_Actuate(m_ptrs[i], 0.0f);
     }
 }

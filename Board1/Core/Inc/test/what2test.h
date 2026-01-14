@@ -22,7 +22,7 @@ typedef enum {
 /* Selezione test attivo                              */
 /* -------------------------------------------------- */
 /* Cambia SOLO questo valore, flasha e testi altro */
-#define WHAT_TO_TEST TEST_COMMUNICATION_BYTE_STOP_WITH_SENSORS
+#define WHAT_TO_TEST TEST_MOTORI
 
 #define TIME_TO_WAIT_BEFORE_RESTART 50
 

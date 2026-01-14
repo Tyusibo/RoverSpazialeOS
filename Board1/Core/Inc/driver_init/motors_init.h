@@ -7,7 +7,14 @@
 
 #define N_MOTORS 4
 
-extern MotorControl motors[N_MOTORS];
+typedef struct {
+    MotorControl front_left;
+    MotorControl front_right;
+    MotorControl rear_right;
+    MotorControl rear_left;
+} RoverMotors;
+
+extern RoverMotors motors;
 
 void Motors_InitAll(void);
 

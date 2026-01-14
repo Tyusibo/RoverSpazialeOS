@@ -102,10 +102,10 @@ static const float DC_GAIN_MOT1 = 14.480f;
 /** Guadagno statico (RPM/V) - Motore 2 (Front Right) */
 static const float DC_GAIN_MOT2 = 14.200f;
 
-/** Guadagno statico (RPM/V) - Motore 3 (Rear Left) */
+/** Guadagno statico (RPM/V) - Motore 3 (Rear Right) */
 static const float DC_GAIN_MOT3 = 14.510f;
 
-/** Guadagno statico (RPM/V) - Motore 4 (Rear Right) */
+/** Guadagno statico (RPM/V) - Motore 4 (Rear Left) */
 static const float DC_GAIN_MOT4 = 14.210f;
 
 
