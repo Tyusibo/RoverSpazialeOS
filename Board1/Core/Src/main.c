@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
 #include "crc.h"
 #include "usart.h"
 #include "tim.h"
@@ -44,6 +45,8 @@
 #include "motors_init.h"     // #include "motors_control.h"
 // both #include "motor_constants.h"
 #include "motors_test.h"
+#include "batt_level.h"
+#include "temperature_adc.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -79,6 +82,8 @@
 /* USER CODE BEGIN PV */
 volatile uint8_t rx_debug_byte;      // Buffer ricezione
 volatile uint8_t flow_control_flag = 0; // 1 = Comando ricevuto
+batt_level_t battery;
+temp_ky028_t temp_sensor;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -131,9 +136,19 @@ int main(void)
   MX_TIM7_Init();
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
+  MX_ADC2_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 	// --- 1. CONFIGURAZIONE PERIFERICHE ---
 	setComunicationHandler(&hlpuart1);
+	
+	// Calibrazione ADC
+	HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
+
+	// Inizializzazione Batteria
+	battery_init(&battery, &hadc2, R1, R2, ADC_VREF);
+	// Inizializzazione Temperatura
+	temp_ky028_init(&temp_sensor, &hadc1, ADC_VREF);
 
 #if VERBOSE_DEBUG
 
@@ -240,8 +255,8 @@ int main(void)
 			}
 			Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
 							current_speed[2], current_speed[3] };
-			Board1_U.temperature = (Temperature) 35.5f;
-			Board1_U.batteryLevel = (BatteryLevel) 12.0f;
+			Board1_U.temperature = (Temperature) temp_ky028_read_temperature_avg(&temp_sensor, 5);
+			Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
 		} else {
 			Board1_U.speed = (BUS_Speed ) { 32.3f, 32.3, 32.3, 32.3 };
 			Board1_U.temperature = (Temperature) 32.3;
