@@ -5,7 +5,7 @@
 
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 0 
+#define VERBOSE_DEBUG 1
 
 #if VERBOSE_DEBUG == 1
     #define PRINT_DBG(msg) printMsg(msg)
@@ -35,5 +35,6 @@ uint8_t compareCRC(uint8_t* buffer, uint32_t bufferLength){
         return 1;
     }
 
+    PRINT_DBG("CRC MISMATCH\r\n");
     return 0;
 }

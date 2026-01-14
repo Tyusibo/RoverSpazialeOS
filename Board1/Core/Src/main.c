@@ -47,6 +47,8 @@
 #include "motors_test.h"
 #include "batt_level.h"
 #include "temperature_adc.h"
+
+#include "DWT.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -140,6 +142,7 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 	// --- 1. CONFIGURAZIONE PERIFERICHE ---
+  DWT_Init();
 	setComunicationHandler(&hlpuart1);
 	
 	// Calibrazione ADC
@@ -289,9 +292,14 @@ int main(void)
 		PRINT_DBG("INIZIO COMUNICAZIONE B1 \r\n");
 
 		// 3. MODEL STEP
+		uint32_t t0 = DWT_Begin();
+
 		do {
 			Board1_step();
 		} while (Board1_DW.is_ExchangeDecision != Board1_IN_Execution);
+
+		uint32_t cycles = DWT_End(t0);
+		DWT_PrintCyclesAndUs("B1 STEP", cycles);
 
 		// 4. ATTUAZIONE MOTORI
 		MotorControl* m_ptrs[4] = {
@@ -348,8 +356,8 @@ int main(void)
 		Board1_U.continua = (Board1_U.continua == 0) ? 1 : 0;
 
 #if VERBOSE_DEBUG
-		printGlobalState(&(Board1_B.board1GlobalState));
-		printDecision(&(Board1_DW.board1Decision));
+		//printGlobalState(&(Board1_B.board1GlobalState));
+		//printDecision(&(Board1_DW.board1Decision));
 #else
 		/* Senza stampe il ciclo è troppo veloce e potrebbe causare:
 		 1. Timeout prematuri nel protocollo se basati su contatori di step
