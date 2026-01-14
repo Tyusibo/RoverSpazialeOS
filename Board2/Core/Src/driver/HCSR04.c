@@ -110,7 +110,12 @@ int8_t hcsr04_read_distance(hcsr04_t *sensor)
 
         // Convert ticks -> us -> cm
         float time_us = (float)diff_ticks / TIM2_TICKS_PER_US;
-        sensor->distance = time_us * SOUND_SPEED_CM_PER_US;
+
+        if (time_us > 24000.0f) {
+            sensor->distance = (float)DISTANCE_LIMIT;
+        } else {
+            sensor->distance = time_us * SOUND_SPEED_CM_PER_US;
+        }
 
         // Clamp (in cm)
         if (sensor->distance > (float)DISTANCE_LIMIT) sensor->distance = (float)DISTANCE_LIMIT;
