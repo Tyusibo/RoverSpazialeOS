@@ -109,20 +109,4 @@ static const float DC_GAIN_MOT3 = 14.510f;
 static const float DC_GAIN_MOT4 = 14.210f;
 
 
-/* -------------------------------------------------------------------------- */
-/*                               CALIBRAZIONE PULSE                           */
-/* -------------------------------------------------------------------------- */
-
-/** Pulse Teorico Minimo (corrispondente a 1.886V) */
-static const float PULSE_THEO_MIN = 568.0f;
-
-/** Pulse Reale Minimo (misurato col multimetro) */
-static const float PULSE_REAL_MIN = 545.0f;
-
-/** Pulse Teorico Massimo (corrispondente a 3.140V) */
-static const float PULSE_THEO_MAX = 946.0f;
-
-/** Pulse Reale Massimo (misurato col multimetro) */
-static const float PULSE_REAL_MAX = 920.0f;
-
 #endif /* INC_CONSTANTS_MOTOR_CONSTANTS_H_ */
