@@ -224,21 +224,22 @@ void StartPID(void *argument)
 			&motors.rear_right, &motors.rear_left };
 	/* Infinite loop */
 	for (;;) {
-//		for (int i = 0; i < 4; i++) {
-//
-//			Encoder_Update(&encoders[i]);
-//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-//
-//			MotorControl_Update(m_ptrs[i], current_speed[i]);
-//			//Open loop control for testing
-//			MotorControl_OpenLoopActuate(m_ptrs[i]);
-//		}
+		for (int i = 0; i < 4; i++) {
+
+			Encoder_Update(&encoders[i]);
+			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+
+			//MotorControl_SetReferenceRPM(m_ptrs[i], 30.0f);
+			//MotorControl_Update(m_ptrs[i], current_speed[i]);
+			//Open loop control for testing
+			MotorControl_OpenLoopActuate(m_ptrs[i]);
+		}
 
 		Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
 						current_speed[2], current_speed[3] };
 
-		osDelay(20);
-		//periodic_wait(&next, T);
+		//osDelay(20);
+		periodic_wait(&next, T);
 
 	}
 
@@ -299,8 +300,20 @@ void StartSupervisor(void *argument)
 
 		Board1_U.continua = (Board1_U.continua == 0) ? 1 : 0;
 
-		osDelay(20);
-		//periodic_wait(&next, T);
+
+		// Stampa ogni 100 cicli
+		static uint32_t cycle_count = 0;
+		cycle_count++;
+		if (cycle_count >= 100) {
+			cycle_count = 0;
+			//printMsg("Supervisor Cycle End\r\n");ù
+			printGlobalState(&Board1_B.board1GlobalState);
+		}
+		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
+
+
+		//osDelay(20);
+		periodic_wait(&next, T);
 
 	}
 
@@ -329,7 +342,6 @@ void StartReadTemperature(void *argument)
 	for (;;) {
 		//Board1_U.temperature = (Temperature) temp_ky028_read_temperature_avg(&temp_sensor, 5);
 		Board1_U.temperature = (Temperature) temp_ky028_read_temperature(&temp_sensor);
-		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 
 		periodic_wait_no_led(&next, T);
 	}
@@ -388,7 +400,7 @@ static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks) {
 
 	/* Sleep assoluta fino al prossimo periodo */
 	osDelayUntil(*next_release);
-	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
+	// HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
 	return 0;
 }
 

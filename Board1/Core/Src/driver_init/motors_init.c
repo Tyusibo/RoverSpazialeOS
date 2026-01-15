@@ -28,7 +28,6 @@ void Motors_InitAll(void)
     // Motori 1 e 2 -> USART1 (Sabertooth A)
     // Motori 3 e 4 -> USART3 (Sabertooth B)
     UART_HandleTypeDef* uarts[N_MOTORS] = { &huart3, &huart3, &huart1, &huart1 };
-    
     // ID Motore sulla Sabertooth (1 o 2)
     uint8_t sabertooth_ids[N_MOTORS] = { 2, 1, 2, 1 };
 

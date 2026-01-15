@@ -46,18 +46,18 @@ void test_open_loop(float ref) {
     // Loop infinito per mantenere il watchdog attivo
     while (1) {
         for (int i = 0; i < N_MOTORS; i++) {
-            MotorControl_SetReferenceRPM(m_ptrs[i], ref); 
+            MotorControl_SetReferenceRPM(m_ptrs[i], ref);
             MotorControl_OpenLoopActuate(m_ptrs[i]);
-            
+
             Encoder_Update(&encoders[i]);
         }
-        
+
         // Stampa periodica
         if (HAL_GetTick() - last_print > PRINT_INTERVAL_MS) {
             print_speeds();
             last_print = HAL_GetTick();
         }
-        
+
         HAL_Delay(20); // Refresh rate ~50Hz
     }
 }
@@ -88,20 +88,24 @@ void test_closed_loop(float ref) {
             float current_rpm = Encoder_GetSpeedRPM(&encoders[i]);
 
             // 2. Imposto riferimento e eseguo controllo Closed Loop
-            MotorControl_SetReferenceRPM(m_ptrs[i], ref); 
+            MotorControl_SetReferenceRPM(m_ptrs[i], ref);
             MotorControl_Update(m_ptrs[i], current_rpm);
+            
+            // Inseriamo un piccolo ritardo tra i comandi ai due motori sullo stesso bus UART.
+            // Inviare pacchetti back-to-back potrebbe sovraccaricare il Sabertooth o causare errori di framing.
+            HAL_Delay(1);
         }
-        
+
         // Stampa periodica
         if (HAL_GetTick() - last_print > PRINT_INTERVAL_MS) {
             print_speeds();
             last_print = HAL_GetTick();
         }
-        
+
         // Attesa dinamica: dorme solo per il tempo rimanente ai 20ms
         uint32_t elapsed = HAL_GetTick() - loop_start;
         if (elapsed < LOOP_PERIOD_MS) {
-            HAL_Delay(LOOP_PERIOD_MS - elapsed); 
+            HAL_Delay(LOOP_PERIOD_MS - elapsed);
         }
     }
 }

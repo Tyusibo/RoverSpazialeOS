@@ -1,6 +1,7 @@
 #include "motor_control.h"
 #include <math.h>
 
+volatile uint8_t flag_transmit = 0;
 
 static inline float saturate_volt(const MotorControl *m, float u)
 {
@@ -97,9 +98,12 @@ int MotorControl_Actuate(MotorControl *mc, float u_volt)
   uint8_t packet[4] = { mc->address, command, data, checksum };
   
   // Invio UART
-  //__disable_irq();
   HAL_UART_Transmit(mc->huart, packet, 4, 10);
-  //__enable_irq();
+
+//  flag_transmit = 0;
+//  HAL_UART_Transmit_IT(mc->huart, packet, 4);
+//  while (flag_transmit == 0); // Attendo completamento trasmissione
+
   
   mc->last_cmd = speed;
   return speed;
@@ -120,3 +124,11 @@ void MotorControl_OpenLoopActuate(MotorControl *mc){
     }
 }
 
+
+// callback di fine trasmissione UART
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
+	if(huart->Instance == USART1 || huart->Instance == USART3){
+		flag_transmit = 1;
+	}
+
+}

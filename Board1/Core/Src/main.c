@@ -174,6 +174,9 @@ int main(void)
 
     //Board1_U.temperature = (Temperature) temp_ky028_read_temperature(&temp_sensor);
 
+    // test_open_loop(30.0f);
+    //test_closed_loop(30.0f);
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
