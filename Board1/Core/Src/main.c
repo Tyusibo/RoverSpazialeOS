@@ -34,9 +34,6 @@
 #include "uart_functions.h"
 #include "print.h"
 
-// Test
-#include "what2test.h"
-
 // Driver lights
 #include "lights_init.h"   // #include "a4wd3_led.h"
 #include "lights_test.h"
