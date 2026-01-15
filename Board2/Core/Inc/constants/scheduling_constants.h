@@ -6,16 +6,16 @@
  * ========================= */
 
 /* IMU (accelerometro/gyro su I2C) */
-#define T_IMU_READ_MS                10u   /* 100 Hz: stato assetto/filtri */
+#define T_GYROSCOPE                  40u   /* 100 Hz: stato assetto/filtri */
 
 /* Remote controller (I2C) */
-#define T_REMOTE_READ_MS             20u   /* 50 Hz: input utente */
-
-/* Fusione/filtri e stima stato (se separata) */
-#define T_STATE_ESTIMATION_MS        10u   /* 100 Hz */
+#define T_REMOTE_CONTROLLER          20u   /* 50 Hz: input utente */
 
 /* Supervisore / decisione rover (stato globale + safety) */
-#define T_SUPERVISOR_MS              20u   /* 50 Hz */
+#define T_SUPERVISOR             50u   /* 50 Hz */
+
+/* Supervisore / decisione rover (stato globale + safety) */
+#define T_SONAR          100u   /* 50 Hz */
 
 /* Comunicazione tra board */
 #define T_UART_EXCHANGE_MS           20u   /* 50 Hz: frame sensori/stato (IT/DMA) */

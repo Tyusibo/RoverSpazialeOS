@@ -28,7 +28,7 @@ tasksB2_Degr = [
 ]
 
 # CAMBIARE
-tasks = tasksB2_Degr
+tasks = tasksB1
 
 # -------------------------
 # Utility functions

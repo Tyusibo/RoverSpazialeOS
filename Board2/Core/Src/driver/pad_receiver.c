@@ -1,4 +1,4 @@
-#include "driver/pad_receiver.h"
+#include "pad_receiver.h"
 #include "i2c.h"
 
 static BUS_RemoteController rx_buffer;   // Buffer di ricezione

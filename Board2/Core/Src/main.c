@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "crc.h"
 #include "i2c.h"
 #include "usart.h"
@@ -80,10 +81,10 @@
 /* USER CODE BEGIN PM */
 // ROBA DI SONAR
 // Variabili globali rimosse: ora il flag è dentro la struct hcsr04_t
-
 // Verifica se tutti i sonar hanno completato la lettura
 uint8_t all_sonar_done(void) {
-    return (hcsr04_is_done(&sonarLeft) && hcsr04_is_done(&sonarFront) && hcsr04_is_done(&sonarRight));
+	return (hcsr04_is_done(&sonarLeft) && hcsr04_is_done(&sonarFront)
+			&& hcsr04_is_done(&sonarRight));
 }
 /* USER CODE END PM */
 
@@ -102,6 +103,7 @@ volatile uint8_t gyro_done = 0; // Flag di completamento lettura
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -152,7 +154,6 @@ int main(void)
 	//init DWT
 	DWT_Init();
 
-	// --- 1. CONFIGURAZIONE PERIFERICHE ---
 	setComunicationHandler(&hlpuart1);
 #if VERBOSE_DEBUG
 	setPrinterHandler(&huart2); // Imposta UART per debug
@@ -186,74 +187,19 @@ int main(void)
 //		MotorControl_OpenLoopActuate(&motors[i]);
 //	}
 
-	// --- 2. VARIABILI DI CONFIGURAZIONE TEST ---
-	uint8_t use_real_sensors = 0;
-	uint8_t blocking_step_mode = 0;
-	uint8_t use_sonar = 1; // Default attivo
-	flow_control_flag = 0;
 
-	// --- 3. SELEZIONE TEST ---
-	switch (WHAT_TO_TEST) {
-	case TEST_SONAR:
-		SonarTest(SONAR_MODE);
-		break;
-	case TEST_GYROSCOPE:
-		GyroscopeTest();
-		break;
 
-	case TEST_REMOTE_CONTROLLER:
-		JoystickTest();
-		break;
 
-		// --- WITH SENSORS ---
-	case TEST_COMMUNICATION_BYTE_RESTART_WITH_SENSORS:
-		use_real_sensors = 1;
-		blocking_step_mode = 1;
-		PRINT_DBG("B2 MODE: RESTART (SENSORS)\r\n");
-		break;
-
-	case TEST_COMMUNICATION_BYTE_STOP_WITH_SENSORS:
-		use_real_sensors = 1;
-		blocking_step_mode = 0;
-		PRINT_DBG("B2 MODE: RUN/STOP (SENSORS)\r\n");
-		// AVVIA RICEZIONE INTERRUPT
-#if VERBOSE_DEBUG
-        HAL_UART_Receive_IT(getPrinterHandler(), (uint8_t*) &rx_debug_byte, 1);
-#endif
-        break;
-
-    case TEST_COMMUNICATION_NOSONAR:
-        use_real_sensors = 1;
-        blocking_step_mode = 0;
-        use_sonar = 0; // Disabilita sonar
-        PRINT_DBG("B2 MODE: RUN/STOP (NO SONAR)\r\n");
-        // AVVIA RICEZIONE INTERRUPT
-#if VERBOSE_DEBUG
-        HAL_UART_Receive_IT(getPrinterHandler(), (uint8_t*) &rx_debug_byte, 1);
-#endif
-        break; 
-
-        // --- WITHOUT SENSORS ---
-	case TEST_COMMUNICATION_BYTE_RESTART_WITHOUT_SENSORS:
-		use_real_sensors = 0;
-		blocking_step_mode = 1;
-		PRINT_DBG("B2 MODE: RESTART (NO SENS)\r\n");
-		break;
-
-	case TEST_COMMUNICATION_BYTE_STOP_WITHOUT_SENSORS:
-		use_real_sensors = 0;
-		blocking_step_mode = 0;
-		PRINT_DBG("B2 MODE: RUN/STOP (NO SENS)\r\n");
-		// AVVIA RICEZIONE INTERRUPT
-#if VERBOSE_DEBUG
-		HAL_UART_Receive_IT(getPrinterHandler(), (uint8_t*) &rx_debug_byte, 1);
-#endif
-		break;
-
-	default:
-		break;
-	}
   /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();  /* Call init function for freertos objects (in cmsis_os2.c) */
+  MX_FREERTOS_Init();
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -262,128 +208,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-        // 1. INPUT (Sensori o Dummy)
-        if (use_real_sensors) {
-            // --- JOYSTICK ---
-            // Avvia ricezione e attendi completamento
-            PadReceiver_Request();
-            while (!PadReceiver_IsDone()); // attesa attiva
-            PadReceiver_Read(&Board2_U.remoteController);
-
-            // --- GYRO ---
-            gyro_done = 0; // Reset flag prima di avviare
-            MPU6050_Read_Yaw_IT(&hi2c3, &MPU6050_Yaw);
-            
-            // Attesa con Timeout di 50ms
-            uint32_t startTickGyro = HAL_GetTick();
-            while (!gyro_done && (HAL_GetTick() - startTickGyro < 50));
-
-            // Se timer scade, si prende l'ultimo valore valido
-            Board2_U.gyroscope = (double)MPU6050_Yaw.KalmanAngleZ;
-
-            // --- SONAR ---
-            if (use_sonar) {
-                // Timeout per ogni singolo sensore (ms)
-                // 30ms è sufficiente per ~5 metri
-                const uint32_t SONAR_TIMEOUT = 30; 
-                uint32_t startTick;
-
-                // 1. LEFT
-                // sonarLeft_done = 0; // Non serve più, gestito da hcsr04_trigger
-                hcsr04_trigger(&sonarLeft);
-                startTick = HAL_GetTick();
-                while (!hcsr04_is_done(&sonarLeft) && (HAL_GetTick() - startTick < SONAR_TIMEOUT));
-
-                // 2. FRONT
-                // sonarFront_done = 0; // Non serve più
-                hcsr04_trigger(&sonarFront);
-                startTick = HAL_GetTick();
-                while (!hcsr04_is_done(&sonarFront) && (HAL_GetTick() - startTick < SONAR_TIMEOUT));
-
-                // 3. RIGHT
-                // sonarRight_done = 0; // Non serve più
-                hcsr04_trigger(&sonarRight);
-                startTick = HAL_GetTick();
-                while (!hcsr04_is_done(&sonarRight) && (HAL_GetTick() - startTick < SONAR_TIMEOUT));
-
-                Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance,
-                                sonarFront.distance, sonarRight.distance };
-            } else {
-                // Dummy Values se sonar disattivato
-                Board2_U.sonar = (BUS_Sonar ) { 400, 400, 400 };
-            }
-
-        } else {
-            // --- DUMMY ---
-            // Simuliamo ostacoli o quiete
-            Board2_U.sonar = (BUS_Sonar ) { 400, 400, 400 }; // Lontano ostacoli
-            Board2_U.gyroscope = (Gyroscope) 32.3f;
-            Board2_U.remoteController = (BUS_RemoteController ) { 0, 30, 0 };
-        }
-
-		// 2. CHECK STOP/PAUSA
-		if (blocking_step_mode == 0) {
-			//HAL_Delay(TIME_TO_WAIT_BEFORE_RESTART);
-			if (flow_control_flag == 1) {
-				PRINT_DBG("--- B2 PAUSED ---\r\n");
-				flow_control_flag = 0;
-				while (flow_control_flag == 0) {
-					//HAL_Delay(50);
-				}
-				PRINT_DBG("--- B2 RESUMED ---\r\n");
-				flow_control_flag = 0;
-			}
-		}
-
-		PRINT_DBG("INIZIO COMUNICAZIONE B2 \r\n");
-
-		// 3. MODEL STEP
-		do {
-			Board2_step();
-		} while (Board2_DW.is_ExchangeDecision != Board2_IN_Execution);
-
-		// 4. Gestione LED debug per emergenze
-
-		// Se la SA non è NONE sta rilevando qualcosa che impedisce di eseguire l'azione
-		if (Board2_DW.board2Decision.safeAction != SA_NONE) {
-			// Subito accendo il led
-			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
-			// Avvio il timer che fa il toggle con la ISR
-			if (htim7.State == HAL_TIM_STATE_READY) {
-				HAL_TIM_Base_Start_IT(&htim7);
-			}
-		}
-
-		// Se la SA non è NONE non sta rilevando qualcosa che impedisce di eseguire l'azione
-		// Però può comunque star eseguendo un azione di emergenza iniziata
-		if (Board2_DW.board2Decision.safeAction == SA_NONE) {
-			// Subito spengo il led
-			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
-			// Fermo il timer che fa il toggle con la ISR
-			if (htim7.Instance->CR1 & TIM_CR1_CEN) {
-				HAL_TIM_Base_Stop_IT(&htim7);
-			}
-		}
-
-		// 5. Per permettere al modello di ripartire
-		Board2_U.continua = (Board2_U.continua == 0) ? 1 : 0;
-
-#if VERBOSE_DEBUG
-		printGlobalState(&(Board2_B.board2GlobalState));
-		printDecision(&(Board2_DW.board2Decision));
-#else
-		/* Senza stampe il ciclo è troppo veloce e potrebbe causare problemi di sincronizzazione.
-		 Inseriamo un delay per simulare il tempo di stampa. */
-		//HAL_Delay(TIME_TO_WAIT_BEFORE_RESTART);
-#endif
-
-		// 6. ATTESA (Solo per RESTART)
-		if (blocking_step_mode == 1) {
-#if VERBOSE_DEBUG
-			uint8_t dummy;
-			HAL_UART_Receive(getPrinterHandler(), &dummy, 1, HAL_MAX_DELAY);
-#endif
-		}
 	}
   /* USER CODE END 3 */
 }
@@ -431,6 +255,28 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM6 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM6)
+  {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

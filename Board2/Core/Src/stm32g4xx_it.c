@@ -20,14 +20,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32g4xx_it.h"
-#include "driver/mpu6050.h"    // Includi i tuoi driver
-#include "driver/pad_receiver.h"
-
-// Fai extern delle handle se sono definite in main.c o i2c.c
-extern I2C_HandleTypeDef hi2c1; 
-// Se l'MPU è su un'altra I2C, ad esempio hi2c2, aggiungila qui
-// extern I2C_HandleTypeDef hi2c2; 
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "hcsr04.h"
@@ -81,6 +73,8 @@ extern UART_HandleTypeDef hlpuart1;
 extern UART_HandleTypeDef huart2;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim7;
+extern TIM_HandleTypeDef htim6;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -163,19 +157,6 @@ void UsageFault_Handler(void)
 }
 
 /**
-  * @brief This function handles System service call via SWI instruction.
-  */
-void SVC_Handler(void)
-{
-  /* USER CODE BEGIN SVCall_IRQn 0 */
-
-  /* USER CODE END SVCall_IRQn 0 */
-  /* USER CODE BEGIN SVCall_IRQn 1 */
-
-  /* USER CODE END SVCall_IRQn 1 */
-}
-
-/**
   * @brief This function handles Debug monitor.
   */
 void DebugMon_Handler(void)
@@ -186,33 +167,6 @@ void DebugMon_Handler(void)
   /* USER CODE BEGIN DebugMonitor_IRQn 1 */
 
   /* USER CODE END DebugMonitor_IRQn 1 */
-}
-
-/**
-  * @brief This function handles Pendable request for system service.
-  */
-void PendSV_Handler(void)
-{
-  /* USER CODE BEGIN PendSV_IRQn 0 */
-
-  /* USER CODE END PendSV_IRQn 0 */
-  /* USER CODE BEGIN PendSV_IRQn 1 */
-
-  /* USER CODE END PendSV_IRQn 1 */
-}
-
-/**
-  * @brief This function handles System tick timer.
-  */
-void SysTick_Handler(void)
-{
-  /* USER CODE BEGIN SysTick_IRQn 0 */
-
-  /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
-
-  /* USER CODE END SysTick_IRQn 1 */
 }
 
 /******************************************************************************/
@@ -276,6 +230,20 @@ void USART2_IRQHandler(void)
   /* USER CODE BEGIN USART2_IRQn 1 */
 
   /* USER CODE END USART2_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM6 global interrupt, DAC1 and DAC3 channel underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_IRQn 1 */
 }
 
 /**
@@ -427,15 +395,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	}
 }
 
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-
-	if (htim->Instance == TIM7) {
-		HAL_GPIO_TogglePin(LedDebug_GPIO_Port, LedDebug_Pin);
-	}
-
-}
-
-//nuov
+#include "pad_receiver.h"
 /**
   * @brief  Rx Transfer completed callback.
   * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
@@ -450,6 +410,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
   }
 }
 
+#include "mpu6050.h"
 /**
   * @brief  Memory Rx Transfer completed callback.
   * @param  hi2c Pointer to a I2C_HandleTypeDef structure that contains
@@ -458,7 +419,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
   */
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	printMsg("MPU6050 I2C Mem Rx Complete\r\n");
+	PRINT_DBG("MPU6050 I2C Mem Rx Complete\r\n");
 
 	if (hi2c->Instance == I2C3) {
 

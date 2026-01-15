@@ -6,7 +6,14 @@
  * ========================= */
 
 /* Hard-ish realtime: controllo motori */
-#define T_MOTOR_CONTROL_MS           5u    /* 200 Hz: PID/FOC semplice, update PWM */
+
+#define T_PID           		20u    /* 200 Hz: PID/FOC semplice, update PWM */
+
+#define T_SUPERVISOR           	50u    /* 200 Hz: PID/FOC semplice, update PWM */
+
+#define T_BATTERY           	200u    /* 200 Hz: PID/FOC semplice, update PWM */
+
+#define T_TEMPERATURE           200u    /* 200 Hz: PID/FOC semplice, update PWM */
 
 /* Acquisizione encoder (se non fai tutto nel controllo) */
 #define T_ENCODER_PROCESS_MS         5u    /* 200 Hz: calcolo velocità/filtri */

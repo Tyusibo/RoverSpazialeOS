@@ -97,7 +97,9 @@ int MotorControl_Actuate(MotorControl *mc, float u_volt)
   uint8_t packet[4] = { mc->address, command, data, checksum };
   
   // Invio UART
+  //__disable_irq();
   HAL_UART_Transmit(mc->huart, packet, 4, 10);
+  //__enable_irq();
   
   mc->last_cmd = speed;
   return speed;

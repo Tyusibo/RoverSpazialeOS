@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "adc.h"
 #include "crc.h"
 #include "usart.h"
@@ -59,7 +60,6 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define Board1_IN_Execution            ((uint8_T)3U)
 
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
@@ -90,6 +90,7 @@ temp_ky028_t temp_sensor;
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 /* USER CODE END PFP */
 
@@ -134,8 +135,6 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM8_Init();
-  MX_TIM6_Init();
-  MX_TIM7_Init();
   MX_USART1_UART_Init();
   MX_USART3_UART_Init();
   MX_ADC2_Init();
@@ -176,71 +175,18 @@ int main(void)
 
     //HAL_TIM_Base_Start_IT(&htim6);  // Per la control law
 
-    // --- 2. VARIABILI DI CONFIGURAZIONE TEST ---
-	uint8_t use_real_sensors = 0;
+    //Board1_U.temperature = (Temperature) temp_ky028_read_temperature(&temp_sensor);
 
-	// 0 = Continuo (gestito con Interrupt per Stop), 1 = Step-by-Step (Bloccante)
-	uint8_t blocking_step_mode = 0;
-
-	// Reset Flag interrupt
-	flow_control_flag = 0;
-
-	// --- 3. SELEZIONE TEST ---
-	switch (WHAT_TO_TEST) {
-	case TEST_LUCI:
-		led_test_set();
-		//led_test_toggle();
-		//led_test_all();
-		break;
-
-	case TEST_MOTORI:
-		float setPoint_test = 20.0f;
-		test_open_loop(setPoint_test);
-		//test_closed_loop(setPoint_test);
-		break;
-
-		// --- WITH SENSORS ---
-	case TEST_COMMUNICATION_BYTE_RESTART_WITH_SENSORS:
-		use_real_sensors = 1;
-		blocking_step_mode = 1;
-		PRINT_DBG("MODE: RESTART (SENSORS)\r\n");
-		break;
-
-	case TEST_COMMUNICATION_BYTE_STOP_WITH_SENSORS:
-		use_real_sensors = 1;
-		blocking_step_mode = 0;
-		PRINT_DBG("MODE: RUN/STOP (SENSORS)\r\n");
-#if VERBOSE_DEBUG
-
-		// AVVIA RICEZIONE INTERRUPT per gestire lo Stop asincrono su UART2 (Printer)
-		HAL_UART_Receive_IT(getPrinterHandler(), (uint8_t*) &rx_debug_byte, 1);
-
-#endif
-		break;
-
-		// --- WITHOUT SENSORS ---
-	case TEST_COMMUNICATION_BYTE_RESTART_WITHOUT_SENSORS:
-		use_real_sensors = 0;
-		blocking_step_mode = 1;
-		PRINT_DBG("MODE: RESTART (NO SENS)\r\n");
-		break;
-
-	case TEST_COMMUNICATION_BYTE_STOP_WITHOUT_SENSORS:
-		use_real_sensors = 0;
-		blocking_step_mode = 0;
-		PRINT_DBG("MODE: RUN/STOP (NO SENS)\r\n");
-		// AVVIA RICEZIONE INTERRUPT per gestire lo Stop asincrono su UART2 (Printer)
-#if VERBOSE_DEBUG
-
-		HAL_UART_Receive_IT(getPrinterHandler(), (uint8_t*) &rx_debug_byte, 1);
-
-#endif
-		break;
-
-	default:
-		break;
-	}
   /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();  /* Call init function for freertos objects (in cmsis_os2.c) */
+  MX_FREERTOS_Init();
+
+  /* Start scheduler */
+  osKernelStart();
+
+  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -249,134 +195,6 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-		// 1. INPUT (Sensori o Dummy)
-		if (use_real_sensors) {
-			float current_speed[4];
-			for (int i = 0; i < 4; i++) {
-				Encoder_Update(&encoders[i]);
-				current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-			}
-			Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
-							current_speed[2], current_speed[3] };
-			Board1_U.temperature = (Temperature) temp_ky028_read_temperature_avg(&temp_sensor, 5);
-			Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
-		} else {
-			Board1_U.speed = (BUS_Speed ) { 32.3f, 32.3, 32.3, 32.3 };
-			Board1_U.temperature = (Temperature) 32.3;
-			Board1_U.batteryLevel = (BatteryLevel) 32.3;
-		}
-
-		// 2. LOGICA DI CONTROLLO FLUSSO
-		// Per "Byte Stop", controlliamo se dobbiamo FERMARCI
-		if (blocking_step_mode == 0) { //se sono nella mod in cui devo premere per bloccarmi
-			//HAL_Delay(TIME_TO_WAIT_BEFORE_RESTART);
-			if (flow_control_flag == 1) { // se ho ricevuto un byte mi metto in pausa
-				// Eravamo in corsa, è arrivato un byte -> PAUSA
-				PRINT_DBG("--- PAUSED (Send Byte to Resume) ---\r\n");
-
-				// Ferma Motori per sicurezza visuale. WTF???
-				// for(int i=0; i<4; i++) MotorControl_HardStop(&motors[i]);
-
-				flow_control_flag = 0; // Reset flag
-
-				// Aspetta prossimo byte per ripartire (busy wait sul flag aggiornato dalla ISR)
-				while (flow_control_flag == 0) {
-					//HAL_Delay(50); // Piccolo delay per non saturare CPU inutilmente
-				}
-
-				PRINT_DBG("--- RESUMED ---\r\n");
-				flow_control_flag = 0; // Reset flag per tornare a correre finché non ne arriva un altro
-			}
-		}
-
-		PRINT_DBG("INIZIO COMUNICAZIONE B1 \r\n");
-
-		// 3. MODEL STEP
-		uint32_t t0 = DWT_Begin();
-
-		do {
-			Board1_step();
-		} while (Board1_DW.is_ExchangeDecision != Board1_IN_Execution);
-
-		uint32_t cycles = DWT_End(t0);
-		DWT_PrintCyclesAndUs("B1 STEP", cycles);
-
-		// 4. ATTUAZIONE MOTORI
-		MotorControl* m_ptrs[4] = {
-			&motors.front_left,
-			&motors.front_right,
-			&motors.rear_right,
-			&motors.rear_left
-		};
-
-		for (int i = 0; i < 4; i++) {
-			float ref =
-					(i == 0 || i == 3) ?
-							Board1_Y.setPoint.leftAxis :
-							Board1_Y.setPoint.rightAxis;
-			// ref = 30;
-			if (ref != 0) {
-				MotorControl_SetReferenceRPM(m_ptrs[i], ref);
-				MotorControl_OpenLoopActuate(m_ptrs[i]);
-			} else {
-				MotorControl_SetReferenceRPM(m_ptrs[i], 0);
-				MotorControl_OpenLoopActuate(m_ptrs[i]);
-
-			}
-
-		}
-		// 5. LED
-		A4WD3_White_Set(&led_left, Board1_DW.board1Decision.leds.white.left);
-		A4WD3_White_Set(&led_right, Board1_DW.board1Decision.leds.white.right);
-
-		// 6. Gestione LED debug per emergenze
-
-		// Se la SA non è NONE sta rilevando qualcosa che impedisce di eseguire l'azione
-		if (Board1_DW.board1Decision.safeAction != SA_NONE) {
-			// Subito accendo il led
-			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
-			// Avvio il timer che fa il toggle con la ISR
-			if (htim7.State == HAL_TIM_STATE_READY) {
-				HAL_TIM_Base_Start_IT(&htim7);
-			}
-		}
-
-		// Se la SA non è NONE non sta rilevando qualcosa che impedisce di eseguire l'azione
-		// Però può comunque star eseguendo un azione di emergenza iniziata
-		if (Board1_DW.board1Decision.safeAction == SA_NONE) {
-			// Subito spengo il led
-			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
-			// Fermo il timer che fa il toggle con la ISR
-			if (htim7.Instance->CR1 & TIM_CR1_CEN) {
-				HAL_TIM_Base_Stop_IT(&htim7);
-			}
-		}
-
-		// 7. Per permettere al modello di ripartire
-		Board1_U.continua = (Board1_U.continua == 0) ? 1 : 0;
-
-#if VERBOSE_DEBUG
-		//printGlobalState(&(Board1_B.board1GlobalState));
-		//printDecision(&(Board1_DW.board1Decision));
-#else
-		/* Senza stampe il ciclo è troppo veloce e potrebbe causare:
-		 1. Timeout prematuri nel protocollo se basati su contatori di step
-		 2. Flooding della UART verso l'altra board
-		 Inseriamo un delay per simulare il tempo di stampa. */
-		//HAL_Delay(TIME_TO_WAIT_BEFORE_RESTART);
-#endif
-
-		// 5. ATTESA (Solo per modalità RESTART)
-		if (blocking_step_mode == 1) {
-			// Modalità Passo-Passo: il byte serve per AVANZARE
-
-#if VERBOSE_DEBUG
-
-			uint8_t dummy;
-			HAL_UART_Receive(getPrinterHandler(), &dummy, 1, HAL_MAX_DELAY);
-
-#endif
-		}
 	}
   /* USER CODE END 3 */
 }
@@ -455,7 +273,31 @@ void Motors_SetPermanentBaudRate_38400(UART_HandleTypeDef *huart, uint8_t addres
     HAL_Delay(100);
 }
 
+extern volatile unsigned long ulHighFrequencyTimerTicks; // Aggiungi se non visibile
+
 /* USER CODE END 4 */
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM6 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM6)
+  {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

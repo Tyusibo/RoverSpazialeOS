@@ -9,17 +9,17 @@ extern UART_HandleTypeDef huart3;
 RoverMotors motors;
 
 static Coefficients fastGains[N_MOTORS] = {
-    { .k_err = 0.097f, .k_last_err = -0.083f },
-    { .k_err = 0.097f, .k_last_err = -0.083f },
-    { .k_err = 0.097f, .k_last_err = -0.083f },
-    { .k_err = 0.097f, .k_last_err = -0.083f },
+    { .k_err = 0.1167f, .k_last_err = -0.06302f },
+    { .k_err = 0.1167f, .k_last_err = -0.06302f },
+    { .k_err = 0.1167f, .k_last_err = -0.06302f },
+    { .k_err = 0.1167f, .k_last_err = -0.06302f },
 };
 
 static Coefficients slowGains[N_MOTORS] = {
-    { .k_err = 0.0002033f, .k_last_err = 0.0002033f },
-    { .k_err = 0.0002033f, .k_last_err = 0.0002033f },
-    { .k_err = 0.0002033f, .k_last_err = 0.0002033f },
-    { .k_err = 0.0002033f, .k_last_err = 0.0002033f },
+	    { .k_err = 0.1167f, .k_last_err = -0.06302f },
+	    { .k_err = 0.1167f, .k_last_err = -0.06302f },
+	    { .k_err = 0.1167f, .k_last_err = -0.06302f },
+	    { .k_err = 0.1167f, .k_last_err = -0.06302f },
 };
 
 void Motors_InitAll(void)

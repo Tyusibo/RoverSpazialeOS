@@ -37,7 +37,7 @@
 
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 0
+#define VERBOSE_DEBUG 1
 
 #if VERBOSE_DEBUG == 1
 #define PRINT_DBG(msg) printMsg(msg)
@@ -70,9 +70,8 @@
 
 /* External variables --------------------------------------------------------*/
 extern UART_HandleTypeDef hlpuart1;
-extern UART_HandleTypeDef huart2;
 extern TIM_HandleTypeDef htim6;
-extern TIM_HandleTypeDef htim7;
+
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -155,19 +154,6 @@ void UsageFault_Handler(void)
 }
 
 /**
-  * @brief This function handles System service call via SWI instruction.
-  */
-void SVC_Handler(void)
-{
-  /* USER CODE BEGIN SVCall_IRQn 0 */
-
-  /* USER CODE END SVCall_IRQn 0 */
-  /* USER CODE BEGIN SVCall_IRQn 1 */
-
-  /* USER CODE END SVCall_IRQn 1 */
-}
-
-/**
   * @brief This function handles Debug monitor.
   */
 void DebugMon_Handler(void)
@@ -180,53 +166,12 @@ void DebugMon_Handler(void)
   /* USER CODE END DebugMonitor_IRQn 1 */
 }
 
-/**
-  * @brief This function handles Pendable request for system service.
-  */
-void PendSV_Handler(void)
-{
-  /* USER CODE BEGIN PendSV_IRQn 0 */
-
-  /* USER CODE END PendSV_IRQn 0 */
-  /* USER CODE BEGIN PendSV_IRQn 1 */
-
-  /* USER CODE END PendSV_IRQn 1 */
-}
-
-/**
-  * @brief This function handles System tick timer.
-  */
-void SysTick_Handler(void)
-{
-  /* USER CODE BEGIN SysTick_IRQn 0 */
-
-  /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
-
-  /* USER CODE END SysTick_IRQn 1 */
-}
-
 /******************************************************************************/
 /* STM32G4xx Peripheral Interrupt Handlers                                    */
 /* Add here the Interrupt Handlers for the used peripherals.                  */
 /* For the available peripheral interrupt handler names,                      */
 /* please refer to the startup file (startup_stm32g4xx.s).                    */
 /******************************************************************************/
-
-/**
-  * @brief This function handles USART2 global interrupt / USART2 wake-up interrupt through EXTI line 26.
-  */
-void USART2_IRQHandler(void)
-{
-  /* USER CODE BEGIN USART2_IRQn 0 */
-
-  /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
-  /* USER CODE BEGIN USART2_IRQn 1 */
-
-  /* USER CODE END USART2_IRQn 1 */
-}
 
 /**
   * @brief This function handles TIM6 global interrupt, DAC1 and DAC3 channel underrun error interrupts.
@@ -240,20 +185,6 @@ void TIM6_DAC_IRQHandler(void)
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
   /* USER CODE END TIM6_DAC_IRQn 1 */
-}
-
-/**
-  * @brief This function handles TIM7 global interrupt, DAC2 and DAC4 channel underrun error interrupts.
-  */
-void TIM7_DAC_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM7_DAC_IRQn 0 */
-
-  /* USER CODE END TIM7_DAC_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim7);
-  /* USER CODE BEGIN TIM7_DAC_IRQn 1 */
-
-  /* USER CODE END TIM7_DAC_IRQn 1 */
 }
 
 /**
@@ -278,55 +209,24 @@ extern volatile uint8_t flow_control_flag;
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	UART_HandleTypeDef *h = getComunicationHandler();
 	if (h != NULL && huart->Instance == h->Instance) {
-		PRINT_DBG("B2 Received\n\r");
+		//PRINT_DBG("B2 Received\n\r");
 		if (receivedFlag == 0) {
 			receivedFlag = 1;
 		}
 		return;
 	}
 
-	// Verifica che l'interrupt arrivi dalla UART di debug (Printer)
-	h = getPrinterHandler();
-	if (h != NULL && huart->Instance == h->Instance) {
-		if (flow_control_flag == 0) {
-			flow_control_flag = 1;
-		}
-
-		// Ri-arma l'interrupt per il prossimo byte
-		HAL_UART_Receive_IT(h, (uint8_t*) &rx_debug_byte, 1);
-
-		return;
-	}
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-//	float current_speed[4];
-//
-//	if (htim->Instance == TIM6) {
-//		for (int i = 0; i < 4; i++) {
-//
-//			Encoder_Update(&encoders[i]);
-//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-//
-//			MotorControl_Update(&motors[i], current_speed[i]);
-//		}
-//
-//		Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
-//						current_speed[2], current_speed[3] };
-//	}
-
-	if (htim->Instance == TIM7) {
-		HAL_GPIO_TogglePin(LedDebug_GPIO_Port, LedDebug_Pin);
-	}
 }
 
 #include "lights_init.h"
 #include "Board1.h"
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+
 
 	if (huart->Instance == LPUART1) {
+
+		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 
 		uint32_t err = huart->ErrorCode;
 

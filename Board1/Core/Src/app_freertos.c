@@ -1,0 +1,414 @@
+/* USER CODE BEGIN Header */
+/**
+ ******************************************************************************
+ * File Name          : app_freertos.c
+ * Description        : Code for freertos applications
+ ******************************************************************************
+ * @attention
+ *
+ * Copyright (c) 2026 STMicroelectronics.
+ * All rights reserved.
+ *
+ * This software is licensed under terms that can be found in the LICENSE file
+ * in the root directory of this software component.
+ * If no LICENSE file comes with this software, it is provided AS-IS.
+ *
+ ******************************************************************************
+ */
+/* USER CODE END Header */
+
+/* Includes ------------------------------------------------------------------*/
+#include "FreeRTOS.h"
+#include "task.h"
+#include "main.h"
+#include "cmsis_os.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "scheduling_constants.h"
+
+#include "Board1.h"
+
+#include "motors_init.h" //#include "motor_control.h"
+#include "encoders_init.h" //#include "encoders.h"
+
+#include "temperature_adc.h"
+
+#include "batt_level.h"
+
+#include "lights_init.h" //#include "a4wd3_led.h"
+
+/* Utility */
+#include "DWT.h"
+#include "print.h"
+/* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+typedef StaticTask_t osStaticThreadDef_t;
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
+
+/* Private variables ---------------------------------------------------------*/
+/* USER CODE BEGIN Variables */
+volatile unsigned long ulHighFrequencyTimerTicks = 0;
+/* USER CODE END Variables */
+/* Definitions for PID */
+osThreadId_t PIDHandle;
+uint32_t PIDBuffer[ 1024 ];
+osStaticThreadDef_t PIDControlBlock;
+const osThreadAttr_t PID_attributes = {
+  .name = "PID",
+  .stack_mem = &PIDBuffer[0],
+  .stack_size = sizeof(PIDBuffer),
+  .cb_mem = &PIDControlBlock,
+  .cb_size = sizeof(PIDControlBlock),
+  .priority = (osPriority_t) osPriorityHigh,
+};
+/* Definitions for Supervisor */
+osThreadId_t SupervisorHandle;
+uint32_t SupervisorBuffer[ 1024 ];
+osStaticThreadDef_t SupervisorControlBlock;
+const osThreadAttr_t Supervisor_attributes = {
+  .name = "Supervisor",
+  .stack_mem = &SupervisorBuffer[0],
+  .stack_size = sizeof(SupervisorBuffer),
+  .cb_mem = &SupervisorControlBlock,
+  .cb_size = sizeof(SupervisorControlBlock),
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
+/* Definitions for ReadTemperature */
+osThreadId_t ReadTemperatureHandle;
+uint32_t ReadTemperatureBuffer[ 1024 ];
+osStaticThreadDef_t ReadTemperatureControlBlock;
+const osThreadAttr_t ReadTemperature_attributes = {
+  .name = "ReadTemperature",
+  .stack_mem = &ReadTemperatureBuffer[0],
+  .stack_size = sizeof(ReadTemperatureBuffer),
+  .cb_mem = &ReadTemperatureControlBlock,
+  .cb_size = sizeof(ReadTemperatureControlBlock),
+  .priority = (osPriority_t) osPriorityAboveNormal1,
+};
+/* Definitions for ReadBattery */
+osThreadId_t ReadBatteryHandle;
+uint32_t ReadBatteryBuffer[ 1024 ];
+osStaticThreadDef_t ReadBatteryControlBlock;
+const osThreadAttr_t ReadBattery_attributes = {
+  .name = "ReadBattery",
+  .stack_mem = &ReadBatteryBuffer[0],
+  .stack_size = sizeof(ReadBatteryBuffer),
+  .cb_mem = &ReadBatteryControlBlock,
+  .cb_size = sizeof(ReadBatteryControlBlock),
+  .priority = (osPriority_t) osPriorityAboveNormal2,
+};
+
+/* Private function prototypes -----------------------------------------------*/
+/* USER CODE BEGIN FunctionPrototypes */
+static uint32_t ms_to_ticks(uint32_t ms);
+static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks);
+static uint8_t periodic_wait_no_led(uint32_t *next_release,
+		uint32_t period_ticks);
+/* USER CODE END FunctionPrototypes */
+
+void StartPID(void *argument);
+void StartSupervisor(void *argument);
+void StartReadTemperature(void *argument);
+void StartReadBattery(void *argument);
+
+void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+
+/* Hook prototypes */
+void configureTimerForRunTimeStats(void);
+unsigned long getRunTimeCounterValue(void);
+void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
+
+/* USER CODE BEGIN 1 */
+
+/* Functions needed when configGENERATE_RUN_TIME_STATS is on */
+__weak void configureTimerForRunTimeStats(void)
+{
+
+}
+
+__weak unsigned long getRunTimeCounterValue(void)
+{
+    // Restituisce il valore combinato: (Numero Overflow * 65536) + Valore Corrente Timer
+    // Si assume che TIM7 sia configurato con Period (ARR) al massimo (65535) per sfruttare i 16 bit.
+}
+/* USER CODE END 1 */
+
+/* USER CODE BEGIN 4 */
+void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
+{
+   /* Run time stack overflow checking is performed if
+   configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
+   called if a stack overflow is detected. */
+}
+/* USER CODE END 4 */
+
+/**
+  * @brief  FreeRTOS initialization
+  * @param  None
+  * @retval None
+  */
+void MX_FREERTOS_Init(void) {
+  /* USER CODE BEGIN Init */
+
+  /* USER CODE END Init */
+
+  /* USER CODE BEGIN RTOS_MUTEX */
+	/* add mutexes, ... */
+  /* USER CODE END RTOS_MUTEX */
+
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* add semaphores, ... */
+  /* USER CODE END RTOS_SEMAPHORES */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+	/* start timers, add new ones, ... */
+  /* USER CODE END RTOS_TIMERS */
+
+  /* USER CODE BEGIN RTOS_QUEUES */
+	/* add queues, ... */
+  /* USER CODE END RTOS_QUEUES */
+
+  /* Create the thread(s) */
+  /* creation of PID */
+  PIDHandle = osThreadNew(StartPID, NULL, &PID_attributes);
+
+  /* creation of Supervisor */
+  SupervisorHandle = osThreadNew(StartSupervisor, NULL, &Supervisor_attributes);
+
+  /* creation of ReadTemperature */
+  ReadTemperatureHandle = osThreadNew(StartReadTemperature, NULL, &ReadTemperature_attributes);
+
+  /* creation of ReadBattery */
+  ReadBatteryHandle = osThreadNew(StartReadBattery, NULL, &ReadBattery_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+	/* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+	/* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+}
+
+/* USER CODE BEGIN Header_StartPID */
+/**
+ * @brief  Function implementing the PID thread.
+ * @param  argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartPID */
+void StartPID(void *argument)
+{
+  /* USER CODE BEGIN StartPID */
+	const uint32_t T = ms_to_ticks(T_PID);
+	uint32_t next = osKernelGetTickCount();
+
+	float current_speed[4] = { 2, 2, 2, 3 };
+
+	MotorControl *m_ptrs[N_MOTORS] = { &motors.front_left, &motors.front_right,
+			&motors.rear_right, &motors.rear_left };
+	/* Infinite loop */
+	for (;;) {
+//		for (int i = 0; i < 4; i++) {
+//
+//			Encoder_Update(&encoders[i]);
+//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+//
+//			MotorControl_Update(m_ptrs[i], current_speed[i]);
+//			//Open loop control for testing
+//			MotorControl_OpenLoopActuate(m_ptrs[i]);
+//		}
+
+		Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
+						current_speed[2], current_speed[3] };
+
+		osDelay(20);
+		//periodic_wait(&next, T);
+
+	}
+
+	osThreadTerminate(osThreadGetId());
+
+  /* USER CODE END StartPID */
+}
+
+/* USER CODE BEGIN Header_StartSupervisor */
+#define Board1_IN_Execution            ((uint8_T)3U)
+
+/**
+ * @brief Function implementing the Supervisor thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartSupervisor */
+void StartSupervisor(void *argument)
+{
+  /* USER CODE BEGIN StartSupervisor */
+	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
+	uint32_t next = osKernelGetTickCount();
+
+	Board1_U.speed = (BUS_Speed ) { 0.0f, 0.0f, 0.0f, 0.0f };
+
+
+	MotorControl *m_ptrs[4] = { &motors.front_left, &motors.front_right,
+			&motors.rear_right, &motors.rear_left };
+
+	/* Infinite loop */
+	for (;;) {
+
+		//printMsg("Supervisor Cycle Start\r\n");
+
+		do {
+			Board1_step();
+		} while (Board1_DW.is_ExchangeDecision != Board1_IN_Execution);
+
+		for (int i = 0; i < 4; i++) {
+			float ref =
+					(i == 0 || i == 3) ?
+							Board1_Y.setPoint.leftAxis :
+							Board1_Y.setPoint.rightAxis;
+			// ref = 30;
+			if (ref != 0) {
+				MotorControl_SetReferenceRPM(m_ptrs[i], ref);
+				//MotorControl_OpenLoopActuate(m_ptrs[i]);
+			} else {
+				MotorControl_SetReferenceRPM(m_ptrs[i], 0);
+				//MotorControl_OpenLoopActuate(m_ptrs[i]);
+
+			}
+
+		}
+
+		A4WD3_White_Set(&led_left, Board1_DW.board1Decision.leds.white.left);
+		A4WD3_White_Set(&led_right, Board1_DW.board1Decision.leds.white.right);
+
+		Board1_U.continua = (Board1_U.continua == 0) ? 1 : 0;
+
+		osDelay(20);
+		//periodic_wait(&next, T);
+
+	}
+
+	osThreadTerminate(osThreadGetId());
+
+  /* USER CODE END StartSupervisor */
+}
+
+/* USER CODE BEGIN Header_StartReadTemperature */
+extern batt_level_t battery;
+extern temp_ky028_t temp_sensor;
+/**
+ * @brief Function implementing the ReadTemperature thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartReadTemperature */
+void StartReadTemperature(void *argument)
+{
+  /* USER CODE BEGIN StartReadTemperature */
+
+	const uint32_t T = ms_to_ticks(T_TEMPERATURE);
+	uint32_t next = osKernelGetTickCount();
+
+	/* Infinite loop */
+	for (;;) {
+		//Board1_U.temperature = (Temperature) temp_ky028_read_temperature_avg(&temp_sensor, 5);
+		Board1_U.temperature = (Temperature) temp_ky028_read_temperature(&temp_sensor);
+		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+
+		periodic_wait_no_led(&next, T);
+	}
+
+	osThreadTerminate(osThreadGetId());
+
+  /* USER CODE END StartReadTemperature */
+}
+
+/* USER CODE BEGIN Header_StartReadBattery */
+/**
+ * @brief Function implementing the ReadBattery thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartReadBattery */
+void StartReadBattery(void *argument)
+{
+  /* USER CODE BEGIN StartReadBattery */
+
+	const uint32_t T = ms_to_ticks(T_BATTERY);
+	uint32_t next = osKernelGetTickCount();
+
+	/* Infinite loop */
+	for (;;) {
+		Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(\
+				battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
+
+		periodic_wait_no_led(&next, T);
+	}
+
+	osThreadTerminate(osThreadGetId());
+
+  /* USER CODE END StartReadBattery */
+}
+
+/* Private application code --------------------------------------------------*/
+/* USER CODE BEGIN Application */
+static uint32_t ms_to_ticks(uint32_t ms) {
+	uint32_t hz = osKernelGetTickFreq();
+	return (ms * hz + 999u) / 1000u;
+}
+
+static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks) {
+	uint32_t now = osKernelGetTickCount();
+
+	/* Calcola il prossimo rilascio */
+	*next_release += period_ticks;
+
+	/* Controllo deadline miss (safe con wrap-around) */
+	if ((int32_t) (now - *next_release) > 0) {
+		/* Deadline miss: siamo già oltre il rilascio */
+		// HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
+		return 1;
+	}
+
+	/* Sleep assoluta fino al prossimo periodo */
+	osDelayUntil(*next_release);
+	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
+	return 0;
+}
+
+static uint8_t periodic_wait_no_led(uint32_t *next_release,
+		uint32_t period_ticks) {
+	uint32_t now = osKernelGetTickCount();
+
+	/* Calcola il prossimo rilascio */
+	*next_release += period_ticks;
+
+	/* Controllo deadline miss (safe con wrap-around) */
+	if ((int32_t) (now - *next_release) > 0) {
+		/* Deadline miss: siamo già oltre il rilascio */
+		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
+		return 1;
+	}
+
+	/* Sleep assoluta fino al prossimo periodo */
+	osDelayUntil(*next_release);
+	return 0;
+}
+/* USER CODE END Application */
+
