@@ -2,20 +2,25 @@
 #define INC_DRIVER_INIT_MOTORS_INIT_H_
 
 #include <stdint.h>
+
 #include "motor_control.h"
 #include "motor_constants.h"
 
-#define N_MOTORS 4
 
-typedef struct {
-    MotorControl front_left;
-    MotorControl front_right;
-    MotorControl rear_right;
-    MotorControl rear_left;
-} RoverMotors;
+typedef enum {
+    MOTOR_FRONT_LEFT = 0,
+    MOTOR_FRONT_RIGHT,
+    MOTOR_REAR_RIGHT,
+    MOTOR_REAR_LEFT,
+    N_MOTORS
+} MotorId;
 
-extern RoverMotors motors;
+ extern MotorControl motors[N_MOTORS];
+
 
 void Motors_InitAll(void);
+
+void Motors_StartAllPwm(void);
+void Motors_SetDefaultCcr(uint32_t ccr);
 
 #endif /* INC_DRIVER_INIT_MOTORS_INIT_H_ */

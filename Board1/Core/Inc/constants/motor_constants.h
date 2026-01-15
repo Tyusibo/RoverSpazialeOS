@@ -77,5 +77,47 @@ static const float DC_GAIN_MOT3 = 14.510f;
 /** Guadagno statico (RPM/V) - Motore 4 (Rear Left) */
 static const float DC_GAIN_MOT4 = 14.210f;
 
+/* -------------------------------------------------------------------------- */
+/*                    MOTOR CONTROLLER GAINS (PER-MOTOR)                     */
+/* -------------------------------------------------------------------------- */
+
+
+/* --------------------------- FAST MODE GAINS ------------------------------ */
+
+/** Front Left (Motore 1) */
+#define FAST_MOT1_K_ERR        (0.1167f)
+#define FAST_MOT1_K_LAST_ERR  (-0.06302f)
+
+/** Front Right (Motore 2) */
+#define FAST_MOT2_K_ERR        (0.1167f)
+#define FAST_MOT2_K_LAST_ERR  (-0.06302f)
+
+/** Rear Right (Motore 3) */
+#define FAST_MOT3_K_ERR        (0.1167f)
+#define FAST_MOT3_K_LAST_ERR  (-0.06302f)
+
+/** Rear Left (Motore 4) */
+#define FAST_MOT4_K_ERR        (0.1167f)
+#define FAST_MOT4_K_LAST_ERR  (-0.06302f)
+
+
+/* --------------------------- SLOW MODE GAINS ------------------------------ */
+
+/** Front Left (Motore 1) */
+#define SLOW_MOT1_K_ERR        (0.1167f)
+#define SLOW_MOT1_K_LAST_ERR  (-0.06302f)
+
+/** Front Right (Motore 2) */
+#define SLOW_MOT2_K_ERR        (0.1167f)
+#define SLOW_MOT2_K_LAST_ERR  (-0.06302f)
+
+/** Rear Right (Motore 3) */
+#define SLOW_MOT3_K_ERR        (0.1167f)
+#define SLOW_MOT3_K_LAST_ERR  (-0.06302f)
+
+/** Rear Left (Motore 4) */
+#define SLOW_MOT4_K_ERR        (0.1167f)
+#define SLOW_MOT4_K_LAST_ERR  (-0.06302f)
+
 
 #endif /* INC_CONSTANTS_MOTOR_CONSTANTS_H_ */

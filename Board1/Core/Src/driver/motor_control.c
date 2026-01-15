@@ -1,7 +1,16 @@
 #include "motor_control.h"
-#include <math.h>
+#include <math.h>  // roundf
 
-volatile uint8_t flag_transmit = 0;
+
+/**
+ * Funzione generica di mappatura lineare (Arduino style 'map').
+ * Mappa il valore x dal range [in_min, in_max] al range [out_min, out_max].
+ * Formula: out = out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min)
+ */
+static inline float map_linear(float x, float in_min, float in_max, float out_min, float out_max)
+{
+  return out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min);
+}
 
 static inline float saturate_volt(const MotorControl *m, float u)
 {
@@ -10,24 +19,47 @@ static inline float saturate_volt(const MotorControl *m, float u)
   return u;
 }
 
+static inline float volt_to_duty_percent(const MotorControl *m, float volt)
+{
+  // 1. Normalizza volt in un valore "grezzo" percentuale (0-100 basato su 12V)
+  // Nota: Questo passaggio dipende dalla tua logica specifica dove 12V = 100%
+  float duty_raw = (volt * 100.0f) / 12.0f;
+
+  // 2. Mappa il range di input (es. -100 a +100) al range di output configurato (es. 56.8 a 94.6)
+  return map_linear(duty_raw, m->in_min, m->in_max, m->out_min, m->out_max);
+}
+
+static inline int duty_percent_to_pulse(const MotorControl *m, float duty_percent)
+{
+  float pulse_f = (duty_percent / 100.0f) * (float)m->arr_pwm_plus_one;
+  return (int)roundf(pulse_f);
+}
+
 void MotorControl_Init(
   MotorControl *mc,
-  UART_HandleTypeDef *huart,
-  uint8_t address,
-  uint8_t motor_id,
+  TIM_HandleTypeDef *htim_pwm,
+  uint32_t pwm_channel,
   float Ts,
   float min_volt, float max_volt,
+  float in_min, float in_max, float out_min, float out_max,
   float dc_gain, 
   Coefficients pi_fast, Coefficients pi_slow
 )
 {
-  mc->huart = huart;
-  mc->address = address;
-  mc->motor_id = motor_id;
+  mc->htim_pwm = htim_pwm;
+  mc->pwm_channel = pwm_channel;
   mc->Ts = Ts;
-  mc->min_volt = min_volt; // es. -12.0
-  mc->max_volt = max_volt; // es. +12.0
+
+  mc->min_volt = min_volt;
+  mc->max_volt = max_volt;
+  mc->in_min = in_min;
+  mc->in_max = in_max;
+  mc->out_min = out_min;
+  mc->out_max = out_max;
+  
   mc->dc_gain = dc_gain; 
+
+
   mc->pi_fast = pi_fast;
   mc->pi_slow = pi_slow;
   mc->use_slow = 0;
@@ -35,8 +67,11 @@ void MotorControl_Init(
   mc->reference_rpm = 0.0f;
   mc->last_error = 0.0f;
   mc->z = 0.0f;
+
+  mc->arr_pwm_plus_one = (uint64_t)__HAL_TIM_GET_AUTORELOAD(htim_pwm) + 1ULL;
+
   mc->last_u = 0.0f;
-  mc->last_cmd = 0;
+  mc->last_pulse = 0;
 }
 
 void MotorControl_SetReferenceRPM(MotorControl *mc, float ref_rpm)
@@ -52,10 +87,13 @@ void MotorControl_SelectSlow(MotorControl *mc, uint8_t enable)
 float MotorControl_ComputeU(MotorControl *mc, float speed_rpm)
 {
   float e = mc->reference_rpm - speed_rpm;
+
   Coefficients pi = mc->use_slow ? mc->pi_slow : mc->pi_fast;
-  
+
+  // stessa forma che usavi: q = k_err*e + k_last_err*e_prev ; u = q + z ; sat ; z=sat
   float q = pi.k_err * e + pi.k_last_err * mc->last_error;
   float u = q + mc->z;
+
   float sat = saturate_volt(mc, u);
 
   mc->z = sat;
@@ -65,48 +103,20 @@ float MotorControl_ComputeU(MotorControl *mc, float speed_rpm)
   return sat;
 }
 
+
 int MotorControl_Actuate(MotorControl *mc, float u_volt)
 {
-  // 1. Mappa tensione (-12V..+12V) a range Sabertooth (-127..+127)
-  // Assumiamo che max_volt corrisponda alla massima velocità
-  float scale_factor = 127.0f / mc->max_volt; 
-  float val = u_volt * scale_factor;
-  
-  // Saturazione
-  if (val > 127.0f) val = 127.0f;
-  if (val < -127.0f) val = -127.0f;
-  
-  int speed = (int)val;
-  uint8_t command;
-  uint8_t data = (uint8_t)(speed < 0 ? -speed : speed);
-  
-  // Sabertooth Packet Serial - Normal Mode
-  // Motor 1: Forward=0, Backward=1
-  // Motor 2: Forward=4, Backward=5
+  float duty = volt_to_duty_percent(mc, u_volt);
+  int pulse = duty_percent_to_pulse(mc, duty);
 
-  if (mc->motor_id == 1) {
-      if (speed >= 0) command = 0; // Forward
-      else command = 1;            // Backward
-  } else { // Motore 2
-      if (speed >= 0) command = 4; // Forward
-      else command = 5;            // Backward
-  }
+  // (opzionale ma utile) clamp CCR in [0, ARR]
+  if (pulse < 0) pulse = 0;
+  if ((uint64_t)pulse > (mc->arr_pwm_plus_one - 1ULL)) pulse = (int)(mc->arr_pwm_plus_one - 1ULL);
 
-  // Calcolo Checksum: (Address + Command + Data) & 0x7F
-  uint8_t checksum = (mc->address + command + data) & 0x7F;
-  
-  uint8_t packet[4] = { mc->address, command, data, checksum };
-  
-  // Invio UART
-  HAL_UART_Transmit(mc->huart, packet, 4, 10);
+  __HAL_TIM_SET_COMPARE(mc->htim_pwm, mc->pwm_channel, (uint32_t)pulse);
 
-//  flag_transmit = 0;
-//  HAL_UART_Transmit_IT(mc->huart, packet, 4);
-//  while (flag_transmit == 0); // Attendo completamento trasmissione
-
-  
-  mc->last_cmd = speed;
-  return speed;
+  mc->last_pulse = pulse;
+  return pulse;
 }
 
 int MotorControl_Update(MotorControl *mc, float speed_rpm)
@@ -116,7 +126,9 @@ int MotorControl_Update(MotorControl *mc, float speed_rpm)
 }
 
 void MotorControl_OpenLoopActuate(MotorControl *mc){
-    if (mc->dc_gain > 0.001f) {
+    // Usa il guadagno specifico del motore salvato nella struct
+    // u_volt = ref_rpm / k_gain
+    if (mc->dc_gain > 0.001f) { // Evita divisione per zero
         float u_volt = mc->reference_rpm / mc->dc_gain;
         MotorControl_Actuate(mc, u_volt);
     } else {
@@ -124,11 +136,3 @@ void MotorControl_OpenLoopActuate(MotorControl *mc){
     }
 }
 
-
-// callback di fine trasmissione UART
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
-	if(huart->Instance == USART1 || huart->Instance == USART3){
-		flag_transmit = 1;
-	}
-
-}

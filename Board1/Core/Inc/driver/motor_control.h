@@ -10,20 +10,24 @@ typedef struct {
 } Coefficients;
 
 typedef struct {
-  // --- Sabertooth UART HW ---
-  UART_HandleTypeDef *huart;
-  uint8_t address; 
-  uint8_t motor_id; // 1 o 2
+  // --- PWM HW ---
+  TIM_HandleTypeDef *htim_pwm;
+  uint64_t arr_pwm_plus_one;  // (ARR + 1) cache
+  uint32_t pwm_channel;
 
-  // --- Parametri ---
+  // --- Parametri (teniamo Ts per futuro) ---
   float Ts;
 
-  // --- Limiti ---
+  // --- Limiti e mapping Volt -> Duty ---
   float min_volt;
   float max_volt;
+  float in_min;
+  float in_max;
+  float out_min;
+  float out_max;
 
   // --- Parametri Open Loop ---
-  float dc_gain; // Guadagno statico k (RPM/V)
+  float dc_gain; // Guadagno statico k (RPM/V) specifico per il motore
 
   // --- Regolatori ---
   Coefficients pi_fast;
@@ -33,29 +37,46 @@ typedef struct {
   // --- Stato regolatore ---
   float reference_rpm;
   float last_error;
-  float z;           
+  float z;           // memoria (ultima u saturata)
 
-  // --- Debug ---
-  float last_u;       
-  int last_cmd;       // Ultimo comando inviato (-127 a 127)
+  // --- Debug opzionale ---
+  float last_u;       // ultima u (prima della saturazione o dopo? scegliamo dopo sat)
+  int last_pulse;
 } MotorControl;
 
 void MotorControl_Init(
   MotorControl *mc,
-  UART_HandleTypeDef *huart,
-  uint8_t address,
-  uint8_t motor_id,
+  TIM_HandleTypeDef *htim_pwm,
+  uint32_t pwm_channel,
   float Ts,
   float min_volt, float max_volt,
+  float in_min, float in_max, float out_min, float out_max,
   float dc_gain, 
   Coefficients pi_fast, Coefficients pi_slow
 );
 
 void MotorControl_SetReferenceRPM(MotorControl *mc, float ref_rpm);
 void MotorControl_SelectSlow(MotorControl *mc, uint8_t enable);
+
+/**
+ * Calcola l'uscita di controllo (Volt) usando la misura speed_rpm.
+ * - aggiorna last_error e z internamente
+ * - ritorna u_saturata (Volt), pronta per l'attuatore
+ */
 float MotorControl_ComputeU(MotorControl *mc, float speed_rpm);
+
+/**
+ * Applica u (Volt) al PWM (mapping + CCR write).
+ * Ritorna pulse scritto nel CCR.
+ */
 int MotorControl_Actuate(MotorControl *mc, float u_volt);
+
+/**
+ * (Opzionale) convenience: compute + actuate in un colpo.
+ */
 int MotorControl_Update(MotorControl *mc, float speed_rpm);
+
+
 void MotorControl_OpenLoopActuate(MotorControl *mc);
 
 #endif /* INC_DRIVER_MOTOR_CONTROL_H_ */

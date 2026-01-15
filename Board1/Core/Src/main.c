@@ -43,6 +43,7 @@
 #include "motors_init.h"     // #include "motors_control.h"
 // both #include "motor_constants.h"
 #include "motors_test.h"
+
 #include "batt_level.h"
 #include "temperature_adc.h"
 
@@ -57,13 +58,12 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
 #define VERBOSE_DEBUG 1
 
 #if VERBOSE_DEBUG == 1
-	#define PRINT_DBG(msg) printMsg(msg)
+#define PRINT_DBG(msg) printMsg(msg)
 #else
 	#define PRINT_DBG(msg) ((void)0)
 #endif
@@ -79,8 +79,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-volatile uint8_t rx_debug_byte;      // Buffer ricezione
-volatile uint8_t flow_control_flag = 0; // 1 = Comando ricevuto
 batt_level_t battery;
 temp_ky028_t temp_sensor;
 /* USER CODE END PV */
@@ -132,50 +130,40 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM4_Init();
   MX_TIM8_Init();
-  MX_USART1_UART_Init();
-  MX_USART3_UART_Init();
   MX_ADC2_Init();
   MX_ADC1_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-	// --- 1. CONFIGURAZIONE PERIFERICHE ---
-  DWT_Init();
-	setComunicationHandler(&hlpuart1);
-	
-	// Calibrazione ADC
-	HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
 
-	// Inizializzazione Batteria
-	battery_init(&battery, &hadc2, R1, R2, ADC_VREF);
-	// Inizializzazione Temperatura
-	temp_ky028_init(&temp_sensor, &hadc1, ADC_VREF);
+	DWT_Init();
+
+	setComunicationHandler(&hlpuart1);
+
 
 #if VERBOSE_DEBUG
 
-	setPrinterHandler(&huart2); // Imposta UART per debug/print
+	setPrinterHandler(&huart2);
 	clearScreen();
-
-#endif
 	PRINT_DBG("BEGIN B1 INIT...\r\n");
+#endif
 
-	// Init Modello Simulink
-	Board1_U.continua = 0;
+
+	// Init Simulink Model
 	Board1_initialize();
 
+
+	/* DRIVER INITIALIZATIONS */
 	led_init();
 
-	// Init Encoder
 	Encoders_InitAll();
 	Encoders_StartAll();
 
-	// Init Motori (Include anche lo stop iniziale via UART)
-    Motors_InitAll();
+	Motors_InitAll();
 
-    //HAL_TIM_Base_Start_IT(&htim6);  // Per la control law
 
-    //Board1_U.temperature = (Temperature) temp_ky028_read_temperature(&temp_sensor);
-
-    // test_open_loop(30.0f);
-    //test_closed_loop(30.0f);
+	HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
+	battery_init(&battery, &hadc2, R1, R2, ADC_VREF);
+	temp_ky028_init(&temp_sensor, &hadc1, ADC_VREF);
 
   /* USER CODE END 2 */
 
@@ -243,34 +231,35 @@ void SystemClock_Config(void)
 
 // Funzione di utilità per cambiare baudrate ST al volo
 void Reinit_UART_Baudrate(UART_HandleTypeDef *huart, uint32_t baudrate) {
-    huart->Init.BaudRate = baudrate;
-    if (HAL_UART_Init(huart) != HAL_OK) {
-        Error_Handler();
-    }
+	huart->Init.BaudRate = baudrate;
+	if (HAL_UART_Init(huart) != HAL_OK) {
+		Error_Handler();
+	}
 }
 
-void Motors_SetPermanentBaudRate_38400(UART_HandleTypeDef *huart, uint8_t address) {
-    // 1. Configuriamo STM32 a 9600 (default Sabertooth)
-    Reinit_UART_Baudrate(huart, 9600);
-    HAL_Delay(100);
+void Motors_SetPermanentBaudRate_38400(UART_HandleTypeDef *huart,
+		uint8_t address) {
+	// 1. Configuriamo STM32 a 9600 (default Sabertooth)
+	Reinit_UART_Baudrate(huart, 9600);
+	HAL_Delay(100);
 
-    // 2. Inviamo comando: Address, CMD=15, Value=4 (38400), Checksum
-    uint8_t command = 15;
-    uint8_t value = 4; // 4 = 38400 baud
-    uint8_t checksum = (address + command + value) & 0x7F;
-    
-    uint8_t packet[4] = { address, command, value, checksum };
-    HAL_UART_Transmit(huart, packet, 4, 100);
-    
-    HAL_Delay(200); // Tempo alla Sabertooth per scrivere EEPROM e cambiare baud
+	// 2. Inviamo comando: Address, CMD=15, Value=4 (38400), Checksum
+	uint8_t command = 15;
+	uint8_t value = 4; // 4 = 38400 baud
+	uint8_t checksum = (address + command + value) & 0x7F;
 
-    // 3. Ora riconfiguriamo STM32 a 38400 per poter parlare
-    Reinit_UART_Baudrate(huart, 38400); 
-    
-    // Opzionale: inviare 0xAA per risincronizzare nel dubbio
-    uint8_t sync = 0xAA;
-    HAL_UART_Transmit(huart, &sync, 1, 10);
-    HAL_Delay(100);
+	uint8_t packet[4] = { address, command, value, checksum };
+	HAL_UART_Transmit(huart, packet, 4, 100);
+
+	HAL_Delay(200); // Tempo alla Sabertooth per scrivere EEPROM e cambiare baud
+
+	// 3. Ora riconfiguriamo STM32 a 38400 per poter parlare
+	Reinit_UART_Baudrate(huart, 38400);
+
+	// Opzionale: inviare 0xAA per risincronizzare nel dubbio
+	uint8_t sync = 0xAA;
+	HAL_UART_Transmit(huart, &sync, 1, 10);
+	HAL_Delay(100);
 }
 
 extern volatile unsigned long ulHighFrequencyTimerTicks; // Aggiungi se non visibile
