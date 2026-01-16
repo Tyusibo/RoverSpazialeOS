@@ -108,7 +108,14 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/* Definizioni Registri DWT per Cortex-M4 (STM32G4) */
+#define DEMCR           (*((volatile uint32_t *)0xE000EDFC))
+#define DWT_CTRL        (*((volatile uint32_t *)0xE0001000))
+#define DWT_CYCCNT      (*((volatile uint32_t *)0xE0001004))
 
+/* Bitmask */
+#define TRCENA          (1 << 24)
+#define DWT_CYCCNTENA   (1 << 0)
 /* USER CODE END 0 */
 
 /**
@@ -119,7 +126,14 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+	/* 1. Abilita l'accesso ai registri di Trace (TRCENA) */
+	  DEMCR |= TRCENA;
 
+	  /* 2. Reset del contatore cicli a 0 */
+	  DWT_CYCCNT = 0;
+
+	  /* 3. Abilita il contatore dei cicli (CYCCNTENA) */
+	  DWT_CTRL |= DWT_CYCCNTENA;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
