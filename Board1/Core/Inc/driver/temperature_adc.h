@@ -1,10 +1,3 @@
-/*
- * temperature_adc.h
- *
- *  Created on: Jan 11, 2026
- *      Author: Armando Book
- */
-
 #ifndef INC_TEMPERATURE_ADC_H_
 #define INC_TEMPERATURE_ADC_H_
 

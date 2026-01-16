@@ -228,22 +228,22 @@ void StartReadGyroscope(void *argument)
     for (;;) {
 
 #if REAL_TASK
-//		uint8_t status = MPU6050_Read_Yaw_IT(&hi2c3, &MPU6050_Yaw);
-//
-//		if (status == 0) {
-////			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
-////			break;         // Riprova
-//		}
-//
-//		while (!MPU6050_IsDone()) {
-//			// Attesa attiva
-//		}
-//
-//
-//		// rivedere la struttua, magari fare una get come per il padreceiver
-//		Board2_U.gyroscope = (double) MPU6050_Yaw.KalmanAngleZ;
-//
-//		//printGyroscope(Board2_U.gyroscope);
+		uint8_t status = MPU6050_Read_Yaw_IT(&hi2c3, &MPU6050_Yaw);
+
+		if (status == 0) {
+//			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
+//			break;         // Riprova
+		}
+
+		while (!MPU6050_IsDone()) {
+			// Attesa attiva
+		}
+
+
+		// rivedere la struttua, magari fare una get come per il padreceiver
+		Board2_U.gyroscope = (double) MPU6050_Yaw.KalmanAngleZ;
+
+		//printGyroscope(Board2_U.gyroscope);
 
         Board2_U.gyroscope = (double) 0.0;
 #else
@@ -274,8 +274,6 @@ void StartSupervisor(void *argument)
 	/* Infinite loop */
 	for (;;) {
 
-//		printGyroscope(Board2_U.gyroscope);
-//		printRemoteController(&Board2_U.remoteController);
 
 		Board2_U.sonar = (BUS_Sonar){500, 500, 500};
 		do {

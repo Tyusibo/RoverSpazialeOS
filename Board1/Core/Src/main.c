@@ -28,6 +28,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
+// Simulink Model
 #include "Board1.h"
 
 // UART Handlers for communication inter board and debugging
@@ -36,18 +38,21 @@
 
 // Driver lights
 #include "lights_init.h"   // #include "a4wd3_led.h"
-#include "lights_test.h"
 
 // Driver motors
 #include "encoders_init.h"   // #include "encoders.h"
 #include "motors_init.h"     // #include "motors_control.h"
 // both #include "motor_constants.h"
-#include "motors_test.h"
 
-#include "batt_level.h"
-#include "temperature_adc.h"
+#include "battery_init.h"        // #include "batt_level.h"
+#include "temperature_init.h"    //#include "temperature_adc.h"
 
 #include "DWT.h"
+
+/* TEST */
+#include "lights_test.h"
+#include "motors_test.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -79,8 +84,6 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-batt_level_t battery;
-temp_ky028_t temp_sensor;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -181,10 +184,8 @@ int main(void)
 
 	Motors_InitAll();
 
-
-	HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
-	battery_init(&battery, &hadc2, R1, R2, ADC_VREF);
-	temp_ky028_init(&temp_sensor, &hadc1, ADC_VREF);
+	temperature_sensor_init();
+	battery_sensor_init();
 
   /* USER CODE END 2 */
 
