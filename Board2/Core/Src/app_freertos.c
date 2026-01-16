@@ -45,6 +45,8 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#define REAL_TASK 0 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -178,30 +180,34 @@ void MX_FREERTOS_Init(void) {
 void StartReadController(void *argument)
 {
   /* USER CODE BEGIN StartReadController */
-	const uint32_t T = ms_to_ticks(T_REMOTE_CONTROLLER);
-	uint32_t next = osKernelGetTickCount();
-	/* Infinite loop */
-	for (;;) {
-		uint8_t status = PadReceiver_Request();
+    const uint32_t T = ms_to_ticks(T_REMOTE_CONTROLLER);
+    uint32_t next = osKernelGetTickCount();
+    /* Infinite loop */
+    for (;;) {
+#if REAL_TASK
+        uint8_t status = PadReceiver_Request();
 
-		if (status == 0) {
+        if (status == 0) {
 //			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
 //			break;         // Riprova
-		}
+        }
 
-		while (!PadReceiver_IsDone()) {
-			// attesa attiva
-		};
+        while (!PadReceiver_IsDone()) {
+            // attesa attiva
+        };
 
-		// Trasferisce i dati dal buffer del driver alla struttura locale
-		// La struttura locale del modello Simulink è copiata all'interno di uno stato locale
-		// e mai più usata altrove, quindi non ci sono problemi di concorrenza
-		PadReceiver_Read(&Board2_U.remoteController);
+        // Trasferisce i dati dal buffer del driver alla struttura locale
+        // La struttura locale del modello Simulink è copiata all'interno di uno stato locale
+        // e mai più usata altrove, quindi non ci sono problemi di concorrenza
+        PadReceiver_Read(&Board2_U.remoteController);
+#else
+        HAL_Delay(C_CONTROLLER);
+#endif
 
-		periodic_wait_no_led(&next, T);
-	}
+        periodic_wait_no_led(&next, T);
+    }
 
-	osThreadTerminate(osThreadGetId());
+    osThreadTerminate(osThreadGetId());
   /* USER CODE END StartReadController */
 }
 
@@ -216,11 +222,12 @@ extern MPU6050_Yaw_t MPU6050_Yaw;
 void StartReadGyroscope(void *argument)
 {
   /* USER CODE BEGIN StartReadGyroscope */
-	const uint32_t T = ms_to_ticks(T_GYROSCOPE); // T_GYROSCOPE
-	uint32_t next = osKernelGetTickCount();
-	/* Infinite loop */
-	for (;;) {
+    const uint32_t T = ms_to_ticks(T_GYROSCOPE); // T_GYROSCOPE
+    uint32_t next = osKernelGetTickCount();
+    /* Infinite loop */
+    for (;;) {
 
+#if REAL_TASK
 //		uint8_t status = MPU6050_Read_Yaw_IT(&hi2c3, &MPU6050_Yaw);
 //
 //		if (status == 0) {
@@ -238,12 +245,15 @@ void StartReadGyroscope(void *argument)
 //
 //		//printGyroscope(Board2_U.gyroscope);
 
-		Board2_U.gyroscope = (double) 0.0;
+        Board2_U.gyroscope = (double) 0.0;
+#else
+        HAL_Delay(C_GYROSCOPE);
+#endif
 
-		periodic_wait_no_led(&next, T);
-	}
+        periodic_wait_no_led(&next, T);
+    }
 
-	osThreadTerminate(osThreadGetId());
+    osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartReadGyroscope */
 }
@@ -293,15 +303,19 @@ void StartSupervisor(void *argument)
 void StartReadSonars(void *argument)
 {
   /* USER CODE BEGIN StartReadSonars */
-	const uint32_t T = ms_to_ticks(T_SONAR);
-	uint32_t next = osKernelGetTickCount();
-	/* Infinite loop */
-	for (;;) {
-		Board2_U.sonar = (BUS_Sonar){500, 500, 500};
-		periodic_wait_no_led(&next, T);
-	}
+    const uint32_t T = ms_to_ticks(T_SONAR);
+    uint32_t next = osKernelGetTickCount();
+    /* Infinite loop */
+    for (;;) {
+#if REAL_TASK
+        Board2_U.sonar = (BUS_Sonar){500, 500, 500};
+#else
+        HAL_Delay(C_SONAR);
+#endif
+        periodic_wait_no_led(&next, T);
+    }
 
-	osThreadTerminate(osThreadGetId());
+    osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartReadSonars */
 }

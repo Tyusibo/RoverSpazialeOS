@@ -52,6 +52,8 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#define REAL_TASK 0 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -219,32 +221,36 @@ void MX_FREERTOS_Init(void) {
 void StartPID(void *argument)
 {
   /* USER CODE BEGIN StartPID */
-	SEGGER_SYSVIEW_Conf();
-	SEGGER_SYSVIEW_Start();
-	const uint32_t T = ms_to_ticks(T_PID);
-	uint32_t next = osKernelGetTickCount();
+    SEGGER_SYSVIEW_Conf();
+    SEGGER_SYSVIEW_Start();
+    const uint32_t T = ms_to_ticks(T_PID);
+    uint32_t next = osKernelGetTickCount();
 
-	float current_speed[4] = { 2, 2, 2, 3 };
+    float current_speed[4] = { 2, 2, 2, 3 };
 
 
-	/* Infinite loop */
-	for (;;) {
-		for (int i = 0; i < 4; i++) {
+    /* Infinite loop */
+    for (;;) {
+#if REAL_TASK
+        for (int i = 0; i < 4; i++) {
 
-			Encoder_Update(&encoders[i]);
-			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+            Encoder_Update(&encoders[i]);
+            current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
 
-			MotorControl_OpenLoopActuate(&motors[i]);
-		}
+            MotorControl_OpenLoopActuate(&motors[i]);
+        }
 
-		Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
-						current_speed[2], current_speed[3] };
+        Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
+                        current_speed[2], current_speed[3] };
+#else
+        HAL_Delay(C_PID);
+#endif
 
-		periodic_wait(&next, T);
+        periodic_wait(&next, T);
 
-	}
+    }
 
-	osThreadTerminate(osThreadGetId());
+    osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartPID */
 }
@@ -317,19 +323,23 @@ void StartReadTemperature(void *argument)
 {
   /* USER CODE BEGIN StartReadTemperature */
 
-	const uint32_t T = ms_to_ticks(T_TEMPERATURE);
-	uint32_t next = osKernelGetTickCount();
+    const uint32_t T = ms_to_ticks(T_TEMPERATURE);
+    uint32_t next = osKernelGetTickCount();
 
-	/* Infinite loop */
-	for (;;) {
-		//Board1_U.temperature = (Temperature) temp_ky028_read_temperature_avg(&temp_sensor, 5);
-		Board1_U.temperature = (Temperature) temp_ky028_read_temperature(
-				&temp_sensor);
+    /* Infinite loop */
+    for (;;) {
+#if REAL_TASK
+        //Board1_U.temperature = (Temperature) temp_ky028_read_temperature_avg(&temp_sensor, 5);
+        Board1_U.temperature = (Temperature) temp_ky028_read_temperature(
+                &temp_sensor);
+#else
+        HAL_Delay(C_TEMPERATURE);
+#endif
 
-		periodic_wait(&next, T);
-	}
+        periodic_wait(&next, T);
+    }
 
-	osThreadTerminate(osThreadGetId());
+    osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartReadTemperature */
 }
@@ -345,18 +355,22 @@ void StartReadBattery(void *argument)
 {
   /* USER CODE BEGIN StartReadBattery */
 
-	const uint32_t T = ms_to_ticks(T_BATTERY);
-	uint32_t next = osKernelGetTickCount();
+    const uint32_t T = ms_to_ticks(T_BATTERY);
+    uint32_t next = osKernelGetTickCount();
 
-	/* Infinite loop */
-	for (;;) {
-		Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
-				battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
+    /* Infinite loop */
+    for (;;) {
+#if REAL_TASK
+        Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
+                battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
+#else
+        HAL_Delay(C_BATTERY);
+#endif
 
-		periodic_wait(&next, T);
-	}
+        periodic_wait(&next, T);
+    }
 
-	osThreadTerminate(osThreadGetId());
+    osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartReadBattery */
 }

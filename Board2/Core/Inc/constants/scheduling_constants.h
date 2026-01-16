@@ -17,19 +17,9 @@
 /* Supervisore / decisione rover (stato globale + safety) */
 #define T_SONAR          100u   /* 50 Hz */
 
-/* Comunicazione tra board */
-#define T_UART_EXCHANGE_MS           20u   /* 50 Hz: frame sensori/stato (IT/DMA) */
-#define T_PROTOCOL_WATCHDOG_MS       100u  /* 10 Hz: timeout link/heartbeat */
-
-/* Health */
-#define T_BATTERY_ADC_MS             100u  /* 10 Hz */
-#define T_THERMAL_MS                 200u  /* 5 Hz */
-
-/* Logging/telemetria */
-#define T_LOG_MS                     200u  /* 5 Hz */
-
-/* Utilità */
-#define MS_TO_TICKS(ms)              (ms)  /* se kernel tick = 1ms; altrimenti adatta */
-
+// Costanti di simulazione carico (in ms)
+#define C_CONTROLLER    2
+#define C_GYROSCOPE     4
+#define C_SONAR         25
 
 #endif /* INC_CONSTANTS_SCHEDULING_CONSTANTS_H_ */
