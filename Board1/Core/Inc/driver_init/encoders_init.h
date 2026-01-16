@@ -5,8 +5,7 @@
 #include "encoder.h"
 #include "motor_constants.h"   // per TS, COUNTS (se li hai lì dentro)
 
-#define N_MOTORS 4
-#define N_ENCODER (N_MOTORS)
+#define N_ENCODER 4
 
 extern Encoder encoders[N_ENCODER];
 

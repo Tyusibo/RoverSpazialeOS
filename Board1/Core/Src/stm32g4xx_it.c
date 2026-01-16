@@ -226,7 +226,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
 	if (huart->Instance == LPUART1) {
 
-		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
 
 		uint32_t err = huart->ErrorCode;
 

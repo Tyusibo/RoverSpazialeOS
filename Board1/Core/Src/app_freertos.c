@@ -114,10 +114,17 @@ const osThreadAttr_t ReadBattery_attributes = {
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+
+/* SCHEDULING FUNCTIONS */
 static uint32_t ms_to_ticks(uint32_t ms);
 static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks);
-static uint8_t periodic_wait_no_led(uint32_t *next_release,
-		uint32_t period_ticks);
+
+/* DECISION FUNCTIONS */
+static inline void actuate_white_leds(void);
+static inline void actuate_red_leds(void);
+static inline void change_set_point(void);
+static inline void change_regulator(void);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartPID(void *argument);
@@ -135,24 +142,21 @@ void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
 /* USER CODE BEGIN 1 */
 
 /* Functions needed when configGENERATE_RUN_TIME_STATS is on */
-__weak void configureTimerForRunTimeStats(void)
-{
+__weak void configureTimerForRunTimeStats(void) {
 
 }
 
-__weak unsigned long getRunTimeCounterValue(void)
-{
-    // Restituisce il valore combinato: (Numero Overflow * 65536) + Valore Corrente Timer
-    // Si assume che TIM7 sia configurato con Period (ARR) al massimo (65535) per sfruttare i 16 bit.
+__weak unsigned long getRunTimeCounterValue(void) {
+	// Restituisce il valore combinato: (Numero Overflow * 65536) + Valore Corrente Timer
+	// Si assume che TIM7 sia configurato con Period (ARR) al massimo (65535) per sfruttare i 16 bit.
 }
 /* USER CODE END 1 */
 
 /* USER CODE BEGIN 4 */
-void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName)
-{
-   /* Run time stack overflow checking is performed if
-   configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
-   called if a stack overflow is detected. */
+void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName) {
+	/* Run time stack overflow checking is performed if
+	 configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
+	 called if a stack overflow is detected. */
 }
 /* USER CODE END 4 */
 
@@ -215,30 +219,31 @@ void MX_FREERTOS_Init(void) {
 void StartPID(void *argument)
 {
   /* USER CODE BEGIN StartPID */
+	SEGGER_SYSVIEW_Conf();
+	SEGGER_SYSVIEW_Start();
 	const uint32_t T = ms_to_ticks(T_PID);
 	uint32_t next = osKernelGetTickCount();
 
 	float current_speed[4] = { 2, 2, 2, 3 };
 
-	MotorControl *m_ptrs[N_MOTORS] = { &motors.front_left, &motors.front_right,
-			&motors.rear_right, &motors.rear_left };
+
 	/* Infinite loop */
 	for (;;) {
-//		for (int i = 0; i < 4; i++) {
-//
-//			Encoder_Update(&encoders[i]);
-//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-//
-//			MotorControl_Update(m_ptrs[i], current_speed[i]);
-//			//Open loop control for testing
-//			MotorControl_OpenLoopActuate(m_ptrs[i]);
-//		}
+		for (int i = 0; i < 4; i++) {
+
+			Encoder_Update(&encoders[i]);
+			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+
+			//MotorControl_SetReferenceRPM(m_ptrs[i], 30.0f);
+			//MotorControl_Update(m_ptrs[i], current_speed[i]);
+			//Open loop control for testing
+			MotorControl_OpenLoopActuate(&motors[i]);
+		}
 
 		Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
 						current_speed[2], current_speed[3] };
 
-		osDelay(20);
-		//periodic_wait(&next, T);
+		periodic_wait(&next, T);
 
 	}
 
@@ -265,9 +270,6 @@ void StartSupervisor(void *argument)
 	Board1_U.speed = (BUS_Speed ) { 0.0f, 0.0f, 0.0f, 0.0f };
 
 
-	MotorControl *m_ptrs[4] = { &motors.front_left, &motors.front_right,
-			&motors.rear_right, &motors.rear_left };
-
 	/* Infinite loop */
 	for (;;) {
 
@@ -277,30 +279,26 @@ void StartSupervisor(void *argument)
 			Board1_step();
 		} while (Board1_DW.is_ExchangeDecision != Board1_IN_Execution);
 
-		for (int i = 0; i < 4; i++) {
-			float ref =
-					(i == 0 || i == 3) ?
-							Board1_Y.setPoint.leftAxis :
-							Board1_Y.setPoint.rightAxis;
-			// ref = 30;
-			if (ref != 0) {
-				MotorControl_SetReferenceRPM(m_ptrs[i], ref);
-				//MotorControl_OpenLoopActuate(m_ptrs[i]);
-			} else {
-				MotorControl_SetReferenceRPM(m_ptrs[i], 0);
-				//MotorControl_OpenLoopActuate(m_ptrs[i]);
-
-			}
-
-		}
-
-		A4WD3_White_Set(&led_left, Board1_DW.board1Decision.leds.white.left);
-		A4WD3_White_Set(&led_right, Board1_DW.board1Decision.leds.white.right);
-
 		Board1_U.continua = (Board1_U.continua == 0) ? 1 : 0;
 
-		osDelay(20);
-		//periodic_wait(&next, T);
+		/* FINALIZZAZIONE DECISIONE */
+		actuate_white_leds();
+		actuate_red_leds();
+		change_set_point();
+		change_regulator();
+
+		// Stampa ogni 100 cicli
+		static uint32_t cycle_count = 0;
+		cycle_count++;
+		if (cycle_count >= 100) {
+			cycle_count = 0;
+			//printMsg("Supervisor Cycle End\r\n");ù
+			printGlobalState(&Board1_B.board1GlobalState);
+		}
+		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
+
+		//osDelay(20);
+		periodic_wait(&next, T);
 
 	}
 
@@ -328,10 +326,10 @@ void StartReadTemperature(void *argument)
 	/* Infinite loop */
 	for (;;) {
 		//Board1_U.temperature = (Temperature) temp_ky028_read_temperature_avg(&temp_sensor, 5);
-		Board1_U.temperature = (Temperature) temp_ky028_read_temperature(&temp_sensor);
-		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+		Board1_U.temperature = (Temperature) temp_ky028_read_temperature(
+				&temp_sensor);
 
-		periodic_wait_no_led(&next, T);
+		periodic_wait(&next, T);
 	}
 
 	osThreadTerminate(osThreadGetId());
@@ -355,10 +353,10 @@ void StartReadBattery(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
-		Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(\
+		Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
 				battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
 
-		periodic_wait_no_led(&next, T);
+		periodic_wait(&next, T);
 	}
 
 	osThreadTerminate(osThreadGetId());
@@ -368,6 +366,9 @@ void StartReadBattery(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+
+/* SCHEDULING FUNCTIONS */
+
 static uint32_t ms_to_ticks(uint32_t ms) {
 	uint32_t hz = osKernelGetTickFreq();
 	return (ms * hz + 999u) / 1000u;
@@ -388,27 +389,45 @@ static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks) {
 
 	/* Sleep assoluta fino al prossimo periodo */
 	osDelayUntil(*next_release);
-	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
+	// HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
 	return 0;
 }
 
-static uint8_t periodic_wait_no_led(uint32_t *next_release,
-		uint32_t period_ticks) {
-	uint32_t now = osKernelGetTickCount();
+/* DECISION FUNCTIONS */
 
-	/* Calcola il prossimo rilascio */
-	*next_release += period_ticks;
+static inline void actuate_white_leds(void) {
+	A4WD3_White_Set(&led_left, Board1_DW.board1Decision.leds.white.left);
+	A4WD3_White_Set(&led_right, Board1_DW.board1Decision.leds.white.right);
+}
 
-	/* Controllo deadline miss (safe con wrap-around) */
-	if ((int32_t) (now - *next_release) > 0) {
-		/* Deadline miss: siamo già oltre il rilascio */
-		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
-		return 1;
-	}
+static inline void actuate_red_leds(void) {
+	A4WD3_Red_Set(&led_left, Board1_DW.board1Decision.leds.red.left);
+	A4WD3_Red_Set(&led_right, Board1_DW.board1Decision.leds.red.right);
 
-	/* Sleep assoluta fino al prossimo periodo */
-	osDelayUntil(*next_release);
-	return 0;
+	// Se deve fare toggle allora dopo il set si avvia un timer
+}
+
+
+static inline void change_set_point(void)
+{
+    const float left  = Board1_Y.setPoint.leftAxis;
+    const float right = Board1_Y.setPoint.rightAxis;
+
+    MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_LEFT],  left);
+    MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_LEFT],   left);
+
+    MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_RIGHT], right);
+    MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_RIGHT],  right);
+}
+
+static inline void change_regulator(void)
+{
+    const uint8_t use_slow =
+        (Board1_DW.board1Decision.roverAction == RA_BRAKING_SMOOTH);
+
+    for (int i = 0; i < N_MOTORS; i++) {
+        MotorControl_SelectSlow(&motors[i], use_slow);
+    }
 }
 /* USER CODE END Application */
 

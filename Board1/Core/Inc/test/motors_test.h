@@ -19,4 +19,3 @@ void test_open_loop(float ref);
 void test_closed_loop(float ref);
 
 #endif /* INC_TEST_MOTORS_TEST_H_ */
-

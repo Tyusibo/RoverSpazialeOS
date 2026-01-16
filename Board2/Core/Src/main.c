@@ -34,8 +34,6 @@
 #include "uart_functions.h"
 #include "print.h"
 
-// Test
-#include "what2test.h"
 
 // Sonar
 #include "sonar_init.h"  // #include "HCSR04.h"
