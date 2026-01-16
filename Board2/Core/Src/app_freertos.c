@@ -30,6 +30,7 @@
 #include "Board2.h"
 #include "pad_receiver.h"
 #include "mpu6050.h"
+#include "sonar_init.h"
 
 /* Utility */
 #include "DWT.h"
@@ -197,7 +198,7 @@ void StartReadController(void *argument)
 		// La struttura locale del modello Simulink è copiata all'interno di uno stato locale
 		// e mai più usata altrove, quindi non ci sono problemi di concorrenza
 		PadReceiver_Read(&Board2_U.remoteController);
-
+		//printRemoteController(&Board2_U.remoteController);
 		periodic_wait_no_led(&next, T);
 	}
 
@@ -221,24 +222,26 @@ void StartReadGyroscope(void *argument)
 	/* Infinite loop */
 	for (;;) {
 
-//		uint8_t status = MPU6050_Read_Yaw_IT(&hi2c3, &MPU6050_Yaw);
-//
-//		if (status == 0) {
-////			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
-////			break;         // Riprova
-//		}
-//
-//		while (!MPU6050_IsDone()) {
-//			// Attesa attiva
-//		}
-//
-//
-//		// rivedere la struttua, magari fare una get come per il padreceiver
-//		Board2_U.gyroscope = (double) MPU6050_Yaw.KalmanAngleZ;
-//
-//		//printGyroscope(Board2_U.gyroscope);
+		uint8_t status = MPU6050_Read_Yaw_IT(&hi2c3, &MPU6050_Yaw);
 
-		Board2_U.gyroscope = (double) 0.0;
+		if (status == 0) {
+//			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
+//			break;         // Riprova
+		}
+
+		while (!MPU6050_IsDone()) {
+			// Attesa attiva
+		}
+
+
+		MPU6050_Process_Yaw_IT_Data();
+
+		// rivedere la struttua, magari fare una get come per il padreceiver
+		Board2_U.gyroscope = (double) MPU6050_Yaw.KalmanAngleZ;
+
+		//printGyroscope(Board2_U.gyroscope);
+
+		//Board2_U.gyroscope = (double) 0.0;
 
 		periodic_wait_no_led(&next, T);
 	}
@@ -267,15 +270,17 @@ void StartSupervisor(void *argument)
 //		printGyroscope(Board2_U.gyroscope);
 //		printRemoteController(&Board2_U.remoteController);
 
-		Board2_U.sonar = (BUS_Sonar){500, 500, 500};
+		//Board2_U.sonar = (BUS_Sonar){500, 500, 500};
 		do {
 			Board2_step();
 		} while (Board2_DW.is_ExchangeDecision != Board2_IN_Execution);
 
 		// Per permettere al modello di ripartire
 		Board2_U.continua = (Board2_U.continua == 0) ? 1 : 0;
+		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin,GPIO_PIN_SET);
 
 		periodic_wait(&next, T);
+
 	}
 
 	osThreadTerminate(osThreadGetId());
@@ -290,19 +295,69 @@ void StartSupervisor(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReadSonars */
+// Aggiungi il prototipo se non presente nell'header incluso
+extern void hcsr04_process_distance(hcsr04_t *sensor);
+
 void StartReadSonars(void *argument)
 {
   /* USER CODE BEGIN StartReadSonars */
-	const uint32_t T = ms_to_ticks(T_SONAR);
-	uint32_t next = osKernelGetTickCount();
-	/* Infinite loop */
-	for (;;) {
-		Board2_U.sonar = (BUS_Sonar){500, 500, 500};
-		periodic_wait_no_led(&next, T);
-	}
+    const uint32_t T = ms_to_ticks(T_SONAR);
+    uint32_t next = osKernelGetTickCount();
+    /* Infinite loop */
+    for (;;) {
 
-	osThreadTerminate(osThreadGetId());
+        // 1. Triggera i sensori (questo resetta rx_done a 0)
+        hcsr04_trigger(&sonarLeft);
+        hcsr04_trigger(&sonarFront);
+        hcsr04_trigger(&sonarRight);
 
+        // 2. Attesa attiva: il task non si sospende, ma cicla finché i dati non sono pronti.
+        // Aggiungo un timeout di sicurezza usando il tick count per evitare blocchi infiniti
+        // se si stacca un cavo (max 40ms, un sonar ne impiega max ~25ms).
+        uint32_t start_wait = osKernelGetTickCount();
+        
+        while (1) {
+            uint8_t d1 = hcsr04_is_done(&sonarLeft);
+            uint8_t d2 = hcsr04_is_done(&sonarFront);
+            uint8_t d3 = hcsr04_is_done(&sonarRight);
+
+            if (d1 && d2 && d3) {
+                break; // Tutti pronti
+            }
+
+            // Timeout safety (es. 40ms)
+            if ((osKernelGetTickCount() - start_wait) > ms_to_ticks(40)) {
+                break; 
+            }
+            
+            // Non mettiamo osDelay qui perché hai chiesto "non voglio che il task si sospenda".
+            // Il task occuperà la CPU in questo loop (utile se è a bassa priorità e viene preempted dagli altri).
+        };
+
+        // 3. Elaborazione condizionale: Aggiorna SOLO se la lettura è conclusa.
+        // Se "is_done" è falso (timeout), saltiamo l'aggiornamento e manteniamo il valore vecchio (hold last value).
+        if (hcsr04_is_done(&sonarLeft)) {
+             hcsr04_process_distance(&sonarLeft);
+        }
+
+        if (hcsr04_is_done(&sonarFront)) {
+             hcsr04_process_distance(&sonarFront);
+        }
+
+        if (hcsr04_is_done(&sonarRight)) {
+             hcsr04_process_distance(&sonarRight);
+        }
+
+        // 4. Copia dati
+        Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,
+                        sonarRight.distance };
+        
+        printSonar(&Board2_U.sonar);
+        periodic_wait_no_led(&next, T);
+
+}
+
+    osThreadTerminate(osThreadGetId());
   /* USER CODE END StartReadSonars */
 }
 
@@ -322,13 +377,13 @@ static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks) {
 	/* Controllo deadline miss (safe con wrap-around) */
 	if ((int32_t) (now - *next_release) > 0) {
 		/* Deadline miss: siamo già oltre il rilascio */
-		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
+		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
 		return 1;
 	}
 
 	/* Sleep assoluta fino al prossimo periodo */
 	osDelayUntil(*next_release);
-	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
+	//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
 	return 0;
 }
 

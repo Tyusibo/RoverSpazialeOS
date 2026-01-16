@@ -83,6 +83,33 @@ int8_t hcsr04_trigger(hcsr04_t *sensor)
     return HCSR04_OK;
 }
 
+// Funzione richiamata dal task per elaborare i dati grezzi
+void hcsr04_process_distance(hcsr04_t *sensor)
+{
+    if (!sensor) return;
+
+    // Compute elapsed ticks with the real wrap value (ARR)
+    uint32_t arr = __HAL_TIM_GET_AUTORELOAD(sensor->echo_tim);
+    uint32_t diff_ticks = elapsed_ticks_arr(sensor->start_counter, sensor->end_counter, arr);
+
+    // Convert ticks -> us -> cm
+    float time_us = (float)diff_ticks / TIM2_TICKS_PER_US;
+
+    if (time_us > 24000.0f) {
+        sensor->distance = (float)DISTANCE_LIMIT;
+    } else {
+        sensor->distance = time_us * SOUND_SPEED_CM_PER_US;
+    }
+
+    // Clamp (in cm)
+    if (sensor->distance > (float)DISTANCE_LIMIT)
+        sensor->distance = (float)DISTANCE_LIMIT;
+    if (sensor->distance < 0.0f)
+        sensor->distance = 0.0f;
+
+    sensor->rx_done = 1;
+}
+
 // Call this from HAL_TIM_IC_CaptureCallback(), for the right sensor matching the active channel.
 int8_t hcsr04_read_distance(hcsr04_t *sensor)
 {
@@ -104,25 +131,6 @@ int8_t hcsr04_read_distance(hcsr04_t *sensor)
         sensor->end_counter = HAL_TIM_ReadCapturedValue(sensor->echo_tim, sensor->echo_channel);
         sensor->capture_flag = 0;
 
-        // Compute elapsed ticks with the real wrap value (ARR)
-        uint32_t arr = __HAL_TIM_GET_AUTORELOAD(sensor->echo_tim);
-        uint32_t diff_ticks = elapsed_ticks_arr(sensor->start_counter, sensor->end_counter, arr);
-
-        // Convert ticks -> us -> cm
-        float time_us = (float)diff_ticks / TIM2_TICKS_PER_US;
-
-        if (time_us > 24000.0f) {
-            sensor->distance = (float)DISTANCE_LIMIT;
-        } else {
-            sensor->distance = time_us * SOUND_SPEED_CM_PER_US;
-        }
-
-        // Clamp (in cm)
-        if (sensor->distance > (float)DISTANCE_LIMIT) sensor->distance = (float)DISTANCE_LIMIT;
-        if (sensor->distance < 0.0f) sensor->distance = 0.0f;
-
-        sensor->rx_done = 1; // Misura completata
-
         // Restore for next measurement
         __HAL_TIM_SET_CAPTUREPOLARITY(sensor->echo_tim, sensor->echo_channel, TIM_INPUTCHANNELPOLARITY_RISING);
 
@@ -130,7 +138,8 @@ int8_t hcsr04_read_distance(hcsr04_t *sensor)
         uint32_t it = channel_to_it(sensor->echo_channel);
         if (it != 0u) __HAL_TIM_DISABLE_IT(sensor->echo_tim, it);
 
-        return HCSR04_OK;
+        // Return special code 2 to indicate "Capture Complete - Ready for Processing"
+        return 2;
     }
 
     default:
@@ -142,4 +151,8 @@ int8_t hcsr04_read_distance(hcsr04_t *sensor)
 uint8_t hcsr04_is_done(hcsr04_t *sensor) {
     if (!sensor) return 0;
     return sensor->rx_done;
+}
+
+void hcsr04_Set_Done(hcsr04_t *sensor) {
+	sensor->rx_done = 1;
 }

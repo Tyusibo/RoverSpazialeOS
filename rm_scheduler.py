@@ -23,12 +23,12 @@ tasksB2_Degr = [
     ("Controller", 2, 20),
     ("Gyro", 4, 40),
     ("Sonar", 25, 100),
-
     ("Motore", 5, 20)
 ]
 
+
 # CAMBIARE
-tasks = tasksB1
+tasks = tasksB2
 
 # -------------------------
 # Utility functions

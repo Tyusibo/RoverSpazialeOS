@@ -316,8 +316,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance != TIM2)
         return;
 
-    // La funzione hcsr04_read_distance aggiorna internamente lo stato
-    // e setta rx_done = 1 quando ha finito (falling edge).
+    // La funzione hcsr04_read_distance gestisce i fronti e mette rx_done a 1 alla fine
     
     if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3) {
         hcsr04_read_distance(&sonarLeft);
@@ -326,7 +325,7 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
         hcsr04_read_distance(&sonarFront);
 
     } else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
-        hcsr04_read_distance(&sonarRight);
+       hcsr04_read_distance(&sonarRight);
     }
 }
 #include "sonar_test.h"
@@ -362,7 +361,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
 
 	if (huart->Instance == LPUART1) {
 
@@ -422,9 +421,7 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 	PRINT_DBG("MPU6050 I2C Mem Rx Complete\r\n");
 
 	if (hi2c->Instance == I2C3) {
-
-
-		MPU6050_Process_Yaw_IT_Data();
+		MPU6050_Set_Done();
 	}
 }
 

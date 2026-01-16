@@ -27,5 +27,7 @@ int8_t hcsr04_init(hcsr04_t *sensor, GPIO_TypeDef *trigger,
 int8_t hcsr04_trigger(hcsr04_t *sensor);
 int8_t hcsr04_read_distance(hcsr04_t *sensor); // To be called in the callback of the TIMER
 uint8_t hcsr04_is_done(hcsr04_t *sensor); // Nuova funzione
+void hcsr04_Set_Done(hcsr04_t *sensor);
+
 
 #endif /* INC_HCSR04_H_ */

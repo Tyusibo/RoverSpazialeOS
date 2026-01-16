@@ -96,4 +96,6 @@ void MPU6050_Error_Callback(void);
  */
 uint8_t MPU6050_IsDone(void);
 
+void MPU6050_Set_Done(void);
+
 #endif /* INC_GY521_H_ */

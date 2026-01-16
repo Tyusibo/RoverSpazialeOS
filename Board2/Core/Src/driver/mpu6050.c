@@ -355,3 +355,7 @@ void MPU6050_Error_Callback(void) {
 uint8_t MPU6050_IsDone(void) {
     return mpu_rx_done;
 }
+
+void MPU6050_Set_Done(void) {
+    mpu_rx_done = 1; // Segnala operazione conclusa (anche se errore)
+}
