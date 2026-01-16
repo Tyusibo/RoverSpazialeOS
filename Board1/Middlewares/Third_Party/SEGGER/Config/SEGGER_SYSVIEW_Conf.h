@@ -91,10 +91,10 @@ Additional information:
 * TODO: Add your defines here.                                       *
 **********************************************************************
 */
-#define SEGGER_SYSVIEW_RTT_BUFFER_SIZE      1024
+#define SEGGER_SYSVIEW_RTT_BUFFER_SIZE      35000
 #define SEGGER_SYSVIEW_APP_NAME "MioProgetto"
 #define SEGGER_SYSVIEW_DEVICE_NAME "Cortex-M4"
-#define SEGGER_SYSVIEW_POST_MORTEM_MODE         1
+#define SEGGER_SYSVIEW_POST_MORTEM_MODE         0
 
 #endif  // SEGGER_SYSVIEW_CONF_H
 
