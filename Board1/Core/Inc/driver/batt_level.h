@@ -1,25 +1,14 @@
-/*
- * batt_level.h
- *
- *  Created on: Jan 11, 2026
- *      Author: Armando Book
- */
-
 #ifndef INC_BATT_LEVEL_H_
 #define INC_BATT_LEVEL_H_
 
 #include "stm32g4xx_hal.h"
+#include "adc_constants.h"
 
 #define MAX_VOLTAGE (12.6f)
 #define MIN_VOLTAGE (10.5f)
 
 #define MAX_BATT_PERC (100)
 #define MIN_BATT_PERC (0)
-
-#define R1 (36000.0f) // Resistenza superiore (collegata a Vbat)
-#define R2 (12000.0f) // Resistenza inferiore (collegata a GND)
-
-#define ADC_VREF (3.3f) // Tensione di riferimento ADC
 
 typedef struct{
 	ADC_HandleTypeDef* hadc;

@@ -25,22 +25,33 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
 #include "scheduling_constants.h"
 
+// Simulink Model
 #include "Board1.h"
 
-#include "motors_init.h" //#include "motor_control.h"
-#include "encoders_init.h" //#include "encoders.h"
-
-#include "temperature_adc.h"
-
-#include "batt_level.h"
-
-#include "lights_init.h" //#include "a4wd3_led.h"
-
-/* Utility */
-#include "DWT.h"
+// UART Handlers for communication inter board and debugging
+#include "uart_functions.h"
 #include "print.h"
+
+// Driver lights
+#include "lights_init.h"   // #include "a4wd3_led.h"
+
+// Driver motors
+#include "encoders_init.h"   // #include "encoders.h"
+#include "motors_init.h"     // #include "motors_control.h"
+// both #include "motor_constants.h"
+
+#include "battery_init.h"        // #include "batt_level.h"
+#include "temperature_init.h"    //#include "temperature_adc.h"
+
+#include "DWT.h"
+
+/* TEST */
+#include "lights_test.h"
+#include "motors_test.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,6 +62,8 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define REAL_TASK 0 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
 
 /* USER CODE END PD */
 
@@ -111,6 +124,18 @@ const osThreadAttr_t ReadBattery_attributes = {
   .cb_size = sizeof(ReadBatteryControlBlock),
   .priority = (osPriority_t) osPriorityAboveNormal2,
 };
+/* Definitions for StartSegger */
+osThreadId_t StartSeggerHandle;
+uint32_t StartSeggerBuffer[ 128 ];
+osStaticThreadDef_t StartSeggerControlBlock;
+const osThreadAttr_t StartSegger_attributes = {
+  .name = "StartSegger",
+  .stack_mem = &StartSeggerBuffer[0],
+  .stack_size = sizeof(StartSeggerBuffer),
+  .cb_mem = &StartSeggerControlBlock,
+  .cb_size = sizeof(StartSeggerControlBlock),
+  .priority = (osPriority_t) osPriorityHigh1,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -131,34 +156,9 @@ void StartPID(void *argument);
 void StartSupervisor(void *argument);
 void StartReadTemperature(void *argument);
 void StartReadBattery(void *argument);
+void StartSeggerTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
-
-/* Hook prototypes */
-void configureTimerForRunTimeStats(void);
-unsigned long getRunTimeCounterValue(void);
-void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
-
-/* USER CODE BEGIN 1 */
-
-/* Functions needed when configGENERATE_RUN_TIME_STATS is on */
-__weak void configureTimerForRunTimeStats(void) {
-
-}
-
-__weak unsigned long getRunTimeCounterValue(void) {
-	// Restituisce il valore combinato: (Numero Overflow * 65536) + Valore Corrente Timer
-	// Si assume che TIM7 sia configurato con Period (ARR) al massimo (65535) per sfruttare i 16 bit.
-}
-/* USER CODE END 1 */
-
-/* USER CODE BEGIN 4 */
-void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName) {
-	/* Run time stack overflow checking is performed if
-	 configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
-	 called if a stack overflow is detected. */
-}
-/* USER CODE END 4 */
 
 /**
   * @brief  FreeRTOS initialization
@@ -199,12 +199,16 @@ void MX_FREERTOS_Init(void) {
   /* creation of ReadBattery */
   ReadBatteryHandle = osThreadNew(StartReadBattery, NULL, &ReadBattery_attributes);
 
+  /* creation of StartSegger */
+  StartSeggerHandle = osThreadNew(StartSeggerTask, NULL, &StartSegger_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
+
   /* USER CODE END RTOS_EVENTS */
 
 }
@@ -219,35 +223,34 @@ void MX_FREERTOS_Init(void) {
 void StartPID(void *argument)
 {
   /* USER CODE BEGIN StartPID */
-	SEGGER_SYSVIEW_Conf();
-	SEGGER_SYSVIEW_Start();
-	const uint32_t T = ms_to_ticks(T_PID);
-	uint32_t next = osKernelGetTickCount();
+    const uint32_t T = ms_to_ticks(T_PID);
+    uint32_t next = osKernelGetTickCount();
 
-	float current_speed[4] = { 2, 2, 2, 3 };
+    float current_speed[4] = { 2, 2, 2, 3 };
 
 
-	/* Infinite loop */
-	for (;;) {
-		for (int i = 0; i < 4; i++) {
+    /* Infinite loop */
+    for (;;) {
+#if REAL_TASK
+        for (int i = 0; i < 4; i++) {
 
-			Encoder_Update(&encoders[i]);
-			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+            Encoder_Update(&encoders[i]);
+            current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
 
-			//MotorControl_SetReferenceRPM(m_ptrs[i], 30.0f);
-			//MotorControl_Update(m_ptrs[i], current_speed[i]);
-			//Open loop control for testing
-			MotorControl_OpenLoopActuate(&motors[i]);
-		}
+            MotorControl_OpenLoopActuate(&motors[i]);
+        }
 
-		Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
-						current_speed[2], current_speed[3] };
+        Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
+                        current_speed[2], current_speed[3] };
+#else
+        HAL_Delay(C_PID);
+#endif
 
-		periodic_wait(&next, T);
+        periodic_wait(&next, T);
 
-	}
+    }
 
-	osThreadTerminate(osThreadGetId());
+    osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartPID */
 }
@@ -308,8 +311,6 @@ void StartSupervisor(void *argument)
 }
 
 /* USER CODE BEGIN Header_StartReadTemperature */
-extern batt_level_t battery;
-extern temp_ky028_t temp_sensor;
 /**
  * @brief Function implementing the ReadTemperature thread.
  * @param argument: Not used
@@ -320,19 +321,23 @@ void StartReadTemperature(void *argument)
 {
   /* USER CODE BEGIN StartReadTemperature */
 
-	const uint32_t T = ms_to_ticks(T_TEMPERATURE);
-	uint32_t next = osKernelGetTickCount();
+    const uint32_t T = ms_to_ticks(T_TEMPERATURE);
+    uint32_t next = osKernelGetTickCount();
 
-	/* Infinite loop */
-	for (;;) {
-		//Board1_U.temperature = (Temperature) temp_ky028_read_temperature_avg(&temp_sensor, 5);
-		Board1_U.temperature = (Temperature) temp_ky028_read_temperature(
-				&temp_sensor);
+    /* Infinite loop */
+    for (;;) {
+#if REAL_TASK
+        //Board1_U.temperature = (Temperature) temp_ky028_read_temperature_avg(&temp_sensor, 5);
+        Board1_U.temperature = (Temperature) temp_ky028_read_temperature(
+                &temp_sensor);
+#else
+        HAL_Delay(C_TEMPERATURE);
+#endif
 
-		periodic_wait(&next, T);
-	}
+        periodic_wait(&next, T);
+    }
 
-	osThreadTerminate(osThreadGetId());
+    osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartReadTemperature */
 }
@@ -348,20 +353,47 @@ void StartReadBattery(void *argument)
 {
   /* USER CODE BEGIN StartReadBattery */
 
-	const uint32_t T = ms_to_ticks(T_BATTERY);
-	uint32_t next = osKernelGetTickCount();
+    const uint32_t T = ms_to_ticks(T_BATTERY);
+    uint32_t next = osKernelGetTickCount();
 
-	/* Infinite loop */
-	for (;;) {
-		Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
-				battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
+    /* Infinite loop */
+    for (;;) {
+#if REAL_TASK
+        Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
+                battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
+#else
+        HAL_Delay(C_BATTERY);
+#endif
 
-		periodic_wait(&next, T);
-	}
+        periodic_wait(&next, T);
+    }
 
-	osThreadTerminate(osThreadGetId());
+    osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartReadBattery */
+}
+
+/* USER CODE BEGIN Header_StartSeggerTask */
+/**
+* @brief Function implementing the StartSegger thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartSeggerTask */
+void StartSeggerTask(void *argument)
+{
+  /* USER CODE BEGIN StartSeggerTask */
+	  SEGGER_SYSVIEW_Conf();
+	  SEGGER_SYSVIEW_Start();
+
+  /* Infinite loop */
+  for(;;)
+  {
+    break;
+  }
+  osThreadTerminate(osThreadGetId());
+
+  /* USER CODE END StartSeggerTask */
 }
 
 /* Private application code --------------------------------------------------*/
