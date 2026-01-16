@@ -57,7 +57,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+uint32_t cycles;
 /* USER CODE END Variables */
 /* Definitions for ReadController */
 osThreadId_t ReadControllerHandle;
@@ -69,7 +69,7 @@ const osThreadAttr_t ReadController_attributes = {
   .stack_size = sizeof(ReadControllerBuffer),
   .cb_mem = &ReadControllerControlBlock,
   .cb_size = sizeof(ReadControllerControlBlock),
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for ReadGyroscope */
 osThreadId_t ReadGyroscopeHandle;
@@ -81,7 +81,7 @@ const osThreadAttr_t ReadGyroscope_attributes = {
   .stack_size = sizeof(ReadGyroscopeBuffer),
   .cb_mem = &ReadGyroscopeControlBlock,
   .cb_size = sizeof(ReadGyroscopeControlBlock),
-  .priority = (osPriority_t) osPriorityAboveNormal,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for Supervisor */
 osThreadId_t SupervisorHandle;
@@ -107,6 +107,18 @@ const osThreadAttr_t ReadSonars_attributes = {
   .cb_size = sizeof(ReadSonarsControlBlock),
   .priority = (osPriority_t) osPriorityLow,
 };
+/* Definitions for StartSegger */
+osThreadId_t StartSeggerHandle;
+uint32_t StartSeggerBuffer[ 128 ];
+osStaticThreadDef_t StartSeggerControlBlock;
+const osThreadAttr_t StartSegger_attributes = {
+  .name = "StartSegger",
+  .stack_mem = &StartSeggerBuffer[0],
+  .stack_size = sizeof(StartSeggerBuffer),
+  .cb_mem = &StartSeggerControlBlock,
+  .cb_size = sizeof(StartSeggerControlBlock),
+  .priority = (osPriority_t) osPriorityHigh1,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -119,6 +131,7 @@ void StartReadController(void *argument);
 void StartReadGyroscope(void *argument);
 void StartSupervisor(void *argument);
 void StartReadSonars(void *argument);
+void StartSeggerTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -160,6 +173,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of ReadSonars */
   ReadSonarsHandle = osThreadNew(StartReadSonars, NULL, &ReadSonars_attributes);
+
+  /* creation of StartSegger */
+  StartSeggerHandle = osThreadNew(StartSeggerTask, NULL, &StartSegger_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -250,7 +266,8 @@ void StartReadGyroscope(void *argument)
 		//printGyroscope(Board2_U.gyroscope);
 
 #else
-        HAL_Delay(C_GYROSCOPE);
+      HAL_Delay(C_GYROSCOPE);
+
 #endif
 
         periodic_wait_no_led(&next, T);
@@ -277,8 +294,6 @@ void StartSupervisor(void *argument)
 	/* Infinite loop */
 	for (;;) {
 
-
-		//Board2_U.sonar = (BUS_Sonar){500, 500, 500};
 		do {
 			Board2_step();
 		} while (Board2_DW.is_ExchangeDecision != Board2_IN_Execution);
@@ -371,6 +386,28 @@ void StartReadSonars(void *argument)
   /* USER CODE END StartReadSonars */
 }
 
+/* USER CODE BEGIN Header_StartSeggerTask */
+/**
+* @brief Function implementing the StartSegger thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartSeggerTask */
+void StartSeggerTask(void *argument)
+{
+  /* USER CODE BEGIN StartSeggerTask */
+	  SEGGER_SYSVIEW_Conf();
+	  SEGGER_SYSVIEW_Start();
+
+  /* Infinite loop */
+  for(;;)
+  {
+    break;
+  }
+  osThreadTerminate(osThreadGetId());
+
+  /* USER CODE END StartSeggerTask */
+}
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 static uint32_t ms_to_ticks(uint32_t ms) {
