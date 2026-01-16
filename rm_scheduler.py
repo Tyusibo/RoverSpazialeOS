@@ -27,7 +27,7 @@ tasksB2_Degr = [
     ("Motore", 5, 20)
 ]
 
-# CAMBIARE
+# CAMBIARE PER IL DIVERSO TASK SET
 tasks = tasksB1
 
 # -------------------------

@@ -291,8 +291,6 @@ void StartSupervisor(void *argument)
 	/* Infinite loop */
 	for (;;) {
 
-//		printGyroscope(Board2_U.gyroscope);
-//		printRemoteController(&Board2_U.remoteController);
 
 		Board2_U.sonar = (BUS_Sonar){500, 500, 500};
 		uint32_t t0 = DWT_Begin();

@@ -25,22 +25,33 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
 #include "scheduling_constants.h"
 
+// Simulink Model
 #include "Board1.h"
 
-#include "motors_init.h" //#include "motor_control.h"
-#include "encoders_init.h" //#include "encoders.h"
-
-#include "temperature_adc.h"
-
-#include "batt_level.h"
-
-#include "lights_init.h" //#include "a4wd3_led.h"
-
-/* Utility */
-#include "DWT.h"
+// UART Handlers for communication inter board and debugging
+#include "uart_functions.h"
 #include "print.h"
+
+// Driver lights
+#include "lights_init.h"   // #include "a4wd3_led.h"
+
+// Driver motors
+#include "encoders_init.h"   // #include "encoders.h"
+#include "motors_init.h"     // #include "motors_control.h"
+// both #include "motor_constants.h"
+
+#include "battery_init.h"        // #include "batt_level.h"
+#include "temperature_init.h"    //#include "temperature_adc.h"
+
+#include "DWT.h"
+
+/* TEST */
+#include "lights_test.h"
+#include "motors_test.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -148,32 +159,6 @@ void StartReadBattery(void *argument);
 void StartSeggerTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
-
-/* Hook prototypes */
-void configureTimerForRunTimeStats(void);
-unsigned long getRunTimeCounterValue(void);
-void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName);
-
-/* USER CODE BEGIN 1 */
-
-/* Functions needed when configGENERATE_RUN_TIME_STATS is on */
-__weak void configureTimerForRunTimeStats(void) {
-
-}
-
-__weak unsigned long getRunTimeCounterValue(void) {
-	// Restituisce il valore combinato: (Numero Overflow * 65536) + Valore Corrente Timer
-	// Si assume che TIM7 sia configurato con Period (ARR) al massimo (65535) per sfruttare i 16 bit.
-}
-/* USER CODE END 1 */
-
-/* USER CODE BEGIN 4 */
-void vApplicationStackOverflowHook(xTaskHandle xTask, signed char *pcTaskName) {
-	/* Run time stack overflow checking is performed if
-	 configCHECK_FOR_STACK_OVERFLOW is defined to 1 or 2. This hook function is
-	 called if a stack overflow is detected. */
-}
-/* USER CODE END 4 */
 
 /**
   * @brief  FreeRTOS initialization
@@ -326,8 +311,6 @@ void StartSupervisor(void *argument)
 }
 
 /* USER CODE BEGIN Header_StartReadTemperature */
-extern batt_level_t battery;
-extern temp_ky028_t temp_sensor;
 /**
  * @brief Function implementing the ReadTemperature thread.
  * @param argument: Not used
