@@ -113,6 +113,18 @@ const osThreadAttr_t ReadBattery_attributes = {
   .cb_size = sizeof(ReadBatteryControlBlock),
   .priority = (osPriority_t) osPriorityAboveNormal2,
 };
+/* Definitions for StartSegger */
+osThreadId_t StartSeggerHandle;
+uint32_t StartSeggerBuffer[ 128 ];
+osStaticThreadDef_t StartSeggerControlBlock;
+const osThreadAttr_t StartSegger_attributes = {
+  .name = "StartSegger",
+  .stack_mem = &StartSeggerBuffer[0],
+  .stack_size = sizeof(StartSeggerBuffer),
+  .cb_mem = &StartSeggerControlBlock,
+  .cb_size = sizeof(StartSeggerControlBlock),
+  .priority = (osPriority_t) osPriorityHigh1,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -133,6 +145,7 @@ void StartPID(void *argument);
 void StartSupervisor(void *argument);
 void StartReadTemperature(void *argument);
 void StartReadBattery(void *argument);
+void StartSeggerTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -201,12 +214,16 @@ void MX_FREERTOS_Init(void) {
   /* creation of ReadBattery */
   ReadBatteryHandle = osThreadNew(StartReadBattery, NULL, &ReadBattery_attributes);
 
+  /* creation of StartSegger */
+  StartSeggerHandle = osThreadNew(StartSeggerTask, NULL, &StartSegger_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
+
   /* USER CODE END RTOS_EVENTS */
 
 }
@@ -221,8 +238,6 @@ void MX_FREERTOS_Init(void) {
 void StartPID(void *argument)
 {
   /* USER CODE BEGIN StartPID */
-    SEGGER_SYSVIEW_Conf();
-    SEGGER_SYSVIEW_Start();
     const uint32_t T = ms_to_ticks(T_PID);
     uint32_t next = osKernelGetTickCount();
 
@@ -373,6 +388,29 @@ void StartReadBattery(void *argument)
     osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartReadBattery */
+}
+
+/* USER CODE BEGIN Header_StartSeggerTask */
+/**
+* @brief Function implementing the StartSegger thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartSeggerTask */
+void StartSeggerTask(void *argument)
+{
+  /* USER CODE BEGIN StartSeggerTask */
+	  SEGGER_SYSVIEW_Conf();
+	  SEGGER_SYSVIEW_Start();
+
+  /* Infinite loop */
+  for(;;)
+  {
+    break;
+  }
+  osThreadTerminate(osThreadGetId());
+
+  /* USER CODE END StartSeggerTask */
 }
 
 /* Private application code --------------------------------------------------*/
