@@ -160,8 +160,10 @@ int main(void)
 	PRINT_DBG("BEGIN B2 INIT...\r\n");
 
 	// Init Modello Simulink
-	Board2_U.continua = 0;
 	Board2_initialize();
+	Board2_U.remoteController = (BUS_RemoteController ) { 0, 0, 0 };
+	Board2_U.gyroscope = 0.0f;
+	Board2_U.sonar = (BUS_Sonar ) { 0, 0, 0 };
 
 	// Init Sonar
 	if (Sonar_InitAll() == 1) {

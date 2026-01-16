@@ -232,9 +232,6 @@ void StartPID(void *argument)
 			Encoder_Update(&encoders[i]);
 			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
 
-			//MotorControl_SetReferenceRPM(m_ptrs[i], 30.0f);
-			//MotorControl_Update(m_ptrs[i], current_speed[i]);
-			//Open loop control for testing
 			MotorControl_OpenLoopActuate(&motors[i]);
 		}
 

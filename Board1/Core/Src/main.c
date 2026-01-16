@@ -150,6 +150,11 @@ int main(void)
 
 	// Init Simulink Model
 	Board1_initialize();
+	Board1_U.speed = (BUS_Speed ) { 0.0f, 0.0f, 0.0f, 0.0f };
+	Board1_U.batteryLevel = 90.0f;
+	Board1_U.temperature = 30.0f;
+//	Board1_U.batteryLevel = BatteryLevel_UNKNOWN;
+//	Board1_U.temperature = Temperature_UNKNOWN;
 
 
 	/* DRIVER INITIALIZATIONS */
