@@ -219,6 +219,8 @@ void MX_FREERTOS_Init(void) {
 void StartPID(void *argument)
 {
   /* USER CODE BEGIN StartPID */
+	SEGGER_SYSVIEW_Conf();
+	SEGGER_SYSVIEW_Start();
 	const uint32_t T = ms_to_ticks(T_PID);
 	uint32_t next = osKernelGetTickCount();
 
