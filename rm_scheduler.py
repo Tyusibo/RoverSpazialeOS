@@ -16,7 +16,7 @@ tasksB2 = [
     ("Controller", 2, 20),
     ("Gyro", 4, 40),
     ("Sonar", 25, 100),
-    ("Comm", 12, 50)
+    ("Comm", 40, 100)
 ]
 
 tasksB2_Degr = [
@@ -27,7 +27,7 @@ tasksB2_Degr = [
 ]
 
 # CAMBIARE PER IL DIVERSO TASK SET
-tasks = tasksB1
+tasks = tasksB2
 
 # -------------------------
 # Utility functions

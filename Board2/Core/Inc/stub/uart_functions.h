@@ -6,6 +6,7 @@
 #include "stm32g4xx_hal.h"   
 
 extern volatile uint8_t receivedFlag;
+extern volatile uint8_t errorReceiveFlag;
 
 /* Handler */
 void setComunicationHandler(UART_HandleTypeDef* uart_handler);
@@ -31,6 +32,8 @@ void resetRTR();
 void UART_ReceiveIT(uint8_t *pData, size_t size);
 
 uint8_t hasReceived();
+
+uint8_t errorReceived(void);
 
 void UART_SendAck(void);
 

@@ -16,6 +16,7 @@
 /* ---------------------------- */
 
 volatile uint8_t receivedFlag = 0;  				// Avvenuta ricezione frame
+volatile uint8_t errorReceiveFlag = 0;  		 	// Avvenuto errore di ricezione
 
 static const uint8_t ack = 1;					// Ack
 static const uint8_t nack = 0; 					// Nack
@@ -81,7 +82,10 @@ void resetRTR() {
 }
 
 void UART_ReceiveIT(uint8_t *pData, size_t size) {
-    receivedFlag = 0;             				//pulisco il falg
+	//pulisco i falg
+    receivedFlag = 0;
+    errorReceiveFlag = 0;
+
     PRINT_DBG("B1 Wait receive\n\r");
 
     if (HAL_UART_Receive_IT(current_handler, pData, size) != HAL_OK) {
@@ -92,6 +96,10 @@ void UART_ReceiveIT(uint8_t *pData, size_t size) {
 
 uint8_t hasReceived(void) {
     return receivedFlag;
+}
+
+uint8_t errorReceived(void) {
+    return errorReceiveFlag;
 }
 
 void UART_ReceiveAck(void) {

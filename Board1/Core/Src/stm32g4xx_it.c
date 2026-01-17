@@ -33,7 +33,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define Board1_IN_Execution            ((uint8_T)3U)
 
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
@@ -203,9 +202,6 @@ void LPUART1_IRQHandler(void)
 
 /* USER CODE BEGIN 1 */
 
-extern volatile uint8_t rx_debug_byte;
-extern volatile uint8_t flow_control_flag;
-
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	UART_HandleTypeDef *h = getComunicationHandler();
 	if (h != NULL && huart->Instance == h->Instance) {
@@ -223,10 +219,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
+	UART_HandleTypeDef *h = getComunicationHandler();
 
-	if (huart->Instance == LPUART1) {
+	if (h != NULL && huart->Instance == h->Instance) {
 
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
+
+		errorReceiveFlag = 1;
 
 		uint32_t err = huart->ErrorCode;
 

@@ -46,7 +46,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define REAL_TASK 1 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
+#define REAL_TASK 0 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
 
 /* USER CODE END PD */
 
@@ -61,51 +61,64 @@ uint32_t cycles;
 /* USER CODE END Variables */
 /* Definitions for ReadController */
 osThreadId_t ReadControllerHandle;
-uint32_t ReadControllerBuffer[1024];
+uint32_t ReadControllerBuffer[ 1024 ];
 osStaticThreadDef_t ReadControllerControlBlock;
-const osThreadAttr_t ReadController_attributes = { .name = "ReadController",
-		.stack_mem = &ReadControllerBuffer[0], .stack_size =
-				sizeof(ReadControllerBuffer), .cb_mem =
-				&ReadControllerControlBlock, .cb_size =
-				sizeof(ReadControllerControlBlock), .priority =
-				(osPriority_t) osPriorityLow, };
+const osThreadAttr_t ReadController_attributes = {
+  .name = "ReadController",
+  .stack_mem = &ReadControllerBuffer[0],
+  .stack_size = sizeof(ReadControllerBuffer),
+  .cb_mem = &ReadControllerControlBlock,
+  .cb_size = sizeof(ReadControllerControlBlock),
+  .priority = (osPriority_t) osPriorityHigh,
+};
 /* Definitions for ReadGyroscope */
 osThreadId_t ReadGyroscopeHandle;
-uint32_t ReadGyroscopeBuffer[1024];
+uint32_t ReadGyroscopeBuffer[ 1024 ];
 osStaticThreadDef_t ReadGyroscopeControlBlock;
-const osThreadAttr_t ReadGyroscope_attributes = { .name = "ReadGyroscope",
-		.stack_mem = &ReadGyroscopeBuffer[0], .stack_size =
-				sizeof(ReadGyroscopeBuffer), .cb_mem =
-				&ReadGyroscopeControlBlock, .cb_size =
-				sizeof(ReadGyroscopeControlBlock), .priority =
-				(osPriority_t) osPriorityLow, };
+const osThreadAttr_t ReadGyroscope_attributes = {
+  .name = "ReadGyroscope",
+  .stack_mem = &ReadGyroscopeBuffer[0],
+  .stack_size = sizeof(ReadGyroscopeBuffer),
+  .cb_mem = &ReadGyroscopeControlBlock,
+  .cb_size = sizeof(ReadGyroscopeControlBlock),
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
 /* Definitions for Supervisor */
 osThreadId_t SupervisorHandle;
-uint32_t SupervisorBuffer[1024];
+uint32_t SupervisorBuffer[ 1024 ];
 osStaticThreadDef_t SupervisorControlBlock;
-const osThreadAttr_t Supervisor_attributes = { .name = "Supervisor",
-		.stack_mem = &SupervisorBuffer[0], .stack_size =
-				sizeof(SupervisorBuffer), .cb_mem = &SupervisorControlBlock,
-		.cb_size = sizeof(SupervisorControlBlock), .priority =
-				(osPriority_t) osPriorityNormal, };
+const osThreadAttr_t Supervisor_attributes = {
+  .name = "Supervisor",
+  .stack_mem = &SupervisorBuffer[0],
+  .stack_size = sizeof(SupervisorBuffer),
+  .cb_mem = &SupervisorControlBlock,
+  .cb_size = sizeof(SupervisorControlBlock),
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Definitions for ReadSonars */
 osThreadId_t ReadSonarsHandle;
-uint32_t ReadSonarsBuffer[1024];
+uint32_t ReadSonarsBuffer[ 1024 ];
 osStaticThreadDef_t ReadSonarsControlBlock;
-const osThreadAttr_t ReadSonars_attributes = { .name = "ReadSonars",
-		.stack_mem = &ReadSonarsBuffer[0], .stack_size =
-				sizeof(ReadSonarsBuffer), .cb_mem = &ReadSonarsControlBlock,
-		.cb_size = sizeof(ReadSonarsControlBlock), .priority =
-				(osPriority_t) osPriorityLow, };
+const osThreadAttr_t ReadSonars_attributes = {
+  .name = "ReadSonars",
+  .stack_mem = &ReadSonarsBuffer[0],
+  .stack_size = sizeof(ReadSonarsBuffer),
+  .cb_mem = &ReadSonarsControlBlock,
+  .cb_size = sizeof(ReadSonarsControlBlock),
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* Definitions for StartSegger */
 osThreadId_t StartSeggerHandle;
-uint32_t StartSeggerBuffer[128];
+uint32_t StartSeggerBuffer[ 128 ];
 osStaticThreadDef_t StartSeggerControlBlock;
-const osThreadAttr_t StartSegger_attributes = { .name = "StartSegger",
-		.stack_mem = &StartSeggerBuffer[0], .stack_size =
-				sizeof(StartSeggerBuffer), .cb_mem = &StartSeggerControlBlock,
-		.cb_size = sizeof(StartSeggerControlBlock), .priority =
-				(osPriority_t) osPriorityHigh1, };
+const osThreadAttr_t StartSegger_attributes = {
+  .name = "StartSegger",
+  .stack_mem = &StartSeggerBuffer[0],
+  .stack_size = sizeof(StartSeggerBuffer),
+  .cb_mem = &StartSeggerControlBlock,
+  .cb_size = sizeof(StartSeggerControlBlock),
+  .priority = (osPriority_t) osPriorityHigh1,
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -124,59 +137,54 @@ void StartSeggerTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
- * @brief  FreeRTOS initialization
- * @param  None
- * @retval None
- */
+  * @brief  FreeRTOS initialization
+  * @param  None
+  * @retval None
+  */
 void MX_FREERTOS_Init(void) {
-	/* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* USER CODE BEGIN RTOS_MUTEX */
+  /* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-	/* USER CODE END RTOS_MUTEX */
+  /* USER CODE END RTOS_MUTEX */
 
-	/* USER CODE BEGIN RTOS_SEMAPHORES */
+  /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-	/* USER CODE END RTOS_SEMAPHORES */
+  /* USER CODE END RTOS_SEMAPHORES */
 
-	/* USER CODE BEGIN RTOS_TIMERS */
+  /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-	/* USER CODE END RTOS_TIMERS */
+  /* USER CODE END RTOS_TIMERS */
 
-	/* USER CODE BEGIN RTOS_QUEUES */
+  /* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-	/* USER CODE END RTOS_QUEUES */
+  /* USER CODE END RTOS_QUEUES */
 
-	/* Create the thread(s) */
-	/* creation of ReadController */
-	ReadControllerHandle = osThreadNew(StartReadController, NULL,
-			&ReadController_attributes);
+  /* Create the thread(s) */
+  /* creation of ReadController */
+  ReadControllerHandle = osThreadNew(StartReadController, NULL, &ReadController_attributes);
 
-	/* creation of ReadGyroscope */
-	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
-			&ReadGyroscope_attributes);
+  /* creation of ReadGyroscope */
+  ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL, &ReadGyroscope_attributes);
 
-	/* creation of Supervisor */
-	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
-			&Supervisor_attributes);
+  /* creation of Supervisor */
+  SupervisorHandle = osThreadNew(StartSupervisor, NULL, &Supervisor_attributes);
 
-	/* creation of ReadSonars */
-	ReadSonarsHandle = osThreadNew(StartReadSonars, NULL,
-			&ReadSonars_attributes);
+  /* creation of ReadSonars */
+  ReadSonarsHandle = osThreadNew(StartReadSonars, NULL, &ReadSonars_attributes);
 
-	/* creation of StartSegger */
-	StartSeggerHandle = osThreadNew(StartSeggerTask, NULL,
-			&StartSegger_attributes);
+  /* creation of StartSegger */
+  StartSeggerHandle = osThreadNew(StartSeggerTask, NULL, &StartSegger_attributes);
 
-	/* USER CODE BEGIN RTOS_THREADS */
+  /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-	/* USER CODE END RTOS_THREADS */
+  /* USER CODE END RTOS_THREADS */
 
-	/* USER CODE BEGIN RTOS_EVENTS */
+  /* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
-	/* USER CODE END RTOS_EVENTS */
+  /* USER CODE END RTOS_EVENTS */
 
 }
 
@@ -187,8 +195,9 @@ void MX_FREERTOS_Init(void) {
  * @retval None
  */
 /* USER CODE END Header_StartReadController */
-void StartReadController(void *argument) {
-	/* USER CODE BEGIN StartReadController */
+void StartReadController(void *argument)
+{
+  /* USER CODE BEGIN StartReadController */
 	const uint32_t T = ms_to_ticks(T_REMOTE_CONTROLLER);
 	uint32_t next = osKernelGetTickCount();
 	/* Infinite loop */
@@ -218,7 +227,7 @@ void StartReadController(void *argument) {
 	}
 
 	osThreadTerminate(osThreadGetId());
-	/* USER CODE END StartReadController */
+  /* USER CODE END StartReadController */
 }
 
 /* USER CODE BEGIN Header_StartReadGyroscope */
@@ -229,8 +238,9 @@ extern MPU6050_Yaw_t MPU6050_Yaw;
  * @retval None
  */
 /* USER CODE END Header_StartReadGyroscope */
-void StartReadGyroscope(void *argument) {
-	/* USER CODE BEGIN StartReadGyroscope */
+void StartReadGyroscope(void *argument)
+{
+  /* USER CODE BEGIN StartReadGyroscope */
 	const uint32_t T = ms_to_ticks(T_GYROSCOPE); // T_GYROSCOPE
 	uint32_t next = osKernelGetTickCount();
 	/* Infinite loop */
@@ -264,7 +274,7 @@ void StartReadGyroscope(void *argument) {
 
 	osThreadTerminate(osThreadGetId());
 
-	/* USER CODE END StartReadGyroscope */
+  /* USER CODE END StartReadGyroscope */
 }
 
 /* USER CODE BEGIN Header_StartSupervisor */
@@ -275,8 +285,9 @@ void StartReadGyroscope(void *argument) {
  * @retval None
  */
 /* USER CODE END Header_StartSupervisor */
-void StartSupervisor(void *argument) {
-	/* USER CODE BEGIN StartSupervisor */
+void StartSupervisor(void *argument)
+{
+  /* USER CODE BEGIN StartSupervisor */
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
 	/* Infinite loop */
@@ -296,7 +307,7 @@ void StartSupervisor(void *argument) {
 
 	osThreadTerminate(osThreadGetId());
 
-	/* USER CODE END StartSupervisor */
+  /* USER CODE END StartSupervisor */
 }
 
 /* USER CODE BEGIN Header_StartReadSonars */
@@ -306,11 +317,9 @@ void StartSupervisor(void *argument) {
  * @retval None
  */
 /* USER CODE END Header_StartReadSonars */
-// Aggiungi il prototipo se non presente nell'header incluso
-extern void hcsr04_process_distance(hcsr04_t *sensor);
-
-void StartReadSonars(void *argument) {
-	/* USER CODE BEGIN StartReadSonars */
+void StartReadSonars(void *argument)
+{
+  /* USER CODE BEGIN StartReadSonars */
 	const uint32_t T = ms_to_ticks(T_SONAR);
 	uint32_t next = osKernelGetTickCount();
 	/* Infinite loop */
@@ -370,7 +379,7 @@ void StartReadSonars(void *argument) {
 	}
 
 	osThreadTerminate(osThreadGetId());
-	/* USER CODE END StartReadSonars */
+  /* USER CODE END StartReadSonars */
 }
 
 /* USER CODE BEGIN Header_StartSeggerTask */
@@ -380,8 +389,9 @@ void StartReadSonars(void *argument) {
  * @retval None
  */
 /* USER CODE END Header_StartSeggerTask */
-void StartSeggerTask(void *argument) {
-	/* USER CODE BEGIN StartSeggerTask */
+void StartSeggerTask(void *argument)
+{
+  /* USER CODE BEGIN StartSeggerTask */
 	SEGGER_SYSVIEW_Conf();
 	SEGGER_SYSVIEW_Start();
 
@@ -391,8 +401,9 @@ void StartSeggerTask(void *argument) {
 	}
 	osThreadTerminate(osThreadGetId());
 
-	/* USER CODE END StartSeggerTask */
+  /* USER CODE END StartSeggerTask */
 }
+
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
 static uint32_t ms_to_ticks(uint32_t ms) {

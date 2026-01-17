@@ -36,7 +36,7 @@
 /* USER CODE BEGIN PD */
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 0
+#define VERBOSE_DEBUG 1
 
 #if VERBOSE_DEBUG == 1
 #define PRINT_DBG(msg) printMsg(msg)
@@ -330,59 +330,47 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
 }
 #include "sonar_test.h"
 
-extern volatile uint8_t rx_debug_byte;
-extern volatile uint8_t flow_control_flag;
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	UART_HandleTypeDef *h = getComunicationHandler();
 	if (h != NULL && huart->Instance == h->Instance) {
-		PRINT_DBG("B2 Received\n\r");
+		//PRINT_DBG("B2 Received\n\r");
 		if (receivedFlag == 0) {
 			receivedFlag = 1;
 		}
 		return;
 	}
 
-	// Verifica che l'interrupt arrivi dalla UART di debug (Printer)
-	h = getPrinterHandler();
-	if (h != NULL && huart->Instance == h->Instance) {
-        
-        // Imposto il flag per segnalare che è arrivato un byte.
-        // Lo faccio incondizionatamente così il main/test loop può
-        // consumarlo (mettendo a 0) e attenderne uno nuovo (che lo rimetterà a 1).
-        flow_control_flag = 1;
-        
-
-        // Ri-arma l'interrupt per il prossimo byte
-        HAL_UART_Receive_IT(h, (uint8_t*) &rx_debug_byte, 1);
-
-        return;
-    }
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
-	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
 
-	if (huart->Instance == LPUART1) {
+	UART_HandleTypeDef *h = getComunicationHandler();
+
+	if (h != NULL && huart->Instance == h->Instance) {
+
+		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
+
+		errorReceiveFlag = 1;
 
 		uint32_t err = huart->ErrorCode;
 
-		PRINT_DBG("UART ERROR: ");
+		printMsg("UART ERROR: ");
 
 		if (err & HAL_UART_ERROR_ORE) {
-			PRINT_DBG("ORE ");
+			printMsg("ORE ");
 		}
 		if (err & HAL_UART_ERROR_FE) {
-			PRINT_DBG("FE ");
+			printMsg("FE ");
 		}
 		if (err & HAL_UART_ERROR_NE) {
-			PRINT_DBG("NE ");
+			printMsg("NE ");
 		}
 		if (err & HAL_UART_ERROR_PE) {
-			PRINT_DBG("PE ");
+			printMsg("PE ");
 		}
 
-		PRINT_DBG("\r\n");
+		printMsg("\r\n");
 
 		// --- recovery minimo indispensabile ---
 		__HAL_UART_CLEAR_OREFLAG(huart);
@@ -391,9 +379,9 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 		__HAL_UART_CLEAR_PEFLAG(huart);
 
 		HAL_UART_AbortReceive_IT(huart);
+
 	}
 }
-
 #include "pad_receiver.h"
 /**
   * @brief  Rx Transfer completed callback.

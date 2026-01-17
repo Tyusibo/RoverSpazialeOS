@@ -237,7 +237,8 @@ void StartPID(void *argument)
             Encoder_Update(&encoders[i]);
             current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
 
-            MotorControl_OpenLoopActuate(&motors[i]);
+            MotorControl_SetReferenceRPM(&motors[i], 30.0f);
+            MotorControl_Update(&motors[i], current_speed[i]);
         }
 
         Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
@@ -293,7 +294,7 @@ void StartSupervisor(void *argument)
 		// Stampa ogni 100 cicli
 		static uint32_t cycle_count = 0;
 		cycle_count++;
-		if (cycle_count >= 100) {
+		if (cycle_count >= 50) {
 			cycle_count = 0;
 			//printMsg("Supervisor Cycle End\r\n");ù
 			printGlobalState(&Board1_B.board1GlobalState);

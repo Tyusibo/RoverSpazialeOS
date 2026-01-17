@@ -176,6 +176,7 @@ int main(void)
 //	Board1_U.temperature = Temperature_UNKNOWN;
 
 
+
 	/* DRIVER INITIALIZATIONS */
 	led_init();
 
@@ -183,10 +184,43 @@ int main(void)
 	Encoders_StartAll();
 
 	Motors_InitAll();
+	Motors_StartAllPwm();
+	Motors_SetDefaultCcr(750);
 
 	temperature_sensor_init();
 	battery_sensor_init();
 
+
+//	while (1) {
+//		float current_speed[4] = { 2, 2, 2, 3 };
+//		// for sui motori
+//
+//		for (int i = 0; i < N_MOTORS; i++) {
+//			MotorControl_SetReferenceRPM(&motors[i], 30.0f);
+//			MotorControl_OpenLoopActuate(&motors[i]);
+//			Encoder_Update(&encoders[i]);
+//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+//			//printFloat(current_speed[i],2);
+//		}
+//		BUS_Speed sp = { current_speed[0], current_speed[1],
+//				current_speed[2], current_speed[3] };
+//		printMotorSpeeds(&sp);
+//		HAL_Delay(1000);
+//
+//        for (int i = 0; i < 2; i++) {
+//
+//            Encoder_Update(&encoders[i]);
+//            current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+//
+//            MotorControl_SetReferenceRPM(&motors[i], 30.0f);
+//            MotorControl_Update(&motors[i], current_speed[i]);
+//
+//            		BUS_Speed sp = { current_speed[0], current_speed[1],
+//            				current_speed[2], current_speed[3] };
+//            		printMotorSpeeds(&sp);
+//            HAL_Delay(20);
+//        }
+//	}
   /* USER CODE END 2 */
 
   /* Init scheduler */
