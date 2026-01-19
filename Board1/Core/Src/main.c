@@ -190,8 +190,10 @@ int main(void)
 	battery_sensor_init();
 
 	/* TESTS */
+
+
 	//float setPoint_test = 10.0f;
-	float setPoint_test[4] = {10.0f, 100.0f, -50.0f, -100.0f};
+	float setPoint_test[4] = {-40.0f, -40.0f, -40.0f, +40.0f};
 //		float setPoint_test[4] = {10.0f, 100.0f, 0.0f, 00.0f};
 //		float setPoint_test[4] = {0.0f, 0.0f, 100.0f, 10.0f};
 	float current_speed[4];
@@ -203,11 +205,11 @@ int main(void)
 
 	}
 
-//	int32_t cont = 0;
-//
-//	//test_open_loop(setPoint_test);
-//	// test_closed_loop(setPoint_test);
-//
+	int32_t cont = 0;
+
+	//test_open_loop(setPoint_test);
+	// test_closed_loop(setPoint_test);
+
 //		while (1) {
 //			// for sui motori
 //			for (int i = 0; i < 4; i++) {
@@ -225,7 +227,7 @@ int main(void)
 //
 //			// stampo solo quanto vale 8000 e poi resetto cont
 //			cont++;
-//			if (cont < 8000){
+//			if (cont < 800000){
 //				BUS_Speed sp = { current_speed[0], current_speed[1], current_speed[2], current_speed[3] };
 //				//BUS_Speed sp = { current_speed[0], current_speed[1], 0, 0 };
 //
@@ -239,10 +241,12 @@ int main(void)
 //
 //		}
 //
+//
 
 
+#define LOOP_PERIOD_MS  20
 
-#define LOOP_PERIOD_MS  5
+	PRINT_DBG("BEGIN TEST LOOP...\r\n");
 
 	uint32_t nextWakeTime = HAL_GetTick();
 	while (1) {
@@ -267,6 +271,8 @@ int main(void)
 			/* busy wait oppure __WFI(); */
 		}
 	}
+
+	/* FINE TESTS */
 
   /* USER CODE END 2 */
 

@@ -126,7 +126,7 @@ int MotorControl_Actuate(MotorControl *mc, float u_volt)
   int pulse = duty_percent_to_pulse(mc, duty);
 
   // Ricalibrazione Hardware-Specific passandogli l'oggetto mc
-  pulse = recalibrate_pulse(mc, pulse);
+  //pulse = recalibrate_pulse(mc, pulse);
 
   // (opzionale ma utile) clamp CCR in [0, ARR]
   if (pulse < 0) pulse = 0;
