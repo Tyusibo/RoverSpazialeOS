@@ -202,6 +202,7 @@ int main(void)
 
 
 		MotorControl_SetReferenceRPM(&motors[i], setPoint_test[i]);
+		MotorControl_SelectSlow(&motors[i], 1);
 
 	}
 
