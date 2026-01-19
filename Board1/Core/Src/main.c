@@ -105,58 +105,56 @@ void MX_FREERTOS_Init(void);
 /* USER CODE END 0 */
 
 /**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
+ * @brief  The application entry point.
+ * @retval int
+ */
+int main(void) {
 
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 	/* 1. Abilita l'accesso ai registri di Trace (TRCENA) */
-	  DEMCR |= TRCENA;
+	DEMCR |= TRCENA;
 
-	  /* 2. Reset del contatore cicli a 0 */
-	  DWT_CYCCNT = 0;
+	/* 2. Reset del contatore cicli a 0 */
+	DWT_CYCCNT = 0;
 
-	  /* 3. Abilita il contatore dei cicli (CYCCNTENA) */
-	  DWT_CTRL |= DWT_CYCCNTENA;
+	/* 3. Abilita il contatore dei cicli (CYCCNTENA) */
+	DWT_CTRL |= DWT_CYCCNTENA;
 
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_LPUART1_UART_Init();
-  MX_USART2_UART_Init();
-  MX_CRC_Init();
-  MX_TIM2_Init();
-  MX_TIM3_Init();
-  MX_TIM4_Init();
-  MX_TIM8_Init();
-  MX_ADC2_Init();
-  MX_ADC1_Init();
-  MX_TIM1_Init();
-  /* USER CODE BEGIN 2 */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_LPUART1_UART_Init();
+	MX_USART2_UART_Init();
+	MX_CRC_Init();
+	MX_TIM2_Init();
+	MX_TIM3_Init();
+	MX_TIM4_Init();
+	MX_TIM8_Init();
+	MX_ADC2_Init();
+	MX_ADC1_Init();
+	MX_TIM1_Init();
+	/* USER CODE BEGIN 2 */
 
 	DWT_Init();
 
 	setComunicationHandler(&hlpuart1);
-
 
 #if VERBOSE_DEBUG
 
@@ -165,7 +163,6 @@ int main(void)
 	PRINT_DBG("BEGIN B1 INIT...\r\n");
 #endif
 
-
 	// Init Simulink Model
 	Board1_initialize();
 	Board1_U.speed = (BUS_Speed ) { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -173,8 +170,6 @@ int main(void)
 	Board1_U.temperature = 30.0f;
 //	Board1_U.batteryLevel = BatteryLevel_UNKNOWN;
 //	Board1_U.temperature = Temperature_UNKNOWN;
-
-
 
 	/* DRIVER INITIALIZATIONS */
 	led_init();
@@ -189,152 +184,126 @@ int main(void)
 	temperature_sensor_init();
 	battery_sensor_init();
 
-	/* TESTS */
-
-
-	//float setPoint_test = 10.0f;
-	float setPoint_test[4] = {-40.0f, -40.0f, -40.0f, +40.0f};
-//		float setPoint_test[4] = {10.0f, 100.0f, 0.0f, 00.0f};
-//		float setPoint_test[4] = {0.0f, 0.0f, 100.0f, 10.0f};
-	float current_speed[4];
-
-	for (int i = 0; i < 4; i++) {
-
-
-		MotorControl_SetReferenceRPM(&motors[i], setPoint_test[i]);
-		MotorControl_SelectSlow(&motors[i], 1);
-
-	}
-
-	int32_t cont = 0;
-
-	//test_open_loop(setPoint_test);
-	// test_closed_loop(setPoint_test);
-
-//		while (1) {
-//			// for sui motori
-//			for (int i = 0; i < 4; i++) {
+//	/* TEST SEQUENCE */
 //
-//				Encoder_Update(&encoders[i]);
-//				current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-//				// se i vale 2 o 3 inverti il segno di current_speed
-////				if (i == 2 || i == 3) current_speed[i] = -current_speed[i];
+//	float setPoint_test[4] = { -40.0f, -40.0f, -40.0f, +40.0f };
+//	float current_speed[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 //
-//				MotorControl_OpenLoopActuate(&motors[i]);
+//	for (int i = 0; i < 4; i++) {
+//		MotorControl_SetReferenceRPM(&motors[i], setPoint_test[i]);
+//		MotorControl_SelectSlow(&motors[i], 0);
+//	}
 //
-//			}
+//	/* OPEN LOOP TEST */
 //
+//	int32_t cont = 0;
 //
+//	while (1) {
+//		for (int i = 0; i < 4; i++) {
 //
-//			// stampo solo quanto vale 8000 e poi resetto cont
-//			cont++;
-//			if (cont < 800000){
-//				BUS_Speed sp = { current_speed[0], current_speed[1], current_speed[2], current_speed[3] };
-//				//BUS_Speed sp = { current_speed[0], current_speed[1], 0, 0 };
-//
-//				//BUS_Speed sp = {0 , 0, current_speed[2], current_speed[3] };
-//
-//
-//				printMotorSpeeds(&sp);
-//
-//				cont = 0;
-//			}
+//			Encoder_Update(&encoders[i]);
+//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+//			MotorControl_OpenLoopActuate(&motors[i]);
 //
 //		}
 //
+//		cont++;
+//		if (cont < 800000) {
+//			BUS_Speed sp = { current_speed[0], current_speed[1],
+//					current_speed[2], current_speed[3] };
 //
+//			printMotorSpeeds(&sp);
+//
+//			cont = 0;
+//		}
+//
+//	}
+//
+//	/* END TEST LOOP */
 
+//	/* CLOSED LOOP TEST */
+//#define LOOP_PERIOD_MS  20
+//
+//	PRINT_DBG("BEGIN TEST LOOP...\r\n");
+//
+//	uint32_t nextWakeTime = HAL_GetTick();
+//	while (1) {
+//		for (int i = 0; i < 4; i++) {
+//
+//			Encoder_Update(&encoders[i]);
+//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+//
+//			MotorControl_Update(&motors[i], current_speed[i]);
+//
+//		}
+//
+//		BUS_Speed sp = { current_speed[0], current_speed[1], current_speed[2],
+//				current_speed[3] };
+//
+//		nextWakeTime += LOOP_PERIOD_MS;
+//		while (HAL_GetTick() < nextWakeTime) {
+//			/* busy wait oppure __WFI(); */
+//		}
+//	}
+//	/* END TEST SEQUENCE */
 
-#define LOOP_PERIOD_MS  20
+	/* USER CODE END 2 */
 
-	PRINT_DBG("BEGIN TEST LOOP...\r\n");
+	/* Init scheduler */
+	osKernelInitialize(); /* Call init function for freertos objects (in cmsis_os2.c) */
+	MX_FREERTOS_Init();
 
-	uint32_t nextWakeTime = HAL_GetTick();
+	/* Start scheduler */
+	osKernelStart();
+
+	/* We should never get here as control is now taken by the scheduler */
+
+	/* Infinite loop */
+	/* USER CODE BEGIN WHILE */
 	while (1) {
-		for (int i = 0; i < 4; i++) {
+		/* USER CODE END WHILE */
 
-			Encoder_Update(&encoders[i]);
-			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-
-
-			MotorControl_Update(&motors[i], current_speed[i]);
-
-//				printFloat(current_speed[i], 2);
-//				printNewLine();
-		}
-
-		BUS_Speed sp = { current_speed[0], current_speed[1],
-				current_speed[2], current_speed[3] };
-		//printMotorSpeeds(&sp);
-
-		nextWakeTime += LOOP_PERIOD_MS;
-		while (HAL_GetTick() < nextWakeTime) {
-			/* busy wait oppure __WFI(); */
-		}
-	}
-
-	/* FINE TESTS */
-
-  /* USER CODE END 2 */
-
-  /* Init scheduler */
-  osKernelInitialize();  /* Call init function for freertos objects (in cmsis_os2.c) */
-  MX_FREERTOS_Init();
-
-  /* Start scheduler */
-  osKernelStart();
-
-  /* We should never get here as control is now taken by the scheduler */
-
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-	while (1) {
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+		/* USER CODE BEGIN 3 */
 
 	}
-  /* USER CODE END 3 */
+	/* USER CODE END 3 */
 }
 
 /**
-  * @brief System Clock Configuration
-  * @retval None
-  */
-void SystemClock_Config(void)
-{
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+ * @brief System Clock Configuration
+ * @retval None
+ */
+void SystemClock_Config(void) {
+	RCC_OscInitTypeDef RCC_OscInitStruct = { 0 };
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = { 0 };
 
-  /** Configure the main internal regulator output voltage
-  */
-  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+	/** Configure the main internal regulator output voltage
+	 */
+	HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	/** Initializes the RCC Oscillators according to the specified parameters
+	 * in the RCC_OscInitTypeDef structure.
+	 */
+	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+	RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+		Error_Handler();
+	}
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+	/** Initializes the CPU, AHB and APB buses clocks
+	 */
+	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
-  {
-    Error_Handler();
-  }
+	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK) {
+		Error_Handler();
+	}
 }
 
 /* USER CODE BEGIN 4 */
@@ -377,39 +346,36 @@ extern volatile unsigned long ulHighFrequencyTimerTicks; // Aggiungi se non visi
 /* USER CODE END 4 */
 
 /**
-  * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM6 interrupt took place, inside
-  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
-  * a global variable "uwTick" used as application time base.
-  * @param  htim : TIM handle
-  * @retval None
-  */
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* USER CODE BEGIN Callback 0 */
+ * @brief  Period elapsed callback in non blocking mode
+ * @note   This function is called  when TIM6 interrupt took place, inside
+ * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+ * a global variable "uwTick" used as application time base.
+ * @param  htim : TIM handle
+ * @retval None
+ */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+	/* USER CODE BEGIN Callback 0 */
 
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM6)
-  {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
+	/* USER CODE END Callback 0 */
+	if (htim->Instance == TIM6) {
+		HAL_IncTick();
+	}
+	/* USER CODE BEGIN Callback 1 */
 
-  /* USER CODE END Callback 1 */
+	/* USER CODE END Callback 1 */
 }
 
 /**
-  * @brief  This function is executed in case of error occurrence.
-  * @retval None
-  */
-void Error_Handler(void)
-{
-  /* USER CODE BEGIN Error_Handler_Debug */
+ * @brief  This function is executed in case of error occurrence.
+ * @retval None
+ */
+void Error_Handler(void) {
+	/* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();
 	while (1) {
 	}
-  /* USER CODE END Error_Handler_Debug */
+	/* USER CODE END Error_Handler_Debug */
 }
 #ifdef USE_FULL_ASSERT
 /**

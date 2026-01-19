@@ -62,7 +62,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define REAL_TASK 0 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
+#define REAL_TASK 1 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
 
 /* USER CODE END PD */
 
@@ -225,18 +225,18 @@ void StartPID(void *argument)
     const uint32_t T = ms_to_ticks(T_PID);
     uint32_t next = osKernelGetTickCount();
 
-    float current_speed[4] = { 2, 2, 2, 3 };
+    float current_speed[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
+    Board1_Y.setPoint.leftAxis = 0;
+    Board1_Y.setPoint.rightAxis = 0;
+    change_set_point();
 
     /* Infinite loop */
     for (;;) {
 #if REAL_TASK
         for (int i = 0; i < 4; i++) {
-
             Encoder_Update(&encoders[i]);
             current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-
-            MotorControl_SetReferenceRPM(&motors[i], 30.0f);
             MotorControl_Update(&motors[i], current_speed[i]);
         }
 
@@ -247,7 +247,6 @@ void StartPID(void *argument)
 #endif
 
         periodic_wait(&next, T);
-
     }
 
     osThreadTerminate(osThreadGetId());
@@ -271,8 +270,6 @@ void StartSupervisor(void *argument)
 	uint32_t next = osKernelGetTickCount();
 
 	Board1_U.speed = (BUS_Speed ) { 0.0f, 0.0f, 0.0f, 0.0f };
-
-
 	/* Infinite loop */
 	for (;;) {
 
@@ -298,8 +295,7 @@ void StartSupervisor(void *argument)
 			//printMsg("Supervisor Cycle End\r\n");ù
 			printGlobalState(&Board1_B.board1GlobalState);
 		}
-		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
-
+		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 		//osDelay(20);
 		periodic_wait(&next, T);
 
@@ -327,7 +323,6 @@ void StartReadTemperature(void *argument)
     /* Infinite loop */
     for (;;) {
 #if REAL_TASK
-        //Board1_U.temperature = (Temperature) temp_ky028_read_temperature_avg(&temp_sensor, 5);
         Board1_U.temperature = (Temperature) temp_ky028_read_temperature(
                 &temp_sensor);
 #else
@@ -442,8 +437,8 @@ static inline void actuate_red_leds(void) {
 
 static inline void change_set_point(void)
 {
-    const float left  = Board1_Y.setPoint.leftAxis;
-    const float right = Board1_Y.setPoint.rightAxis;
+    const float left  = Board1_DW.board1Decision.setPoint.leftAxis;
+    const float right = Board1_DW.board1Decision.setPoint.rightAxis;
 
     MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_LEFT],  left);
     MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_LEFT],   left);
