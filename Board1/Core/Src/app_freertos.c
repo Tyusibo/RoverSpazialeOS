@@ -50,7 +50,6 @@
 
 /* TEST */
 #include "lights_test.h"
-#include "motors_test.h"
 
 /* USER CODE END Includes */
 
@@ -441,17 +440,17 @@ static inline void actuate_red_leds(void) {
 }
 
 
-static inline void change_set_point(void)
-{
-    const float left  = Board1_Y.setPoint.leftAxis;
-    const float right = Board1_Y.setPoint.rightAxis;
-
-    MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_LEFT],  left);
-    MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_LEFT],   left);
-
-    MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_RIGHT], right);
-    MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_RIGHT],  right);
-}
+//static inline void change_set_point(void)
+//{
+//    const float left  = Board1_Y.setPoint.leftAxis;
+//    const float right = Board1_Y.setPoint.rightAxis;
+//
+//    MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_LEFT],  left);
+//    MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_LEFT],   left);
+//
+//    MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_RIGHT], right);
+//    MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_RIGHT],  right);
+//}
 
 static inline void change_regulator(void)
 {

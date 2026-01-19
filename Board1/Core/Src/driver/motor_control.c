@@ -43,6 +43,8 @@ void MotorControl_Init(
   float min_volt, float max_volt,
   float in_min, float in_max, float out_min, float out_max,
   float dc_gain, 
+  float pulse_theo_min, float pulse_theo_max, 
+  float pulse_real_min, float pulse_real_max,
   Coefficients pi_fast, Coefficients pi_slow
 )
 {
@@ -58,7 +60,11 @@ void MotorControl_Init(
   mc->out_max = out_max;
   
   mc->dc_gain = dc_gain; 
-
+  
+  mc->pulse_theo_min = pulse_theo_min;
+  mc->pulse_theo_max = pulse_theo_max;
+  mc->pulse_real_min = pulse_real_min;
+  mc->pulse_real_max = pulse_real_max;
 
   mc->pi_fast = pi_fast;
   mc->pi_slow = pi_slow;
@@ -103,11 +109,24 @@ float MotorControl_ComputeU(MotorControl *mc, float speed_rpm)
   return sat;
 }
 
+/* Funzione di ricalibrazione empirica statica basata sui dati dell'istanza */
+static int recalibrate_pulse(const MotorControl *mc, int pulse_theoretical)
+{
+    // Utilizza la funzione generica map_linear con i parametri della struct
+    float pulse_corrected = map_linear((float)pulse_theoretical, 
+                                       mc->pulse_theo_min, mc->pulse_theo_max, 
+                                       mc->pulse_real_min, mc->pulse_real_max);
+
+    return (int)roundf(pulse_corrected);
+}
 
 int MotorControl_Actuate(MotorControl *mc, float u_volt)
 {
   float duty = volt_to_duty_percent(mc, u_volt);
   int pulse = duty_percent_to_pulse(mc, duty);
+
+  // Ricalibrazione Hardware-Specific passandogli l'oggetto mc
+  pulse = recalibrate_pulse(mc, pulse);
 
   // (opzionale ma utile) clamp CCR in [0, ARR]
   if (pulse < 0) pulse = 0;

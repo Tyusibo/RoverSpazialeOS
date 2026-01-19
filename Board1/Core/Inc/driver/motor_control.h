@@ -29,6 +29,12 @@ typedef struct {
   // --- Parametri Open Loop ---
   float dc_gain; // Guadagno statico k (RPM/V) specifico per il motore
 
+  // --- Parametri Calibrazione Pulse (Hardware Specific) ---
+  float pulse_theo_min;
+  float pulse_theo_max;
+  float pulse_real_min;
+  float pulse_real_max;
+
   // --- Regolatori ---
   Coefficients pi_fast;
   Coefficients pi_slow;
@@ -52,6 +58,8 @@ void MotorControl_Init(
   float min_volt, float max_volt,
   float in_min, float in_max, float out_min, float out_max,
   float dc_gain, 
+  float pulse_theo_min, float pulse_theo_max, 
+  float pulse_real_min, float pulse_real_max,
   Coefficients pi_fast, Coefficients pi_slow
 );
 

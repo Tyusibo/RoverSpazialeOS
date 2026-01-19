@@ -51,7 +51,6 @@
 
 /* TEST */
 #include "lights_test.h"
-#include "motors_test.h"
 
 /* USER CODE END Includes */
 
@@ -190,37 +189,85 @@ int main(void)
 	temperature_sensor_init();
 	battery_sensor_init();
 
+	/* TESTS */
+	//float setPoint_test = 10.0f;
+	float setPoint_test[4] = {10.0f, 100.0f, -50.0f, -100.0f};
+//		float setPoint_test[4] = {10.0f, 100.0f, 0.0f, 00.0f};
+//		float setPoint_test[4] = {0.0f, 0.0f, 100.0f, 10.0f};
+	float current_speed[4];
 
-//	while (1) {
-//		float current_speed[4] = { 2, 2, 2, 3 };
-//		// for sui motori
+	for (int i = 0; i < 4; i++) {
+
+
+		MotorControl_SetReferenceRPM(&motors[i], setPoint_test[i]);
+
+	}
+
+//	int32_t cont = 0;
 //
-//		for (int i = 0; i < N_MOTORS; i++) {
-//			MotorControl_SetReferenceRPM(&motors[i], 30.0f);
-//			MotorControl_OpenLoopActuate(&motors[i]);
-//			Encoder_Update(&encoders[i]);
-//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-//			//printFloat(current_speed[i],2);
+//	//test_open_loop(setPoint_test);
+//	// test_closed_loop(setPoint_test);
+//
+//		while (1) {
+//			// for sui motori
+//			for (int i = 0; i < 4; i++) {
+//
+//				Encoder_Update(&encoders[i]);
+//				current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+//				// se i vale 2 o 3 inverti il segno di current_speed
+////				if (i == 2 || i == 3) current_speed[i] = -current_speed[i];
+//
+//				MotorControl_OpenLoopActuate(&motors[i]);
+//
+//			}
+//
+//
+//
+//			// stampo solo quanto vale 8000 e poi resetto cont
+//			cont++;
+//			if (cont < 8000){
+//				BUS_Speed sp = { current_speed[0], current_speed[1], current_speed[2], current_speed[3] };
+//				//BUS_Speed sp = { current_speed[0], current_speed[1], 0, 0 };
+//
+//				//BUS_Speed sp = {0 , 0, current_speed[2], current_speed[3] };
+//
+//
+//				printMotorSpeeds(&sp);
+//
+//				cont = 0;
+//			}
+//
 //		}
-//		BUS_Speed sp = { current_speed[0], current_speed[1],
-//				current_speed[2], current_speed[3] };
-//		printMotorSpeeds(&sp);
-//		HAL_Delay(1000);
 //
-//        for (int i = 0; i < 2; i++) {
-//
-//            Encoder_Update(&encoders[i]);
-//            current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-//
-//            MotorControl_SetReferenceRPM(&motors[i], 30.0f);
-//            MotorControl_Update(&motors[i], current_speed[i]);
-//
-//            		BUS_Speed sp = { current_speed[0], current_speed[1],
-//            				current_speed[2], current_speed[3] };
-//            		printMotorSpeeds(&sp);
-//            HAL_Delay(20);
-//        }
-//	}
+
+
+
+#define LOOP_PERIOD_MS  5
+
+	uint32_t nextWakeTime = HAL_GetTick();
+	while (1) {
+		for (int i = 0; i < 4; i++) {
+
+			Encoder_Update(&encoders[i]);
+			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+
+
+			MotorControl_Update(&motors[i], current_speed[i]);
+
+//				printFloat(current_speed[i], 2);
+//				printNewLine();
+		}
+
+		BUS_Speed sp = { current_speed[0], current_speed[1],
+				current_speed[2], current_speed[3] };
+		//printMotorSpeeds(&sp);
+
+		nextWakeTime += LOOP_PERIOD_MS;
+		while (HAL_GetTick() < nextWakeTime) {
+			/* busy wait oppure __WFI(); */
+		}
+	}
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
