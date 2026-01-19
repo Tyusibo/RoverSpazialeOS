@@ -74,6 +74,10 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 volatile unsigned long ulHighFrequencyTimerTicks = 0;
+volatile uint32_t MissPID = 0;
+volatile uint32_t MissSupervisor = 0;
+volatile uint32_t MissReadTemperature = 0;
+volatile uint32_t MissReadBattery = 0;
 /* USER CODE END Variables */
 /* Definitions for PID */
 osThreadId_t PIDHandle;
@@ -246,7 +250,8 @@ void StartPID(void *argument)
         HAL_Delay(C_PID);
 #endif
 
-        periodic_wait(&next, T);
+        if (periodic_wait(&next, T))
+            MissPID++;
     }
 
     osThreadTerminate(osThreadGetId());
@@ -268,14 +273,20 @@ void StartSupervisor(void *argument)
   /* USER CODE BEGIN StartSupervisor */
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
+	uint32_t wait_start;
+
 
 	Board1_U.speed = (BUS_Speed ) { 0.0f, 0.0f, 0.0f, 0.0f };
 	/* Infinite loop */
 	for (;;) {
 
 		//printMsg("Supervisor Cycle Start\r\n");
-
+		wait_start = osKernelGetTickCount();
 		do {
+			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(50)) {
+				printLabel("Supervisor timeout!");
+				break;
+			}
 			Board1_step();
 		} while (Board1_DW.is_ExchangeDecision != Board1_IN_Execution);
 
@@ -287,18 +298,30 @@ void StartSupervisor(void *argument)
 		change_set_point();
 		change_regulator();
 
-		// Stampa ogni 100 cicli
+		// Stampa ogni 50 cicli
 		static uint32_t cycle_count = 0;
 		cycle_count++;
 		if (cycle_count >= 50) {
 			cycle_count = 0;
 			//printMsg("Supervisor Cycle End\r\n");ù
 			printGlobalState(&Board1_B.board1GlobalState);
+
+            printLabel("Miss PID:");
+            printInt(MissPID);
+            printNewLine();
+            printLabel("Miss Sup:");
+            printInt(MissSupervisor);
+            printNewLine();
+            printLabel("Miss Temp:");
+            printInt(MissReadTemperature);
+            printNewLine();
+            printLabel("Miss Batt:");
+            printInt(MissReadBattery);
+            printNewLine();
 		}
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
-		//osDelay(20);
-		periodic_wait(&next, T);
-
+		if (periodic_wait(&next, T))
+			MissSupervisor++;
 	}
 
 	osThreadTerminate(osThreadGetId());
@@ -329,7 +352,8 @@ void StartReadTemperature(void *argument)
         HAL_Delay(C_TEMPERATURE);
 #endif
 
-        periodic_wait(&next, T);
+        if (periodic_wait(&next, T))
+            MissReadTemperature++;
     }
 
     osThreadTerminate(osThreadGetId());
@@ -360,7 +384,8 @@ void StartReadBattery(void *argument)
         HAL_Delay(C_BATTERY);
 #endif
 
-        periodic_wait(&next, T);
+        if (periodic_wait(&next, T))
+            MissReadBattery++;
     }
 
     osThreadTerminate(osThreadGetId());
@@ -413,6 +438,12 @@ static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks) {
 		// HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
 		return 1;
 	}
+
+//Penso sia migliore così. Se perdo un ciclo, mi riallineo al prossimo periodo
+//	if ((int32_t)(now - *next_release) > 0) {
+//	    *next_release = now + period_ticks;
+//	    return 1;
+//	}
 
 	/* Sleep assoluta fino al prossimo periodo */
 	osDelayUntil(*next_release);

@@ -51,6 +51,7 @@
 
 /* TEST */
 #include "lights_test.h"
+//#include "motors_test.h"
 
 /* USER CODE END Includes */
 
@@ -179,73 +180,59 @@ int main(void) {
 
 	Motors_InitAll();
 	Motors_StartAllPwm();
-	Motors_SetDefaultCcr(750);
+	Motors_SetDefaultCcr(757);
 
 	temperature_sensor_init();
 	battery_sensor_init();
 
-//	/* TEST SEQUENCE */
-//
-//	float setPoint_test[4] = { -40.0f, -40.0f, -40.0f, +40.0f };
-//	float current_speed[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-//
-//	for (int i = 0; i < 4; i++) {
-//		MotorControl_SetReferenceRPM(&motors[i], setPoint_test[i]);
-//		MotorControl_SelectSlow(&motors[i], 0);
-//	}
-//
-//	/* OPEN LOOP TEST */
-//
-//	int32_t cont = 0;
-//
-//	while (1) {
-//		for (int i = 0; i < 4; i++) {
-//
-//			Encoder_Update(&encoders[i]);
-//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-//			MotorControl_OpenLoopActuate(&motors[i]);
-//
-//		}
-//
-//		cont++;
-//		if (cont < 800000) {
-//			BUS_Speed sp = { current_speed[0], current_speed[1],
-//					current_speed[2], current_speed[3] };
-//
-//			printMotorSpeeds(&sp);
-//
-//			cont = 0;
-//		}
-//
-//	}
-//
-//	/* END TEST LOOP */
+	//float current_speed[4] = { 1, 2, 3, 4 };
 
-//	/* CLOSED LOOP TEST */
-//#define LOOP_PERIOD_MS  20
-//
-//	PRINT_DBG("BEGIN TEST LOOP...\r\n");
-//
-//	uint32_t nextWakeTime = HAL_GetTick();
+	float current_speed[4] = { 0, 0, 0, 0 };
 //	while (1) {
-//		for (int i = 0; i < 4; i++) {
 //
+//		// for sui motori
+//
+//		for (int i = 0; i < N_MOTORS; i++) {
+//			MotorControl_SetReferenceRPM(&motors[i], 0.0f);
+//			MotorControl_OpenLoopActuate(&motors[i]);
 //			Encoder_Update(&encoders[i]);
 //			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-//
-//			MotorControl_Update(&motors[i], current_speed[i]);
-//
 //		}
-//
 //		BUS_Speed sp = { current_speed[0], current_speed[1], current_speed[2],
 //				current_speed[3] };
+//		printMotorSpeeds(&sp);
+//		HAL_Delay(1000);
 //
-//		nextWakeTime += LOOP_PERIOD_MS;
-//		while (HAL_GetTick() < nextWakeTime) {
-//			/* busy wait oppure __WFI(); */
-//		}
 //	}
-//	/* END TEST SEQUENCE */
+//
+#define LOOP_PERIOD_MS  10
+
+uint32_t nextWakeTime = HAL_GetTick();
+
+while (1)
+{
+    for (int i = 0; i < 4; i++) {
+
+        Encoder_Update(&encoders[i]);
+        current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+
+        MotorControl_SetReferenceRPM(&motors[i], 0.0f);
+        MotorControl_Update(&motors[i], current_speed[i]);
+    }
+
+    BUS_Speed sp = {
+        current_speed[0],
+        current_speed[1],
+        current_speed[2],
+        current_speed[3]
+    };
+    printMotorSpeeds(&sp);
+
+    nextWakeTime += LOOP_PERIOD_MS;
+    while (HAL_GetTick() < nextWakeTime) {
+        /* busy wait oppure __WFI(); */
+    }
+}
 
 	/* USER CODE END 2 */
 

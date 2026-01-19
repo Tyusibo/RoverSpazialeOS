@@ -58,67 +58,58 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 uint32_t cycles;
+volatile uint32_t MissReadController = 0;
+volatile uint32_t MissReadGyroscope = 0;
+volatile uint32_t MissSupervisor = 0;
+volatile uint32_t MissReadSonars = 0;
 /* USER CODE END Variables */
 /* Definitions for ReadController */
 osThreadId_t ReadControllerHandle;
-uint32_t ReadControllerBuffer[ 1024 ];
+uint32_t ReadControllerBuffer[1024];
 osStaticThreadDef_t ReadControllerControlBlock;
-const osThreadAttr_t ReadController_attributes = {
-  .name = "ReadController",
-  .stack_mem = &ReadControllerBuffer[0],
-  .stack_size = sizeof(ReadControllerBuffer),
-  .cb_mem = &ReadControllerControlBlock,
-  .cb_size = sizeof(ReadControllerControlBlock),
-  .priority = (osPriority_t) osPriorityHigh,
-};
+const osThreadAttr_t ReadController_attributes = { .name = "ReadController",
+		.stack_mem = &ReadControllerBuffer[0], .stack_size =
+				sizeof(ReadControllerBuffer), .cb_mem =
+				&ReadControllerControlBlock, .cb_size =
+				sizeof(ReadControllerControlBlock), .priority =
+				(osPriority_t) osPriorityHigh, };
 /* Definitions for ReadGyroscope */
 osThreadId_t ReadGyroscopeHandle;
-uint32_t ReadGyroscopeBuffer[ 1024 ];
+uint32_t ReadGyroscopeBuffer[1024];
 osStaticThreadDef_t ReadGyroscopeControlBlock;
-const osThreadAttr_t ReadGyroscope_attributes = {
-  .name = "ReadGyroscope",
-  .stack_mem = &ReadGyroscopeBuffer[0],
-  .stack_size = sizeof(ReadGyroscopeBuffer),
-  .cb_mem = &ReadGyroscopeControlBlock,
-  .cb_size = sizeof(ReadGyroscopeControlBlock),
-  .priority = (osPriority_t) osPriorityAboveNormal,
-};
+const osThreadAttr_t ReadGyroscope_attributes = { .name = "ReadGyroscope",
+		.stack_mem = &ReadGyroscopeBuffer[0], .stack_size =
+				sizeof(ReadGyroscopeBuffer), .cb_mem =
+				&ReadGyroscopeControlBlock, .cb_size =
+				sizeof(ReadGyroscopeControlBlock), .priority =
+				(osPriority_t) osPriorityAboveNormal, };
 /* Definitions for Supervisor */
 osThreadId_t SupervisorHandle;
-uint32_t SupervisorBuffer[ 1024 ];
+uint32_t SupervisorBuffer[1024];
 osStaticThreadDef_t SupervisorControlBlock;
-const osThreadAttr_t Supervisor_attributes = {
-  .name = "Supervisor",
-  .stack_mem = &SupervisorBuffer[0],
-  .stack_size = sizeof(SupervisorBuffer),
-  .cb_mem = &SupervisorControlBlock,
-  .cb_size = sizeof(SupervisorControlBlock),
-  .priority = (osPriority_t) osPriorityNormal,
-};
+const osThreadAttr_t Supervisor_attributes = { .name = "Supervisor",
+		.stack_mem = &SupervisorBuffer[0], .stack_size =
+				sizeof(SupervisorBuffer), .cb_mem = &SupervisorControlBlock,
+		.cb_size = sizeof(SupervisorControlBlock), .priority =
+				(osPriority_t) osPriorityNormal, };
 /* Definitions for ReadSonars */
 osThreadId_t ReadSonarsHandle;
-uint32_t ReadSonarsBuffer[ 1024 ];
+uint32_t ReadSonarsBuffer[1024];
 osStaticThreadDef_t ReadSonarsControlBlock;
-const osThreadAttr_t ReadSonars_attributes = {
-  .name = "ReadSonars",
-  .stack_mem = &ReadSonarsBuffer[0],
-  .stack_size = sizeof(ReadSonarsBuffer),
-  .cb_mem = &ReadSonarsControlBlock,
-  .cb_size = sizeof(ReadSonarsControlBlock),
-  .priority = (osPriority_t) osPriorityLow,
-};
+const osThreadAttr_t ReadSonars_attributes = { .name = "ReadSonars",
+		.stack_mem = &ReadSonarsBuffer[0], .stack_size =
+				sizeof(ReadSonarsBuffer), .cb_mem = &ReadSonarsControlBlock,
+		.cb_size = sizeof(ReadSonarsControlBlock), .priority =
+				(osPriority_t) osPriorityLow, };
 /* Definitions for StartSegger */
 osThreadId_t StartSeggerHandle;
-uint32_t StartSeggerBuffer[ 128 ];
+uint32_t StartSeggerBuffer[128];
 osStaticThreadDef_t StartSeggerControlBlock;
-const osThreadAttr_t StartSegger_attributes = {
-  .name = "StartSegger",
-  .stack_mem = &StartSeggerBuffer[0],
-  .stack_size = sizeof(StartSeggerBuffer),
-  .cb_mem = &StartSeggerControlBlock,
-  .cb_size = sizeof(StartSeggerControlBlock),
-  .priority = (osPriority_t) osPriorityHigh1,
-};
+const osThreadAttr_t StartSegger_attributes = { .name = "StartSegger",
+		.stack_mem = &StartSeggerBuffer[0], .stack_size =
+				sizeof(StartSeggerBuffer), .cb_mem = &StartSeggerControlBlock,
+		.cb_size = sizeof(StartSeggerControlBlock), .priority =
+				(osPriority_t) osPriorityHigh1, };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -137,54 +128,59 @@ void StartSeggerTask(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
 void MX_FREERTOS_Init(void) {
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* USER CODE BEGIN RTOS_MUTEX */
+	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
+	/* USER CODE END RTOS_MUTEX */
 
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
+	/* USER CODE END RTOS_SEMAPHORES */
 
-  /* USER CODE BEGIN RTOS_TIMERS */
+	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
+	/* USER CODE END RTOS_TIMERS */
 
-  /* USER CODE BEGIN RTOS_QUEUES */
+	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
+	/* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* creation of ReadController */
-  ReadControllerHandle = osThreadNew(StartReadController, NULL, &ReadController_attributes);
+	/* Create the thread(s) */
+	/* creation of ReadController */
+	ReadControllerHandle = osThreadNew(StartReadController, NULL,
+			&ReadController_attributes);
 
-  /* creation of ReadGyroscope */
-  ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL, &ReadGyroscope_attributes);
+	/* creation of ReadGyroscope */
+	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
+			&ReadGyroscope_attributes);
 
-  /* creation of Supervisor */
-  SupervisorHandle = osThreadNew(StartSupervisor, NULL, &Supervisor_attributes);
+	/* creation of Supervisor */
+	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
+			&Supervisor_attributes);
 
-  /* creation of ReadSonars */
-  ReadSonarsHandle = osThreadNew(StartReadSonars, NULL, &ReadSonars_attributes);
+	/* creation of ReadSonars */
+	ReadSonarsHandle = osThreadNew(StartReadSonars, NULL,
+			&ReadSonars_attributes);
 
-  /* creation of StartSegger */
-  StartSeggerHandle = osThreadNew(StartSeggerTask, NULL, &StartSegger_attributes);
+	/* creation of StartSegger */
+	StartSeggerHandle = osThreadNew(StartSeggerTask, NULL,
+			&StartSegger_attributes);
 
-  /* USER CODE BEGIN RTOS_THREADS */
+	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
+	/* USER CODE END RTOS_THREADS */
 
-  /* USER CODE BEGIN RTOS_EVENTS */
+	/* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
+	/* USER CODE END RTOS_EVENTS */
 
 }
 
@@ -195,24 +191,29 @@ void MX_FREERTOS_Init(void) {
  * @retval None
  */
 /* USER CODE END Header_StartReadController */
-void StartReadController(void *argument)
-{
-  /* USER CODE BEGIN StartReadController */
+void StartReadController(void *argument) {
+	/* USER CODE BEGIN StartReadController */
 	const uint32_t T = ms_to_ticks(T_REMOTE_CONTROLLER);
 	uint32_t next = osKernelGetTickCount();
+	uint32_t wait_start;
+
 	/* Infinite loop */
 	for (;;) {
 #if REAL_TASK
-        uint8_t status = PadReceiver_Request();
+		uint8_t status = PadReceiver_Request();
 
-        if (status == 0) {
+		if (status == 0) {
 //			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
 //			break;         // Riprova
-        }
+		}
 
-        while (!PadReceiver_IsDone()) {
-            // attesa attiva
-        };
+		wait_start = osKernelGetTickCount();
+		while (!PadReceiver_IsDone()) {
+			// attesa attiva con timeout
+			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(5)) {
+				break;
+			}
+		};
 
 		// Trasferisce i dati dal buffer del driver alla struttura locale
 		// La struttura locale del modello Simulink è copiata all'interno di uno stato locale
@@ -223,11 +224,12 @@ void StartReadController(void *argument)
 		HAL_Delay(C_CONTROLLER);
 #endif
 
-		periodic_wait_no_led(&next, T);
+		if (periodic_wait_no_led(&next, T))
+			MissReadController++;
 	}
 
 	osThreadTerminate(osThreadGetId());
-  /* USER CODE END StartReadController */
+	/* USER CODE END StartReadController */
 }
 
 /* USER CODE BEGIN Header_StartReadGyroscope */
@@ -238,11 +240,12 @@ extern MPU6050_Yaw_t MPU6050_Yaw;
  * @retval None
  */
 /* USER CODE END Header_StartReadGyroscope */
-void StartReadGyroscope(void *argument)
-{
-  /* USER CODE BEGIN StartReadGyroscope */
+void StartReadGyroscope(void *argument) {
+	/* USER CODE BEGIN StartReadGyroscope */
 	const uint32_t T = ms_to_ticks(T_GYROSCOPE); // T_GYROSCOPE
 	uint32_t next = osKernelGetTickCount();
+	uint32_t wait_start;
+
 	/* Infinite loop */
 	for (;;) {
 
@@ -254,8 +257,12 @@ void StartReadGyroscope(void *argument)
 //			break;         // Riprova
 		}
 
+		wait_start = osKernelGetTickCount();
 		while (!MPU6050_IsDone()) {
-			// Attesa attiva
+			// Attesa attiva con timeout
+			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(5)) {
+				break;
+			}
 		}
 		MPU6050_Process_Yaw_IT_Data();
 
@@ -269,12 +276,13 @@ void StartReadGyroscope(void *argument)
 
 #endif
 
-		periodic_wait_no_led(&next, T);
+		if (periodic_wait_no_led(&next, T))
+			MissReadGyroscope++;
 	}
 
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartReadGyroscope */
+	/* USER CODE END StartReadGyroscope */
 }
 
 /* USER CODE BEGIN Header_StartSupervisor */
@@ -285,15 +293,21 @@ void StartReadGyroscope(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSupervisor */
-void StartSupervisor(void *argument)
-{
-  /* USER CODE BEGIN StartSupervisor */
+void StartSupervisor(void *argument) {
+	/* USER CODE BEGIN StartSupervisor */
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
+	uint32_t wait_start;
+
 	/* Infinite loop */
 	for (;;) {
 
+		wait_start = osKernelGetTickCount();
 		do {
+			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(50)) {
+				printLabel("Supervisor timeout!");
+				break;
+			}
 			Board2_step();
 		} while (Board2_DW.is_ExchangeDecision != Board2_IN_Execution);
 
@@ -301,13 +315,32 @@ void StartSupervisor(void *argument)
 		Board2_U.continua = (Board2_U.continua == 0) ? 1 : 0;
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 
-		periodic_wait(&next, T);
+		static uint32_t counter_print = 0;
+		counter_print++;
+		if (counter_print >= 40) { // Approx 2 seconds (50ms * 40)
+			printLabel("Miss RC:");
+			printInt(MissReadController);
+			printNewLine();
+			printLabel("Miss Gyro:");
+			printInt(MissReadGyroscope);
+			printNewLine();
+			printLabel("Miss Sup:");
+			printInt(MissSupervisor);
+			printNewLine();
+			printLabel("Miss Sonar:");
+			printInt(MissReadSonars);
+			printNewLine();
+			counter_print = 0;
+		}
+
+		if (periodic_wait(&next, T))
+			MissSupervisor++;
 
 	}
 
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartSupervisor */
+	/* USER CODE END StartSupervisor */
 }
 
 /* USER CODE BEGIN Header_StartReadSonars */
@@ -317,70 +350,69 @@ void StartSupervisor(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReadSonars */
-void StartReadSonars(void *argument)
-{
-  /* USER CODE BEGIN StartReadSonars */
+void StartReadSonars(void *argument) {
+	/* USER CODE BEGIN StartReadSonars */
 	const uint32_t T = ms_to_ticks(T_SONAR);
 	uint32_t next = osKernelGetTickCount();
+	uint32_t start_wait;
+
 	/* Infinite loop */
 	for (;;) {
 #if REAL_TASK
 // 1. Triggera i sensori (questo resetta rx_done a 0)
-        hcsr04_trigger(&sonarLeft);
-        hcsr04_trigger(&sonarFront);
-        hcsr04_trigger(&sonarRight);
+		hcsr04_trigger(&sonarLeft);
+		hcsr04_trigger(&sonarFront);
+		hcsr04_trigger(&sonarRight);
 
-        // 2. Attesa attiva: il task non si sospende, ma cicla finché i dati non sono pronti.
-        // Aggiungo un timeout di sicurezza usando il tick count per evitare blocchi infiniti
-        // se si stacca un cavo (max 40ms, un sonar ne impiega max ~25ms).
-        uint32_t start_wait = osKernelGetTickCount();
-        
-        while (1) {
-            uint8_t d1 = hcsr04_is_done(&sonarLeft);
-            uint8_t d2 = hcsr04_is_done(&sonarFront);
-            uint8_t d3 = hcsr04_is_done(&sonarRight);
+		// 2. Attesa attiva: il task non si sospende, ma cicla finché i dati non sono pronti.
+		// Aggiungo un timeout di sicurezza usando il tick count per evitare blocchi infiniti
+		// se si stacca un cavo (max 40ms, un sonar ne impiega max ~25ms).
+		start_wait = osKernelGetTickCount();
 
-            if (d1 && d2 && d3) {
-                break; // Tutti pronti
-            }
+		while (1) {
+			uint8_t d1 = hcsr04_is_done(&sonarLeft);
+			uint8_t d2 = hcsr04_is_done(&sonarFront);
+			uint8_t d3 = hcsr04_is_done(&sonarRight);
 
-            // Timeout safety (es. 40ms)
-            if ((osKernelGetTickCount() - start_wait) > ms_to_ticks(40)) {
-                break; 
-            }
-            
-            // Non mettiamo osDelay qui perché hai chiesto "non voglio che il task si sospenda".
-            // Il task occuperà la CPU in questo loop (utile se è a bassa priorità e viene preempted dagli altri).
-        };
+			if (d1 && d2 && d3) {
+				break; // Tutti pronti
+			}
 
-        // 3. Elaborazione condizionale: Aggiorna SOLO se la lettura è conclusa.
-        // Se "is_done" è falso (timeout), saltiamo l'aggiornamento e manteniamo il valore vecchio (hold last value).
-        if (hcsr04_is_done(&sonarLeft)) {
-             hcsr04_process_distance(&sonarLeft);
-        }
+			// Timeout safety (es. 40ms)
+			if ((osKernelGetTickCount() - start_wait) > ms_to_ticks(40)) {
+				break;
+			}
 
-        if (hcsr04_is_done(&sonarFront)) {
-             hcsr04_process_distance(&sonarFront);
-        }
+			// Non mettiamo osDelay qui perché hai chiesto "non voglio che il task si sospenda".
+			// Il task occuperà la CPU in questo loop (utile se è a bassa priorità e viene preempted dagli altri).
+		};
 
-        if (hcsr04_is_done(&sonarRight)) {
-             hcsr04_process_distance(&sonarRight);
-        }
+		// 3. Elaborazione condizionale: Aggiorna SOLO se la lettura è conclusa.
+		// Se "is_done" è falso (timeout), saltiamo l'aggiornamento e manteniamo il valore vecchio (hold last value).
+		if (hcsr04_is_done(&sonarLeft)) {
+			hcsr04_process_distance(&sonarLeft);
+		}
 
-        // 4. Copia dati
-//        Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,
-//                        sonarRight.distance };
-        Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
-        
-        //printSonar(&Board2_U.sonar);
+		if (hcsr04_is_done(&sonarFront)) {
+			hcsr04_process_distance(&sonarFront);
+		}
+
+		if (hcsr04_is_done(&sonarRight)) {
+			hcsr04_process_distance(&sonarRight);
+		}
+
+		// 4. Copia dati
+        Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,sonarRight.distance};
+		//Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
+
+		if (periodic_wait_no_led(&next, T)) MissReadSonars++;
 #else
 		HAL_Delay(C_SONAR);
 #endif
-		periodic_wait_no_led(&next, T);
 	}
 
 	osThreadTerminate(osThreadGetId());
-  /* USER CODE END StartReadSonars */
+	/* USER CODE END StartReadSonars */
 }
 
 /* USER CODE BEGIN Header_StartSeggerTask */
@@ -390,9 +422,8 @@ void StartReadSonars(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSeggerTask */
-void StartSeggerTask(void *argument)
-{
-  /* USER CODE BEGIN StartSeggerTask */
+void StartSeggerTask(void *argument) {
+	/* USER CODE BEGIN StartSeggerTask */
 	SEGGER_SYSVIEW_Conf();
 	SEGGER_SYSVIEW_Start();
 
@@ -402,7 +433,7 @@ void StartSeggerTask(void *argument)
 	}
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartSeggerTask */
+	/* USER CODE END StartSeggerTask */
 }
 
 /* Private application code --------------------------------------------------*/
