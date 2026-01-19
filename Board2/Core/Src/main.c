@@ -195,12 +195,6 @@ int main(void)
 	//Motors_StartAllPwm();
 	//Motors_SetDefaultCcr((uint32_t) 946);
 
-//  Prova con un riferimento in open loop
-//	for (int i = 0; i < 4; i++) {
-//		MotorControl_SetReferenceRPM(&motors[i], 0);
-//		MotorControl_OpenLoopActuate(&motors[i]);
-//	}
-
 
 
 
