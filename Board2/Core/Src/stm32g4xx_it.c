@@ -406,7 +406,6 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c)
   */
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
-	PRINT_DBG("MPU6050 I2C Mem Rx Complete\r\n");
 
 	if (hi2c->Instance == I2C3) {
 		MPU6050_Set_Done();

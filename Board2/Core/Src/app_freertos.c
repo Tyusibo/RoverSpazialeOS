@@ -46,7 +46,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define REAL_TASK 0 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
+#define REAL_TASK 1 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
 
 /* USER CODE END PD */
 
@@ -368,10 +368,11 @@ void StartReadSonars(void *argument)
         }
 
         // 4. Copia dati
-        Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,
-                        sonarRight.distance };
+//        Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,
+//                        sonarRight.distance };
+        Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
         
-        printSonar(&Board2_U.sonar);
+        //printSonar(&Board2_U.sonar);
 #else
 		HAL_Delay(C_SONAR);
 #endif
