@@ -12,7 +12,7 @@ int8_t PadReceiver_Request(void) {
     if (HAL_I2C_GetState(&hi2c1) == HAL_I2C_STATE_READY) {
         rx_status = PAD_RX_IN_PROGRESS; // Reset flag: inizio operazione
         
-        // Avvia ricezione interrupt (Indirizzo 0x60)
+        // Avvia ricezione interrupt (Indirizzo Shiftato)
         if (HAL_I2C_Master_Receive_IT(&hi2c1, PAD_I2C_ADDRESS, (uint8_t*) &rx_buffer, sizeof(BUS_RemoteController)) != HAL_OK) {
             rx_status = PAD_RX_NOT_RECEIVED; // Errore avvio
             return PAD_ERR;    // Failed to start

@@ -48,6 +48,8 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 #define REAL_TASK 1
 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
+#define PRINT 1
+// 1: Abilita stampe di debug, 0: Disabilita stampe di debug
 
 /* USER CODE END PD */
 
@@ -157,21 +159,21 @@ void MX_FREERTOS_Init(void) {
 	ReadControllerHandle = osThreadNew(StartReadController, NULL,
 			&ReadController_attributes);
 
-	/* creation of ReadGyroscope */
-	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
-			&ReadGyroscope_attributes);
-
-	/* creation of Supervisor */
-	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
-			&Supervisor_attributes);
-
-	/* creation of ReadSonars */
-	ReadSonarsHandle = osThreadNew(StartReadSonars, NULL,
-			&ReadSonars_attributes);
-
-	/* creation of StartSegger */
-	StartSeggerHandle = osThreadNew(StartSeggerTask, NULL,
-			&StartSegger_attributes);
+//	/* creation of ReadGyroscope */
+//	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
+//			&ReadGyroscope_attributes);
+//
+//	/* creation of Supervisor */
+//	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
+//			&Supervisor_attributes);
+//
+//	/* creation of ReadSonars */
+//	ReadSonarsHandle = osThreadNew(StartReadSonars, NULL,
+//			&ReadSonars_attributes);
+//
+//	/* creation of StartSegger */
+//	StartSeggerHandle = osThreadNew(StartSeggerTask, NULL,
+//			&StartSegger_attributes);
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -213,10 +215,16 @@ void StartReadController(void *argument) {
 
 		};
 
+
 		// Trasferisce i dati dal buffer del driver alla struttura locale
 		// La struttura locale del modello Simulink è copiata all'interno di uno stato locale
 		// e mai più usata altrove, quindi non ci sono problemi di concorrenza
 		PadReceiver_Read(&Board2_U.remoteController);
+
+#if PRINT
+		printRemoteController(&Board2_U.remoteController);
+		HAL_Delay(2000); // Per non intasare la seriale
+#endif
 
 #else
 		HAL_Delay(C_CONTROLLER);
@@ -264,7 +272,10 @@ void StartReadGyroscope(void *argument) {
 		// rivedere la struttua, magari fare una get come per il padreceiver
 		Board2_U.gyroscope = (double) MPU6050_Yaw.KalmanAngleZ;
 
-		//printGyroscope(Board2_U.gyroscope);
+#if PRINT
+		printGyroscope((float)Board2_U.gyroscope);
+		HAL_Delay(2000); // Per non intasare la seriale
+#endif
 
 #else
 		HAL_Delay(C_GYROSCOPE);
@@ -387,10 +398,12 @@ void StartReadSonars(void *argument) {
 			hcsr04_process_distance(&sonarRight);
 		}
 
-		// 4. Copia dati
-        Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,sonarRight.distance};
-		//Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
+#if PRINT
         printSonar(&Board2_U.sonar);
+        HAL_Delay(2000); // Per non intasare la seriale
+#endif
+		//Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
+        Board2_U.sonar = (BUS_Sonar){ sonarLeft.distance, sonarFront.distance,sonarRight.distance};
 
         periodic_wait(&next, T, &MissReadSonars);
 

@@ -23,6 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "hcsr04.h"
+#include "pad_receiver.h"
+#include "mpu6050.h"
 #include "print.h"
 #include "uart_functions.h"
 /* USER CODE END Includes */
@@ -364,8 +366,6 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
 /* MASTER RX COMPLETE CALLBACK I2C, PadReceiver */
 
-#include "pad_receiver.h"
-
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 	if (hi2c->Instance == I2C1) {
 		PadReceiver_RxCpltCallback();
@@ -373,8 +373,6 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 }
 
 /* RX MEMORY COMPLETE CALLBACK I2C, Gyroscope */
-
-#include "mpu6050.h"
 
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 

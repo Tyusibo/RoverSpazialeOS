@@ -182,12 +182,14 @@ int main(void)
 	// Init Sonar
 	if (Sonar_InitAll() == 1) {
 		PRINT_DBG("ERROR SONAR INIT\r\n");
+		return -1;
 	}
 	StartSonarTimer();
 
 	// Init Gyroscope (IMU)
 	if (MPU6050_Init(&hi2c3) == 1) {
 		PRINT_DBG("ERROR GYRO INIT\r\n");
+		return -1;
 	}
 
 	// Init Motori
