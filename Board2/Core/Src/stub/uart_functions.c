@@ -6,7 +6,7 @@
 
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 0
+#define VERBOSE_DEBUG 1
 
 #if VERBOSE_DEBUG == 1
     #define PRINT_DBG(msg) printMsg(msg)
@@ -51,6 +51,7 @@ void UART_TransmitIT(uint8_t *pData, size_t size) {
 
 void setRTR(void) {
     HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_SET);
+    PRINT_DBG("SET RTR\n\r\r\n");
 }
 
 void resetRTR() {
