@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 4.45
+ * Model version                  : 4.75
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Mon Jan 12 16:34:16 2026
+ * C/C++ source code generated on : Tue Jan 20 22:09:20 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -50,6 +50,7 @@
 #include "deserialize.h"
 #include "uart_functions.h"
 #include "crc_functions.h"
+#include "freeRTOS_functions.h"
 
 /* Block signals (default storage) */
 typedef struct {
@@ -89,6 +90,7 @@ typedef struct {
   uint8_T txPayload;                   /* '<Root>/SupervisorB1' */
   uint8_T rxPayload;                   /* '<Root>/SupervisorB1' */
   uint8_T flagCRC;                     /* '<Root>/SupervisorB1' */
+  uint8_T receiveArmed;                /* '<Root>/SupervisorB1' */
   uint8_T is_active_c15_Board1;        /* '<Root>/SupervisorB1' */
   uint8_T is_RoverState;               /* '<Root>/SupervisorB1' */
   uint8_T is_CommunicationPhase;       /* '<Root>/SupervisorB1' */
@@ -121,6 +123,7 @@ typedef struct {
   ENUM_SafeAction safeAction;          /* '<Root>/safeAction' */
   ENUM_TrackingObstacles statusObstacles;/* '<Root>/statusObstacles' */
   ENUM_UserAction currentUserAction;   /* '<Root>/currentUserAction' */
+  uint8_T supervision_ended;           /* '<Root>/supervision_ended' */
 } ExtY_Board1_T;
 
 /* Real-time Model Data Structure */

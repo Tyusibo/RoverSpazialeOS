@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 4.4
+ * Model version                  : 4.7
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Mon Jan 12 16:33:53 2026
+ * C/C++ source code generated on : Tue Jan 20 22:05:20 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -22,7 +22,6 @@
 #ifndef ActionsModel_COMMON_INCLUDES_
 #define ActionsModel_COMMON_INCLUDES_
 #include "rtwtypes.h"
-#include "rt_nonfinite.h"
 #include "math.h"
 #endif                                 /* ActionsModel_COMMON_INCLUDES_ */
 

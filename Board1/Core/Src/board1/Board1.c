@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 4.45
+ * Model version                  : 4.75
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Mon Jan 12 16:34:16 2026
+ * C/C++ source code generated on : Tue Jan 20 22:09:20 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -29,11 +29,14 @@
 #define B_IN_StateCoherenceVerification ((uint8_T)5U)
 #define Boar_IN_ComputingOwnGlobalState ((uint8_T)1U)
 #define Board1_IN_ActuatorSelection    ((uint8_T)1U)
-#define Board1_IN_CheckCRC             ((uint8_T)1U)
+#define Board1_IN_ArmingReceive        ((uint8_T)1U)
+#define Board1_IN_CheckCRC             ((uint8_T)2U)
 #define Board1_IN_CommunicationPhase   ((uint8_T)1U)
 #define Board1_IN_ComputeDecision      ((uint8_T)1U)
 #define Board1_IN_D_Receive            ((uint8_T)1U)
 #define Board1_IN_D_Transmit           ((uint8_T)2U)
+#define Board1_IN_EnterDegraded        ((uint8_T)3U)
+#define Board1_IN_EnterDegraded_e      ((uint8_T)1U)
 #define Board1_IN_ExchangeDecision     ((uint8_T)2U)
 #define Board1_IN_ExchangeGlobalState  ((uint8_T)3U)
 #define Board1_IN_ExchangeLocalState   ((uint8_T)4U)
@@ -45,18 +48,20 @@
 #define Board1_IN_LightEvaluation      ((uint8_T)3U)
 #define Board1_IN_NO_ACTIVE_CHILD      ((uint8_T)0U)
 #define Board1_IN_NotCommunicating     ((uint8_T)2U)
-#define Board1_IN_R_CheckCRC           ((uint8_T)2U)
-#define Board1_IN_R_ReceivingRTR       ((uint8_T)1U)
-#define Board1_IN_R_Trasmit            ((uint8_T)2U)
-#define Board1_IN_R_WaitAck            ((uint8_T)3U)
-#define Board1_IN_R_WaitingData        ((uint8_T)3U)
-#define Board1_IN_ReceivingRTR         ((uint8_T)4U)
-#define Board1_IN_SendAck              ((uint8_T)4U)
-#define Board1_IN_SendNack             ((uint8_T)5U)
-#define Board1_IN_Trasmit              ((uint8_T)5U)
+#define Board1_IN_R_ArmingReceive      ((uint8_T)4U)
+#define Board1_IN_R_CheckCRC           ((uint8_T)5U)
+#define Board1_IN_R_ReadyToReceive     ((uint8_T)6U)
+#define Board1_IN_R_ReceivingRTR       ((uint8_T)2U)
+#define Board1_IN_R_SendNack           ((uint8_T)7U)
+#define Board1_IN_R_Trasmit            ((uint8_T)3U)
+#define Board1_IN_R_WaitAck            ((uint8_T)4U)
+#define Board1_IN_ReadyToReceive       ((uint8_T)8U)
+#define Board1_IN_ReceivingRTR         ((uint8_T)5U)
+#define Board1_IN_SendAck              ((uint8_T)9U)
+#define Board1_IN_SendNack             ((uint8_T)10U)
+#define Board1_IN_Trasmit              ((uint8_T)6U)
 #define Board1_IN_UserActionComputation ((uint8_T)6U)
-#define Board1_IN_WaitAck              ((uint8_T)6U)
-#define Board1_IN_WaitingData          ((uint8_T)6U)
+#define Board1_IN_WaitAck              ((uint8_T)7U)
 #define Board1_TRESHOLD_ACTUATOR_SWITCH (1000U)
 #define Board_IN_EmergencyStateAnalysis ((uint8_T)2U)
 #define Board_IN_RoverActionComputation ((uint8_T)4U)
@@ -95,32 +100,81 @@ static void Board1_ExchangeLocalState(void)
 {
   if (Board1_DW.is_ExchangeLocalState == Board1_IN_LS_Receive) {
     switch (Board1_DW.is_LS_Receive) {
+     case Board1_IN_ArmingReceive:
+      if (Board1_DW.receiveArmed == 1) {
+        Board1_DW.is_LS_Receive = Board1_IN_ReadyToReceive;
+        setRTR();
+      }
+      break;
+
      case Board1_IN_CheckCRC:
       switch (Board1_DW.flagCRC) {
        case 1:
         Board1_DW.is_LS_Receive = Board1_IN_SendAck;
-        UART_SendAck();
+        UART_SendAckIT();
         break;
 
        case 0:
         Board1_DW.is_LS_Receive = Board1_IN_SendNack;
-        UART_SendNack();
+        UART_SendNackIT();
         break;
       }
       break;
 
-     case Board1_IN_R_CheckCRC:
-      if (Board1_DW.flagCRC == 1) {
-        Board1_DW.is_LS_Receive = Board1_IN_SendAck;
-        UART_SendAck();
+     case Board1_IN_EnterDegraded:
+      break;
+
+     case Board1_IN_R_ArmingReceive:
+      if (Board1_DW.receiveArmed == 1) {
+        Board1_DW.is_LS_Receive = Board1_IN_R_ReadyToReceive;
+        setRTR();
       }
       break;
 
-     case Board1_IN_R_WaitingData:
-      if (hasReceived() == 1) {
+     case Board1_IN_R_CheckCRC:
+      switch (Board1_DW.flagCRC) {
+       case 1:
+        Board1_DW.is_LS_Receive = Board1_IN_SendAck;
+        UART_SendAckIT();
+        break;
+
+       case 0:
+        Board1_DW.is_LS_Receive = Board1_IN_R_SendNack;
+        UART_SendNackIT();
+        break;
+      }
+      break;
+
+     case Board1_IN_R_ReadyToReceive:
+      if (errorReceived() == 1) {
+        resetRTR();
+        Board1_DW.is_LS_Receive = Board1_IN_R_SendNack;
+        UART_SendNackIT();
+      } else if (hasReceived() == 1) {
         Board1_DW.flagCRC = 0U;
         resetRTR();
         Board1_DW.is_LS_Receive = Board1_IN_R_CheckCRC;
+
+        /* Inport: '<Root>/rx_buffer' */
+        Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
+          Board1_DW.rxPayload);
+      }
+      break;
+
+     case Board1_IN_R_SendNack:
+      Board1_DW.is_LS_Receive = Board1_IN_EnterDegraded;
+      enterDegraded();
+      break;
+
+     case Board1_IN_ReadyToReceive:
+      if (errorReceived() == 1) {
+        resetRTR();
+        Board1_DW.is_LS_Receive = Board1_IN_SendNack;
+        UART_SendNackIT();
+      } else if (hasReceived() == 1) {
+        Board1_DW.flagCRC = 0U;
+        resetRTR();
+        Board1_DW.is_LS_Receive = Board1_IN_CheckCRC;
 
         /* Inport: '<Root>/rx_buffer' */
         Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
@@ -133,26 +187,13 @@ static void Board1_ExchangeLocalState(void)
       Board1_DW.exit_port_index_LS_Receive = 2U;
       break;
 
-     case Board1_IN_SendNack:
-      Board1_DW.is_LS_Receive = Board1_IN_R_WaitingData;
+     default:
+      /* case IN_SendNack: */
+      Board1_DW.is_LS_Receive = Board1_IN_R_ArmingReceive;
 
       /* Inport: '<Root>/rx_buffer' */
-      UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)(Board1_DW.rxPayload +
-        ((uint8_T)CRC_SIZE)));
-      setRTR();
-      break;
-
-     default:
-      /* case IN_WaitingData: */
-      if (hasReceived() == 1) {
-        Board1_DW.flagCRC = 0U;
-        resetRTR();
-        Board1_DW.is_LS_Receive = Board1_IN_CheckCRC;
-
-        /* Inport: '<Root>/rx_buffer' */
-        Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
-          Board1_DW.rxPayload);
-      }
+      Board1_DW.receiveArmed = UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)
+        (Board1_DW.rxPayload + ((uint8_T)CRC_SIZE)));
       break;
     }
 
@@ -168,10 +209,13 @@ static void Board1_ExchangeLocalState(void)
   } else {
     /* case IN_LS_Transmit: */
     switch (Board1_DW.is_LS_Transmit) {
+     case Board1_IN_EnterDegraded_e:
+      break;
+
      case Board1_IN_R_ReceivingRTR:
       if (checkRTR() != 0) {
         Board1_DW.is_LS_Transmit = Board1_IN_R_Trasmit;
-        UART_ReceiveAck();
+        UART_ReceiveAckIT();
 
         /* Outport: '<Root>/tx_buffer' */
         UART_TransmitIT(&Board1_Y.tx_buffer[0], (uint64_T)(Board1_DW.txPayload +
@@ -184,16 +228,21 @@ static void Board1_ExchangeLocalState(void)
       break;
 
      case Board1_IN_R_WaitAck:
-      if ((hasReceived() == 1) && (UART_CheckAck() == 1)) {
-        Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
-        Board1_DW.exit_port_index_LS_Transmit = 2U;
+      if (hasReceived() == 1) {
+        if (UART_CheckAck() == 0) {
+          Board1_DW.is_LS_Transmit = Board1_IN_EnterDegraded_e;
+          enterDegraded();
+        } else if (UART_CheckAck() == 1) {
+          Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_LS_Transmit = 2U;
+        }
       }
       break;
 
      case Board1_IN_ReceivingRTR:
       if (checkRTR() != 0) {
         Board1_DW.is_LS_Transmit = Board1_IN_Trasmit;
-        UART_ReceiveAck();
+        UART_ReceiveAckIT();
 
         /* Outport: '<Root>/tx_buffer' */
         UART_TransmitIT(&Board1_Y.tx_buffer[0], (uint64_T)(Board1_DW.txPayload +
@@ -221,12 +270,11 @@ static void Board1_ExchangeLocalState(void)
     if (Board1_DW.exit_port_index_LS_Transmit == 2U) {
       Board1_DW.exit_port_index_LS_Transmit = 0U;
       Board1_DW.is_ExchangeLocalState = Board1_IN_LS_Receive;
-      Board1_DW.is_LS_Receive = Board1_IN_WaitingData;
+      Board1_DW.is_LS_Receive = Board1_IN_ArmingReceive;
 
       /* Inport: '<Root>/rx_buffer' */
-      UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)(Board1_DW.rxPayload +
-        ((uint8_T)CRC_SIZE)));
-      setRTR();
+      Board1_DW.receiveArmed = UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)
+        (Board1_DW.rxPayload + ((uint8_T)CRC_SIZE)));
     }
   }
 
@@ -341,32 +389,81 @@ static void Board1_ExchangeGlobalState(void)
 
    case Board1_IN_GL_Receive:
     switch (Board1_DW.is_GL_Receive) {
+     case Board1_IN_ArmingReceive:
+      if (Board1_DW.receiveArmed == 1) {
+        Board1_DW.is_GL_Receive = Board1_IN_ReadyToReceive;
+        setRTR();
+      }
+      break;
+
      case Board1_IN_CheckCRC:
       switch (Board1_DW.flagCRC) {
        case 1:
         Board1_DW.is_GL_Receive = Board1_IN_SendAck;
-        UART_SendAck();
+        UART_SendAckIT();
         break;
 
        case 0:
         Board1_DW.is_GL_Receive = Board1_IN_SendNack;
-        UART_SendNack();
+        UART_SendNackIT();
         break;
       }
       break;
 
-     case Board1_IN_R_CheckCRC:
-      if (Board1_DW.flagCRC == 1) {
-        Board1_DW.is_GL_Receive = Board1_IN_SendAck;
-        UART_SendAck();
+     case Board1_IN_EnterDegraded:
+      break;
+
+     case Board1_IN_R_ArmingReceive:
+      if (Board1_DW.receiveArmed == 1) {
+        Board1_DW.is_GL_Receive = Board1_IN_R_ReadyToReceive;
+        setRTR();
       }
       break;
 
-     case Board1_IN_R_WaitingData:
-      if (hasReceived() == 1) {
+     case Board1_IN_R_CheckCRC:
+      switch (Board1_DW.flagCRC) {
+       case 1:
+        Board1_DW.is_GL_Receive = Board1_IN_SendAck;
+        UART_SendAckIT();
+        break;
+
+       case 0:
+        Board1_DW.is_GL_Receive = Board1_IN_R_SendNack;
+        UART_SendNackIT();
+        break;
+      }
+      break;
+
+     case Board1_IN_R_ReadyToReceive:
+      if (errorReceived() == 1) {
+        resetRTR();
+        Board1_DW.is_GL_Receive = Board1_IN_R_SendNack;
+        UART_SendNackIT();
+      } else if (hasReceived() == 1) {
         Board1_DW.flagCRC = 0U;
         resetRTR();
         Board1_DW.is_GL_Receive = Board1_IN_R_CheckCRC;
+
+        /* Inport: '<Root>/rx_buffer' */
+        Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
+          Board1_DW.rxPayload);
+      }
+      break;
+
+     case Board1_IN_R_SendNack:
+      Board1_DW.is_GL_Receive = Board1_IN_EnterDegraded;
+      enterDegraded();
+      break;
+
+     case Board1_IN_ReadyToReceive:
+      if (errorReceived() == 1) {
+        resetRTR();
+        Board1_DW.is_GL_Receive = Board1_IN_SendNack;
+        UART_SendNackIT();
+      } else if (hasReceived() == 1) {
+        Board1_DW.flagCRC = 0U;
+        resetRTR();
+        Board1_DW.is_GL_Receive = Board1_IN_CheckCRC;
 
         /* Inport: '<Root>/rx_buffer' */
         Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
@@ -379,26 +476,13 @@ static void Board1_ExchangeGlobalState(void)
       Board1_DW.exit_port_index_GL_Receive = 2U;
       break;
 
-     case Board1_IN_SendNack:
-      Board1_DW.is_GL_Receive = Board1_IN_R_WaitingData;
+     default:
+      /* case IN_SendNack: */
+      Board1_DW.is_GL_Receive = Board1_IN_R_ArmingReceive;
 
       /* Inport: '<Root>/rx_buffer' */
-      UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)(Board1_DW.rxPayload +
-        ((uint8_T)CRC_SIZE)));
-      setRTR();
-      break;
-
-     default:
-      /* case IN_WaitingData: */
-      if (hasReceived() == 1) {
-        Board1_DW.flagCRC = 0U;
-        resetRTR();
-        Board1_DW.is_GL_Receive = Board1_IN_CheckCRC;
-
-        /* Inport: '<Root>/rx_buffer' */
-        Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
-          Board1_DW.rxPayload);
-      }
+      Board1_DW.receiveArmed = UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)
+        (Board1_DW.rxPayload + ((uint8_T)CRC_SIZE)));
       break;
     }
 
@@ -416,10 +500,13 @@ static void Board1_ExchangeGlobalState(void)
    default:
     /* case IN_GL_Transmit: */
     switch (Board1_DW.is_GL_Transmit) {
+     case Board1_IN_EnterDegraded_e:
+      break;
+
      case Board1_IN_R_ReceivingRTR:
       if (checkRTR() != 0) {
         Board1_DW.is_GL_Transmit = Board1_IN_R_Trasmit;
-        UART_ReceiveAck();
+        UART_ReceiveAckIT();
 
         /* Outport: '<Root>/tx_buffer' */
         UART_TransmitIT(&Board1_Y.tx_buffer[0], (uint64_T)(Board1_DW.txPayload +
@@ -432,16 +519,21 @@ static void Board1_ExchangeGlobalState(void)
       break;
 
      case Board1_IN_R_WaitAck:
-      if ((hasReceived() == 1) && (UART_CheckAck() == 1)) {
-        Board1_DW.is_GL_Transmit = Board1_IN_NO_ACTIVE_CHILD;
-        Board1_DW.exit_port_index_GL_Transmit = 2U;
+      if (hasReceived() == 1) {
+        if (UART_CheckAck() == 0) {
+          Board1_DW.is_GL_Transmit = Board1_IN_EnterDegraded_e;
+          enterDegraded();
+        } else if (UART_CheckAck() == 1) {
+          Board1_DW.is_GL_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_GL_Transmit = 2U;
+        }
       }
       break;
 
      case Board1_IN_ReceivingRTR:
       if (checkRTR() != 0) {
         Board1_DW.is_GL_Transmit = Board1_IN_Trasmit;
-        UART_ReceiveAck();
+        UART_ReceiveAckIT();
 
         /* Outport: '<Root>/tx_buffer' */
         UART_TransmitIT(&Board1_Y.tx_buffer[0], (uint64_T)(Board1_DW.txPayload +
@@ -469,12 +561,11 @@ static void Board1_ExchangeGlobalState(void)
     if (Board1_DW.exit_port_index_GL_Transmit == 2U) {
       Board1_DW.exit_port_index_GL_Transmit = 0U;
       Board1_DW.is_ExchangeGlobalState = Board1_IN_GL_Receive;
-      Board1_DW.is_GL_Receive = Board1_IN_WaitingData;
+      Board1_DW.is_GL_Receive = Board1_IN_ArmingReceive;
 
       /* Inport: '<Root>/rx_buffer' */
-      UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)(Board1_DW.rxPayload +
-        ((uint8_T)CRC_SIZE)));
-      setRTR();
+      Board1_DW.receiveArmed = UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)
+        (Board1_DW.rxPayload + ((uint8_T)CRC_SIZE)));
     }
     break;
   }
@@ -520,6 +611,9 @@ void Board1_step(void)
     Board1_DW.previousWhiteLeftLed = WHITE_OFF;
     Board1_DW.previousWhiteRightLed = WHITE_OFF;
     Board1_DW.is_RoverState = Board1_IN_NotCommunicating;
+
+    /* Outport: '<Root>/supervision_ended' */
+    Board1_Y.supervision_ended = 0U;
   } else if (Board1_DW.is_RoverState == Board1_IN_CommunicationPhase) {
     switch (Board1_DW.is_CommunicationPhase) {
      case Board1_IN_ComputeDecision:
@@ -622,32 +716,79 @@ void Board1_step(void)
       switch (Board1_DW.is_ExchangeDecision) {
        case Board1_IN_D_Receive:
         switch (Board1_DW.is_D_Receive) {
+         case Board1_IN_ArmingReceive:
+          if (Board1_DW.receiveArmed == 1) {
+            Board1_DW.is_D_Receive = Board1_IN_ReadyToReceive;
+            setRTR();
+          }
+          break;
+
          case Board1_IN_CheckCRC:
           switch (Board1_DW.flagCRC) {
            case 1:
             Board1_DW.is_D_Receive = Board1_IN_SendAck;
-            UART_SendAck();
+            UART_SendAckIT();
             break;
 
            case 0:
             Board1_DW.is_D_Receive = Board1_IN_SendNack;
-            UART_SendNack();
+            UART_SendNackIT();
             break;
           }
           break;
 
-         case Board1_IN_R_CheckCRC:
-          if (Board1_DW.flagCRC == 1) {
-            Board1_DW.is_D_Receive = Board1_IN_SendAck;
-            UART_SendAck();
+         case Board1_IN_EnterDegraded:
+          break;
+
+         case Board1_IN_R_ArmingReceive:
+          if (Board1_DW.receiveArmed == 1) {
+            Board1_DW.is_D_Receive = Board1_IN_R_ReadyToReceive;
+            setRTR();
           }
           break;
 
-         case Board1_IN_R_WaitingData:
-          if (hasReceived() == 1) {
+         case Board1_IN_R_CheckCRC:
+          switch (Board1_DW.flagCRC) {
+           case 1:
+            Board1_DW.is_D_Receive = Board1_IN_SendAck;
+            UART_SendAckIT();
+            break;
+
+           case 0:
+            Board1_DW.is_D_Receive = Board1_IN_R_SendNack;
+            UART_SendNackIT();
+            break;
+          }
+          break;
+
+         case Board1_IN_R_ReadyToReceive:
+          if (errorReceived() == 1) {
+            resetRTR();
+            Board1_DW.is_D_Receive = Board1_IN_R_SendNack;
+            UART_SendNackIT();
+          } else if (hasReceived() == 1) {
             Board1_DW.flagCRC = 0U;
             resetRTR();
             Board1_DW.is_D_Receive = Board1_IN_R_CheckCRC;
+            Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
+              Board1_DW.rxPayload);
+          }
+          break;
+
+         case Board1_IN_R_SendNack:
+          Board1_DW.is_D_Receive = Board1_IN_EnterDegraded;
+          enterDegraded();
+          break;
+
+         case Board1_IN_ReadyToReceive:
+          if (errorReceived() == 1) {
+            resetRTR();
+            Board1_DW.is_D_Receive = Board1_IN_SendNack;
+            UART_SendNackIT();
+          } else if (hasReceived() == 1) {
+            Board1_DW.flagCRC = 0U;
+            resetRTR();
+            Board1_DW.is_D_Receive = Board1_IN_CheckCRC;
             Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
               Board1_DW.rxPayload);
           }
@@ -658,22 +799,11 @@ void Board1_step(void)
           Board1_DW.exit_port_index_D_Receive = 2U;
           break;
 
-         case Board1_IN_SendNack:
-          Board1_DW.is_D_Receive = Board1_IN_R_WaitingData;
-          UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)(Board1_DW.rxPayload
-            + ((uint8_T)CRC_SIZE)));
-          setRTR();
-          break;
-
          default:
-          /* case IN_WaitingData: */
-          if (hasReceived() == 1) {
-            Board1_DW.flagCRC = 0U;
-            resetRTR();
-            Board1_DW.is_D_Receive = Board1_IN_CheckCRC;
-            Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
-              Board1_DW.rxPayload);
-          }
+          /* case IN_SendNack: */
+          Board1_DW.is_D_Receive = Board1_IN_R_ArmingReceive;
+          Board1_DW.receiveArmed = UART_ReceiveIT(&Board1_U.rx_buffer[0],
+            (uint64_T)(Board1_DW.rxPayload + ((uint8_T)CRC_SIZE)));
           break;
         }
 
@@ -683,6 +813,11 @@ void Board1_step(void)
                               &Board1_DW.board2Decision);
           Board1_DW.is_ExchangeDecision = Board1_IN_Execution;
 
+          /* Outport: '<Root>/supervision_ended' incorporates:
+           *  Inport: '<Root>/rx_buffer'
+           */
+          Board1_Y.supervision_ended = 1U;
+
           /* printGlobalState(board1GlobalState); printGlobalState(board2GlobalState);
              printDecision(board1Decision); printDecision(board2Decision); */
         }
@@ -690,10 +825,13 @@ void Board1_step(void)
 
        case Board1_IN_D_Transmit:
         switch (Board1_DW.is_D_Transmit) {
+         case Board1_IN_EnterDegraded_e:
+          break;
+
          case Board1_IN_R_ReceivingRTR:
           if (checkRTR() != 0) {
             Board1_DW.is_D_Transmit = Board1_IN_R_Trasmit;
-            UART_ReceiveAck();
+            UART_ReceiveAckIT();
             UART_TransmitIT(&Board1_Y.tx_buffer[0], (uint64_T)
                             (Board1_DW.txPayload + ((uint8_T)CRC_SIZE)));
           }
@@ -704,16 +842,21 @@ void Board1_step(void)
           break;
 
          case Board1_IN_R_WaitAck:
-          if ((hasReceived() == 1) && (UART_CheckAck() == 1)) {
-            Board1_DW.is_D_Transmit = Board1_IN_NO_ACTIVE_CHILD;
-            Board1_DW.exit_port_index_D_Transmit = 2U;
+          if (hasReceived() == 1) {
+            if (UART_CheckAck() == 0) {
+              Board1_DW.is_D_Transmit = Board1_IN_EnterDegraded_e;
+              enterDegraded();
+            } else if (UART_CheckAck() == 1) {
+              Board1_DW.is_D_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+              Board1_DW.exit_port_index_D_Transmit = 2U;
+            }
           }
           break;
 
          case Board1_IN_ReceivingRTR:
           if (checkRTR() != 0) {
             Board1_DW.is_D_Transmit = Board1_IN_Trasmit;
-            UART_ReceiveAck();
+            UART_ReceiveAckIT();
             UART_TransmitIT(&Board1_Y.tx_buffer[0], (uint64_T)
                             (Board1_DW.txPayload + ((uint8_T)CRC_SIZE)));
           }
@@ -739,15 +882,16 @@ void Board1_step(void)
         if (Board1_DW.exit_port_index_D_Transmit == 2U) {
           Board1_DW.exit_port_index_D_Transmit = 0U;
           Board1_DW.is_ExchangeDecision = Board1_IN_D_Receive;
-          Board1_DW.is_D_Receive = Board1_IN_WaitingData;
-          UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)(Board1_DW.rxPayload
-            + ((uint8_T)CRC_SIZE)));
-          setRTR();
+          Board1_DW.is_D_Receive = Board1_IN_ArmingReceive;
+          Board1_DW.receiveArmed = UART_ReceiveIT(&Board1_U.rx_buffer[0],
+            (uint64_T)(Board1_DW.rxPayload + ((uint8_T)CRC_SIZE)));
         }
         break;
 
        default:
+        /* Outport: '<Root>/supervision_ended' */
         /* case IN_Execution: */
+        Board1_Y.supervision_ended = 1U;
         if (continua_prev != Board1_DW.continua_start) {
           Board1_DW.is_ExchangeDecision = Board1_IN_NO_ACTIVE_CHILD;
           Board1_DW.exit_port_index_ExchangeDecisio = 2U;
@@ -775,9 +919,14 @@ void Board1_step(void)
     if (Board1_DW.exit_port_index_CommunicationPh == 2U) {
       Board1_DW.exit_port_index_CommunicationPh = 0U;
       Board1_DW.is_RoverState = Board1_IN_NotCommunicating;
+
+      /* Outport: '<Root>/supervision_ended' */
+      Board1_Y.supervision_ended = 0U;
     }
   } else {
+    /* Outport: '<Root>/supervision_ended' */
     /* case IN_NotCommunicating: */
+    Board1_Y.supervision_ended = 0U;
     Board1_DW.board1LocalState.speed = Board1_U.speed;
     Board1_DW.board1LocalState.temperature = Board1_U.temperature;
     Board1_DW.board1LocalState.batteryLevel = Board1_U.batteryLevel;
