@@ -62,7 +62,10 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define REAL_TASK 1 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
+#define REAL_TASK 1 
+// 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
+#define PRINT 1    
+ // 1: Abilita stampe di debug, 0: Disabilita stampe di debug
 
 /* USER CODE END PD */
 
@@ -73,11 +76,13 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+
 volatile unsigned long ulHighFrequencyTimerTicks = 0;
 volatile uint32_t MissPID = 0;
 volatile uint32_t MissSupervisor = 0;
 volatile uint32_t MissReadTemperature = 0;
 volatile uint32_t MissReadBattery = 0;
+
 /* USER CODE END Variables */
 /* Definitions for PID */
 osThreadId_t PIDHandle;
@@ -145,7 +150,7 @@ const osThreadAttr_t StartSegger_attributes = {
 
 /* SCHEDULING FUNCTIONS */
 static uint32_t ms_to_ticks(uint32_t ms);
-static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks);
+static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatile uint32_t *miss_counter);
 
 /* DECISION FUNCTIONS */
 static inline void actuate_white_leds(void);
@@ -246,12 +251,17 @@ void StartPID(void *argument)
 
         Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
                         current_speed[2], current_speed[3] };
+
+#if PRINT
+        printMotorSpeeds(&Board1_U.speed);
+        HAL_Delay(2000); // Per non intasare la seriale
+#endif
+
 #else
         HAL_Delay(C_PID);
 #endif
 
-        if (periodic_wait(&next, T))
-            MissPID++;
+        periodic_wait(&next, T, &MissPID);
     }
 
     osThreadTerminate(osThreadGetId());
@@ -298,6 +308,9 @@ void StartSupervisor(void *argument)
 		change_set_point();
 		change_regulator();
 
+#if PRINT
+
+#endif
 		// Stampa ogni 50 cicli
 		static uint32_t cycle_count = 0;
 		cycle_count++;
@@ -320,8 +333,7 @@ void StartSupervisor(void *argument)
             printNewLine();
 		}
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
-		if (periodic_wait(&next, T))
-			MissSupervisor++;
+		periodic_wait(&next, T, &MissSupervisor);
 	}
 
 	osThreadTerminate(osThreadGetId());
@@ -347,12 +359,17 @@ void StartReadTemperature(void *argument)
     for (;;) {
 #if REAL_TASK
         Board1_U.temperature = (Temperature) temp_ky028_read_temperature(&temp_sensor);
+
+#if PRINT
+        printTemperature((float)Board1_U.temperature);
+        HAL_Delay(2000);
+#endif
+
 #else
         HAL_Delay(C_TEMPERATURE);
 #endif
 
-        if (periodic_wait(&next, T))
-            MissReadTemperature++;
+        periodic_wait(&next, T, &MissReadTemperature);
     }
 
     osThreadTerminate(osThreadGetId());
@@ -379,12 +396,17 @@ void StartReadBattery(void *argument)
 #if REAL_TASK
         Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
                 battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
+
+#if PRINT
+        printBattery((float)Board1_U.batteryLevel);
+        HAL_Delay(2000);
+#endif
+
 #else
         HAL_Delay(C_BATTERY);
 #endif
 
-        if (periodic_wait(&next, T))
-            MissReadBattery++;
+        periodic_wait(&next, T, &MissReadBattery);
     }
 
     osThreadTerminate(osThreadGetId());
@@ -425,7 +447,7 @@ static uint32_t ms_to_ticks(uint32_t ms) {
 	return (ms * hz + 999u) / 1000u;
 }
 
-static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks) {
+static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatile uint32_t *miss_counter) {
 	uint32_t now = osKernelGetTickCount();
 
 	/* Calcola il prossimo rilascio */
@@ -434,20 +456,20 @@ static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks) {
 	/* Controllo deadline miss (safe con wrap-around) */
 //	if ((int32_t) (now - *next_release) > 0) {
 //		/* Deadline miss: siamo già oltre il rilascio */
-//		// HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
+//		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
 //		return 1;
 //	}
-
-//Penso sia migliore così. Se perdo un ciclo, mi riallineo al prossimo periodo
 	if ((int32_t)(now - *next_release) > 0) {
 	    *next_release = now + period_ticks;
-	    return 1;
+        if(miss_counter != NULL) {
+            (*miss_counter)++;
+        }
+	    return;
 	}
 
 	/* Sleep assoluta fino al prossimo periodo */
 	osDelayUntil(*next_release);
-	// HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
-	return 0;
+	//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
 }
 
 /* DECISION FUNCTIONS */
