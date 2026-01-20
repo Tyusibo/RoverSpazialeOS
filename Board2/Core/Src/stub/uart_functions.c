@@ -58,7 +58,7 @@ void resetRTR() {
     HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
 }
 
-void UART_ReceiveIT(uint8_t *pData, size_t size) {
+uint8_t UART_ReceiveIT(uint8_t *pData, size_t size) {
 	//pulisco i flag
     receivedFlag = 0;
     errorReceiveFlag = 0;
@@ -68,7 +68,9 @@ void UART_ReceiveIT(uint8_t *pData, size_t size) {
     if (HAL_UART_Receive_IT(current_handler, pData, size) != HAL_OK) {
     	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
         PRINT_DBG("B2 RECEVE_INIT_ERR\n\r");
+        return 0; //errore
     }
+    return 1; //ok
 }
 
 uint8_t hasReceived(void) {
@@ -79,7 +81,7 @@ uint8_t errorReceived(void) {
     return errorReceiveFlag;
 }
 
-void UART_ReceiveAck(void) {
+void UART_ReceiveAckIT(void) {
     received_ack = 0; // Pulizia
     UART_ReceiveIT(&received_ack, 1);
 }
@@ -88,11 +90,11 @@ uint8_t UART_CheckAck(void) {
     return received_ack;
 }
 
-void UART_SendAck(void) {
+void UART_SendAckIT(void) {
     UART_TransmitIT((uint8_t*) &ack, 1);
 }
 
-void UART_SendNack(void) {
+void UART_SendNackIT(void) {
     UART_TransmitIT((uint8_t*) &nack, 1);
 }
 

@@ -317,20 +317,20 @@ void StartSupervisor(void *argument)
 		if (cycle_count >= 50) {
 			cycle_count = 0;
 			//printMsg("Supervisor Cycle End\r\n");ù
-			//printGlobalState(&Board1_B.board1GlobalState);
-			printMsg("---- Supervisor Stats ----\r\n");
-            printLabel("Miss PID");
-            printInt(MissPID);
-            printNewLine();
-            printLabel("Miss Sup");
-            printInt(MissSupervisor);
-            printNewLine();
-            printLabel("Miss Temp");
-            printInt(MissReadTemperature);
-            printNewLine();
-            printLabel("Miss Batt");
-            printInt(MissReadBattery);
-            printNewLine();
+			printGlobalState(&Board1_B.board1GlobalState);
+//			printMsg("---- Supervisor Stats ----\r\n");
+//            printLabel("Miss PID");
+//            printInt(MissPID);
+//            printNewLine();
+//            printLabel("Miss Sup");
+//            printInt(MissSupervisor);
+//            printNewLine();
+//            printLabel("Miss Temp");
+//            printInt(MissReadTemperature);
+//            printNewLine();
+//            printLabel("Miss Batt");
+//            printInt(MissReadBattery);
+//            printNewLine();
 		}
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 		periodic_wait(&next, T, &MissSupervisor);
@@ -505,7 +505,7 @@ static inline void change_regulator(void)
         (Board1_DW.board1Decision.roverAction == RA_BRAKING_SMOOTH);
 
     for (int i = 0; i < N_MOTORS; i++) {
-        MotorControl_SelectSlow(&motors[i], use_slow);
+        MotorControl_SelectSlow(&motors[i], 0);
     }
 }
 /* USER CODE END Application */

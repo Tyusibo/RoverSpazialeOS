@@ -36,7 +36,7 @@
 
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 1
+#define VERBOSE_DEBUG 0
 
 #if VERBOSE_DEBUG == 1
 #define PRINT_DBG(msg) printMsg(msg)

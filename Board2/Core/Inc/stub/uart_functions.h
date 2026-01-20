@@ -29,7 +29,7 @@ void setRTR();
 
 void resetRTR();
 
-void UART_ReceiveIT(uint8_t *pData, size_t size);
+uint8_t UART_ReceiveIT(uint8_t *pData, size_t size);
 
 uint8_t hasReceived();
 
