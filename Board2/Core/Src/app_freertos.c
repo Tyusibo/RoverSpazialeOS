@@ -114,9 +114,7 @@ const osThreadAttr_t StartSegger_attributes = { .name = "StartSegger",
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 static uint32_t ms_to_ticks(uint32_t ms);
-static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks);
-static uint8_t periodic_wait_no_led(uint32_t *next_release,
-		uint32_t period_ticks);
+static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatile uint32_t *miss_counter);
 /* USER CODE END FunctionPrototypes */
 
 void StartReadController(void *argument);
@@ -200,17 +198,18 @@ void StartReadController(void *argument) {
 	/* Infinite loop */
 	for (;;) {
 #if REAL_TASK
-		uint8_t status = PadReceiver_Request();
+		int8_t status = PadReceiver_Request();
 
-		if (status == 0) {
+		if (status == PAD_ERR) {
 //			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
 //			break;         // Riprova
 		}
 
 		wait_start = osKernelGetTickCount();
-		while (!PadReceiver_IsDone()) {
+		while (PadReceiver_GetStatus() == PAD_RX_IN_PROGRESS) {
 			// attesa attiva con timeout
 			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(5)) {
+				printMsg("PadReceiver timeout!\r\n");
 				break;
 			}
 		};
@@ -224,8 +223,7 @@ void StartReadController(void *argument) {
 		HAL_Delay(C_CONTROLLER);
 #endif
 
-		if (periodic_wait_no_led(&next, T))
-			MissReadController++;
+		periodic_wait(&next, T, &MissReadController);
 	}
 
 	osThreadTerminate(osThreadGetId());
@@ -261,6 +259,7 @@ void StartReadGyroscope(void *argument) {
 		while (!MPU6050_IsDone()) {
 			// Attesa attiva con timeout
 			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(5)) {
+				printMsg("Gyroscope timeout!\r\n");
 				break;
 			}
 		}
@@ -276,8 +275,7 @@ void StartReadGyroscope(void *argument) {
 
 #endif
 
-		if (periodic_wait_no_led(&next, T))
-			MissReadGyroscope++;
+		periodic_wait(&next, T, &MissReadGyroscope);
 	}
 
 	osThreadTerminate(osThreadGetId());
@@ -305,7 +303,7 @@ void StartSupervisor(void *argument) {
 		wait_start = osKernelGetTickCount();
 		do {
 			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(50)) {
-				printLabel("Supervisor timeout!");
+				printMsg("Supervisor timeout!\r\n");
 				break;
 			}
 			Board2_step();
@@ -318,23 +316,19 @@ void StartSupervisor(void *argument) {
 		static uint32_t counter_print = 0;
 		counter_print++;
 		if (counter_print >= 40) { // Approx 2 seconds (50ms * 40)
-			printLabel("Miss RC:");
+			printMsg("---- Supervisor Stats ----\r\n");
+			printLabel("Miss RC");
 			printInt(MissReadController);
-			printNewLine();
-			printLabel("Miss Gyro:");
+			printLabel("Miss Gyro");
 			printInt(MissReadGyroscope);
-			printNewLine();
-			printLabel("Miss Sup:");
+			printLabel("Miss Sup");
 			printInt(MissSupervisor);
-			printNewLine();
-			printLabel("Miss Sonar:");
+			printLabel("Miss Sonar");
 			printInt(MissReadSonars);
-			printNewLine();
 			counter_print = 0;
 		}
 
-		if (periodic_wait(&next, T))
-			MissSupervisor++;
+		periodic_wait(&next, T, &MissSupervisor);
 
 	}
 
@@ -379,9 +373,10 @@ void StartReadSonars(void *argument) {
 			}
 
 			// Timeout safety (es. 40ms)
-			if ((osKernelGetTickCount() - start_wait) > ms_to_ticks(40)) {
-				break;
-			}
+//			if ((osKernelGetTickCount() - start_wait) > ms_to_ticks(200)) {
+//				printMsg("Sonar read timeout!\r\n");
+//				break;
+//			}
 
 			// Non mettiamo osDelay qui perché hai chiesto "non voglio che il task si sospenda".
 			// Il task occuperà la CPU in questo loop (utile se è a bassa priorità e viene preempted dagli altri).
@@ -404,8 +399,10 @@ void StartReadSonars(void *argument) {
 		// 4. Copia dati
         Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,sonarRight.distance};
 		//Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
+        printSonar(&Board2_U.sonar);
 
-		if (periodic_wait_no_led(&next, T)) MissReadSonars++;
+        periodic_wait(&next, T, &MissReadSonars);
+
 #else
 		HAL_Delay(C_SONAR);
 #endif
@@ -443,42 +440,30 @@ static uint32_t ms_to_ticks(uint32_t ms) {
 	return (ms * hz + 999u) / 1000u;
 }
 
-static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks) {
+static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatile uint32_t *miss_counter) {
 	uint32_t now = osKernelGetTickCount();
 
 	/* Calcola il prossimo rilascio */
 	*next_release += period_ticks;
 
 	/* Controllo deadline miss (safe con wrap-around) */
-	if ((int32_t) (now - *next_release) > 0) {
-		/* Deadline miss: siamo già oltre il rilascio */
-		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
-		return 1;
+//	if ((int32_t) (now - *next_release) > 0) {
+//		/* Deadline miss: siamo già oltre il rilascio */
+//		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
+//		return 1;
+//	}
+	if ((int32_t)(now - *next_release) > 0) {
+	    *next_release = now + period_ticks;
+        if(miss_counter != NULL) {
+            (*miss_counter)++;
+        }
+	    return;
 	}
 
 	/* Sleep assoluta fino al prossimo periodo */
 	osDelayUntil(*next_release);
 	//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
-	return 0;
 }
 
-static uint8_t periodic_wait_no_led(uint32_t *next_release,
-		uint32_t period_ticks) {
-	uint32_t now = osKernelGetTickCount();
-
-	/* Calcola il prossimo rilascio */
-	*next_release += period_ticks;
-
-	/* Controllo deadline miss (safe con wrap-around) */
-	if ((int32_t) (now - *next_release) > 0) {
-		/* Deadline miss: siamo già oltre il rilascio */
-		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
-		return 1;
-	}
-
-	/* Sleep assoluta fino al prossimo periodo */
-	osDelayUntil(*next_release);
-	return 0;
-}
 /* USER CODE END Application */
 

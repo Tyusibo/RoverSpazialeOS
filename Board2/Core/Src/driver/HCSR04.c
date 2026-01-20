@@ -106,8 +106,6 @@ void hcsr04_process_distance(hcsr04_t *sensor)
         sensor->distance = (float)DISTANCE_LIMIT;
     if (sensor->distance < 0.0f)
         sensor->distance = 0.0f;
-
-    sensor->rx_done = 1;
 }
 
 // Call this from HAL_TIM_IC_CaptureCallback(), for the right sensor matching the active channel.
@@ -137,7 +135,7 @@ int8_t hcsr04_read_distance(hcsr04_t *sensor)
         // Disable this channel interrupt until next trigger
         uint32_t it = channel_to_it(sensor->echo_channel);
         if (it != 0u) __HAL_TIM_DISABLE_IT(sensor->echo_tim, it);
-
+        sensor->rx_done = 1;
         // Return special code 2 to indicate "Capture Complete - Ready for Processing"
         return 2;
     }

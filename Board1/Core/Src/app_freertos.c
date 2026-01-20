@@ -283,8 +283,8 @@ void StartSupervisor(void *argument)
 		//printMsg("Supervisor Cycle Start\r\n");
 		wait_start = osKernelGetTickCount();
 		do {
-			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(50)) {
-				printLabel("Supervisor timeout!");
+			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(40)) {
+				printMsg("Supervisor timeout!\r\n");
 				break;
 			}
 			Board1_step();
@@ -304,18 +304,18 @@ void StartSupervisor(void *argument)
 		if (cycle_count >= 50) {
 			cycle_count = 0;
 			//printMsg("Supervisor Cycle End\r\n");ù
-			printGlobalState(&Board1_B.board1GlobalState);
-
-            printLabel("Miss PID:");
+			//printGlobalState(&Board1_B.board1GlobalState);
+			printMsg("---- Supervisor Stats ----\r\n");
+            printLabel("Miss PID");
             printInt(MissPID);
             printNewLine();
-            printLabel("Miss Sup:");
+            printLabel("Miss Sup");
             printInt(MissSupervisor);
             printNewLine();
-            printLabel("Miss Temp:");
+            printLabel("Miss Temp");
             printInt(MissReadTemperature);
             printNewLine();
-            printLabel("Miss Batt:");
+            printLabel("Miss Batt");
             printInt(MissReadBattery);
             printNewLine();
 		}
@@ -346,8 +346,7 @@ void StartReadTemperature(void *argument)
     /* Infinite loop */
     for (;;) {
 #if REAL_TASK
-        Board1_U.temperature = (Temperature) temp_ky028_read_temperature(
-                &temp_sensor);
+        Board1_U.temperature = (Temperature) temp_ky028_read_temperature(&temp_sensor);
 #else
         HAL_Delay(C_TEMPERATURE);
 #endif
@@ -433,17 +432,17 @@ static uint8_t periodic_wait(uint32_t *next_release, uint32_t period_ticks) {
 	*next_release += period_ticks;
 
 	/* Controllo deadline miss (safe con wrap-around) */
-	if ((int32_t) (now - *next_release) > 0) {
-		/* Deadline miss: siamo già oltre il rilascio */
-		// HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
-		return 1;
-	}
+//	if ((int32_t) (now - *next_release) > 0) {
+//		/* Deadline miss: siamo già oltre il rilascio */
+//		// HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
+//		return 1;
+//	}
 
 //Penso sia migliore così. Se perdo un ciclo, mi riallineo al prossimo periodo
-//	if ((int32_t)(now - *next_release) > 0) {
-//	    *next_release = now + period_ticks;
-//	    return 1;
-//	}
+	if ((int32_t)(now - *next_release) > 0) {
+	    *next_release = now + period_ticks;
+	    return 1;
+	}
 
 	/* Sleep assoluta fino al prossimo periodo */
 	osDelayUntil(*next_release);
