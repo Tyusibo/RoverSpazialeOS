@@ -19,7 +19,7 @@ uint8_t checkRTR(void);
 
 void UART_TransmitIT(uint8_t *pData, size_t size);
 
-void UART_ReceiveAck(void);
+void UART_ReceiveAckIT(void);
 
 uint8_t UART_CheckAck(void);
 
@@ -35,8 +35,8 @@ uint8_t hasReceived();
 
 uint8_t errorReceived(void);
 
-void UART_SendAck(void);
+void UART_SendAckIT(void);
 
-void UART_SendNack(void);
+void UART_SendNackIT(void);
 
 #endif /* INC_STUB_UARTFUNCTIONS_H_ */
