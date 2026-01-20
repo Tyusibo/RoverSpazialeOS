@@ -205,7 +205,7 @@ void LPUART1_IRQHandler(void)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	UART_HandleTypeDef *h = getComunicationHandler();
 	if (h != NULL && huart->Instance == h->Instance) {
-		//PRINT_DBG("B2 Received\n\r");
+		PRINT_DBG("B2 Received\n\r");
 		if (receivedFlag == 0) {
 			receivedFlag = 1;
 		}

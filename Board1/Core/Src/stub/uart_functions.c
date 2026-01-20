@@ -6,7 +6,7 @@
 
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 0
+#define VERBOSE_DEBUG 1
 
 #if VERBOSE_DEBUG == 1
     #define PRINT_DBG(msg) printMsg(msg)
@@ -74,6 +74,7 @@ void UART_TransmitIT(uint8_t *pData, size_t size) {
 /* Ricezione */
 
 void setRTR(void) {
+	PRINT_DBG("SET RTR\n\r\r\n");
     HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_SET);
 }
 
@@ -88,7 +89,8 @@ void UART_ReceiveIT(uint8_t *pData, size_t size) {
 
     PRINT_DBG("B1 Wait receive\n\r");
 
-    if (HAL_UART_Receive_IT(current_handler, pData, size) != HAL_OK) {
+    HAL_StatusTypeDef status_receive = HAL_UART_Receive_IT(current_handler, pData, size);
+    if (status_receive != HAL_OK) {
     	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
         PRINT_DBG("B1 RECEVE_INIT_ERR\n\r");
     }

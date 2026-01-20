@@ -64,7 +64,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 #define REAL_TASK 1 
 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
-#define PRINT 1    
+#define PRINT 0
  // 1: Abilita stampe di debug, 0: Disabilita stampe di debug
 
 /* USER CODE END PD */
@@ -254,7 +254,7 @@ void StartPID(void *argument)
 
 #if PRINT
         printMotorSpeeds(&Board1_U.speed);
-        HAL_Delay(2000); // Per non intasare la seriale
+        //HAL_Delay(2000); // Per non intasare la seriale
 #endif
 
 #else
@@ -293,10 +293,10 @@ void StartSupervisor(void *argument)
 		//printMsg("Supervisor Cycle Start\r\n");
 		wait_start = osKernelGetTickCount();
 		do {
-			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(40)) {
-				printMsg("Supervisor timeout!\r\n");
-				break;
-			}
+//			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(40)) {
+//				printMsg("Supervisor timeout!\r\n");
+//				break;
+//			}
 			Board1_step();
 		} while (Board1_DW.is_ExchangeDecision != Board1_IN_Execution);
 
@@ -362,7 +362,7 @@ void StartReadTemperature(void *argument)
 
 #if PRINT
         printTemperature((float)Board1_U.temperature);
-        HAL_Delay(2000);
+        //HAL_Delay(2000);
 #endif
 
 #else
@@ -399,7 +399,7 @@ void StartReadBattery(void *argument)
 
 #if PRINT
         printBattery((float)Board1_U.batteryLevel);
-        HAL_Delay(2000);
+        //HAL_Delay(2000);
 #endif
 
 #else
