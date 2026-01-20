@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 4.34
+ * Model version                  : 4.55
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Mon Jan 12 16:40:47 2026
+ * C/C++ source code generated on : Tue Jan 20 22:12:22 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -50,6 +50,7 @@
 #include "deserialize.h"
 #include "uart_functions.h"
 #include "crc_functions.h"
+#include "freeRTOS_functions.h"
 
 /* Block signals (default storage) */
 typedef struct {
@@ -70,7 +71,7 @@ typedef struct {
   uint32_T exit_port_index_ComputeDecision;/* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_ExchangeDecisio;/* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_D_Receive;  /* '<Root>/SupervisorB2' */
-  uint32_T exit_port_index_Transmit;   /* '<Root>/SupervisorB2' */
+  uint32_T exit_port_index_D_Transmit; /* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_ExchangeGlobalS;/* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_GL_Receive; /* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_GL_Transmit;/* '<Root>/SupervisorB2' */
@@ -89,13 +90,14 @@ typedef struct {
   uint8_T txPayload;                   /* '<Root>/SupervisorB2' */
   uint8_T rxPayload;                   /* '<Root>/SupervisorB2' */
   uint8_T flagCRC;                     /* '<Root>/SupervisorB2' */
+  uint8_T receiveArmed;                /* '<Root>/SupervisorB2' */
   uint8_T is_active_c3_Board2;         /* '<Root>/SupervisorB2' */
   uint8_T is_RoverState;               /* '<Root>/SupervisorB2' */
   uint8_T is_CommunicationPhase;       /* '<Root>/SupervisorB2' */
   uint8_T is_ComputeDecision;          /* '<Root>/SupervisorB2' */
   uint8_T is_ExchangeDecision;         /* '<Root>/SupervisorB2' */
   uint8_T is_D_Receive;                /* '<Root>/SupervisorB2' */
-  uint8_T is_Transmit;                 /* '<Root>/SupervisorB2' */
+  uint8_T is_D_Transmit;               /* '<Root>/SupervisorB2' */
   uint8_T is_ExchangeGlobalState;      /* '<Root>/SupervisorB2' */
   uint8_T is_GL_Receive;               /* '<Root>/SupervisorB2' */
   uint8_T is_GL_Transmit;              /* '<Root>/SupervisorB2' */
@@ -121,6 +123,7 @@ typedef struct {
   ENUM_SafeAction safeAction;          /* '<Root>/safeAction' */
   ENUM_TrackingObstacles statusObstacles;/* '<Root>/statusObstacles' */
   ENUM_UserAction currentUserAction;   /* '<Root>/currentUserAction' */
+  uint8_T supervision_ended;           /* '<Root>/supervision_ended' */
 } ExtY_Board2_T;
 
 /* Real-time Model Data Structure */

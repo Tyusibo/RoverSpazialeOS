@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 4.4
+ * Model version                  : 4.7
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Mon Jan 12 16:33:53 2026
+ * C/C++ source code generated on : Tue Jan 20 22:05:20 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -24,7 +24,6 @@
 #include "sensors.h"
 #include "decision.h"
 #include <math.h>
-#include "rt_nonfinite.h"
 
 /* Named constants for Chart: '<Root>/MovingObstacles' */
 #define Ac_IN_PossibleStartingFromRight ((uint8_T)4U)
@@ -305,27 +304,16 @@ static uint8_T ActionsModel_areAllSpeedsZero(real32_T speed1, real32_T speed2,
 static uint8_T Acti_trackGyroAngleChangeRobust(real32_T *accumulatedChange,
   real32_T previousValue, real32_T currentValue, real32_T threshold)
 {
-  uint8_T hasChanged;
-  if (rtIsInfF(previousValue) || rtIsNaNF(previousValue)) {
-    hasChanged = 0U;
-  } else if (rtIsInfF(currentValue) || rtIsNaNF(currentValue)) {
-    hasChanged = 0U;
-  } else if (rtIsInfF(threshold) || rtIsNaNF(threshold)) {
-    hasChanged = 0U;
-  } else {
-    real32_T deltaRaw;
-    deltaRaw = currentValue - previousValue;
-    if (deltaRaw > 180.0F) {
-      deltaRaw -= 360.0F;
-    } else if (deltaRaw < -180.0F) {
-      deltaRaw += 360.0F;
-    }
-
-    *accumulatedChange += deltaRaw;
-    hasChanged = (uint8_T)(fabsf(*accumulatedChange) >= fabsf(threshold));
+  real32_T deltaRaw;
+  deltaRaw = currentValue - previousValue;
+  if (deltaRaw > 180.0F) {
+    deltaRaw -= 360.0F;
+  } else if (deltaRaw < -180.0F) {
+    deltaRaw += 360.0F;
   }
 
-  return hasChanged;
+  *accumulatedChange += deltaRaw;
+  return (uint8_T)(fabsf(*accumulatedChange) >= fabsf(threshold));
 }
 
 /* Function for Chart: '<Root>/RoverAction' */
