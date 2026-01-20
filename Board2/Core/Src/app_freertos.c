@@ -46,7 +46,8 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define REAL_TASK 1 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
+#define REAL_TASK 1
+// 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
 
 /* USER CODE END PD */
 
@@ -191,27 +192,25 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartReadController */
 void StartReadController(void *argument) {
 	/* USER CODE BEGIN StartReadController */
+
 	const uint32_t T = ms_to_ticks(T_REMOTE_CONTROLLER);
 	uint32_t next = osKernelGetTickCount();
-	uint32_t wait_start;
+
+	int8_t result = PAD_ERR;
 
 	/* Infinite loop */
 	for (;;) {
-#if REAL_TASK
-		int8_t status = PadReceiver_Request();
 
-		if (status == PAD_ERR) {
+#if REAL_TASK
+		result = PadReceiver_Request();
+
+		if (result == PAD_ERR) {
 //			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
 //			break;         // Riprova
 		}
 
-		wait_start = osKernelGetTickCount();
 		while (PadReceiver_GetStatus() == PAD_RX_IN_PROGRESS) {
-			// attesa attiva con timeout
-			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(5)) {
-				printMsg("PadReceiver timeout!\r\n");
-				break;
-			}
+
 		};
 
 		// Trasferisce i dati dal buffer del driver alla struttura locale
@@ -240,28 +239,25 @@ extern MPU6050_Yaw_t MPU6050_Yaw;
 /* USER CODE END Header_StartReadGyroscope */
 void StartReadGyroscope(void *argument) {
 	/* USER CODE BEGIN StartReadGyroscope */
-	const uint32_t T = ms_to_ticks(T_GYROSCOPE); // T_GYROSCOPE
+
+	const uint32_t T = ms_to_ticks(T_GYROSCOPE);
 	uint32_t next = osKernelGetTickCount();
-	uint32_t wait_start;
+
+	int8_t result = MPU_ERR;
 
 	/* Infinite loop */
 	for (;;) {
 
 #if REAL_TASK
-		uint8_t status = MPU6050_Read_Yaw_IT(&hi2c3, &MPU6050_Yaw);
+		result = MPU6050_Read_Yaw_IT(&hi2c3, &MPU6050_Yaw);
 
-		if (status == 0) {
+		if (result == MPU_ERR) {
 //			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
 //			break;         // Riprova
 		}
 
-		wait_start = osKernelGetTickCount();
-		while (!MPU6050_IsDone()) {
-			// Attesa attiva con timeout
-			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(5)) {
-				printMsg("Gyroscope timeout!\r\n");
-				break;
-			}
+		while (MPU6050_GetStatus() == MPU_RX_IN_PROGRESS) {
+
 		}
 		MPU6050_Process_Yaw_IT_Data();
 
@@ -293,19 +289,14 @@ void StartReadGyroscope(void *argument) {
 /* USER CODE END Header_StartSupervisor */
 void StartSupervisor(void *argument) {
 	/* USER CODE BEGIN StartSupervisor */
+
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
-	uint32_t wait_start;
 
 	/* Infinite loop */
 	for (;;) {
 
-		wait_start = osKernelGetTickCount();
 		do {
-			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(50)) {
-				printMsg("Supervisor timeout!\r\n");
-				break;
-			}
 			Board2_step();
 		} while (Board2_DW.is_ExchangeDecision != Board2_IN_Execution);
 
@@ -346,12 +337,13 @@ void StartSupervisor(void *argument) {
 /* USER CODE END Header_StartReadSonars */
 void StartReadSonars(void *argument) {
 	/* USER CODE BEGIN StartReadSonars */
+
 	const uint32_t T = ms_to_ticks(T_SONAR);
 	uint32_t next = osKernelGetTickCount();
-	uint32_t start_wait;
 
 	/* Infinite loop */
 	for (;;) {
+
 #if REAL_TASK
 // 1. Triggera i sensori (questo resetta rx_done a 0)
 		hcsr04_trigger(&sonarLeft);
@@ -361,7 +353,6 @@ void StartReadSonars(void *argument) {
 		// 2. Attesa attiva: il task non si sospende, ma cicla finché i dati non sono pronti.
 		// Aggiungo un timeout di sicurezza usando il tick count per evitare blocchi infiniti
 		// se si stacca un cavo (max 40ms, un sonar ne impiega max ~25ms).
-		start_wait = osKernelGetTickCount();
 
 		while (1) {
 			uint8_t d1 = hcsr04_is_done(&sonarLeft);

@@ -279,37 +279,44 @@ double Kalman_getAngle(Kalman_t *Kalman, double newAngle, double newRate, double
 // --- Variabili statiche per la gestione Interrupt ---
 static uint8_t yaw_buffer[2];            // Buffer per i dati grezzi I2C
 static MPU6050_Yaw_t *pYawStruct = NULL; // Puntatore alla struct correntemente in uso
-static volatile uint8_t mpu_rx_done = 1; // Flag stato completamento (1=Done/Idle, 0=Busy)
+static volatile MPU_RxStatus_t mpu_rx_status = MPU_RX_NOT_RECEIVED;
 
 // ---------------------------------------------------------
-// IMPLEMENTAZIONE LETTURA TRAMITE INTERRUPT (LOGICA PAD_RECEIVER)
+// IMPLEMENTAZIONE LETTURA TRAMITE INTERRUPT 
 // ---------------------------------------------------------
 
 /**
  * @brief Avvia la lettura dello Yaw in modalità Interrupt.
- * @return 1 se la richiesta è partita con successo, 0 altrimenti (Busy o Error)
+ * @return MPU_OK se la richiesta è partita con successo, MPU_ERR altrimenti
  */
-uint8_t MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct)
+int8_t MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct)
 {
     if (HAL_I2C_GetState(I2Cx) == HAL_I2C_STATE_READY) {
         
-        mpu_rx_done = 0; // Reset flag: inizio operazione (Busy)
+        mpu_rx_status = MPU_RX_IN_PROGRESS; // Reset flag: inizio operazione (Busy)
         pYawStruct = DataStruct;
 
         // Avvia lettura memoria via interrupt (Registro GYRO_ZOUT_H_REG, 2 bytes)
         if(HAL_I2C_Mem_Read_IT(I2Cx, MPU6050_ADDR, GYRO_ZOUT_H_REG, 1, yaw_buffer, 2) != HAL_OK) {
-             mpu_rx_done = 1; // Errore avvio: ripristina stato DONE per non bloccare
-             return 0;        // Start failed
+             mpu_rx_status = MPU_RX_NOT_RECEIVED; // Errore avvio
+             return MPU_ERR;        // Start failed
         }
-        return 1; // Successfully started
+        return MPU_OK; // Successfully started
     } else {
-        return 0; // Busy or HAL Not Ready
+        return MPU_ERR; // Busy or HAL Not Ready
     }
 }
 
+MPU_RxStatus_t MPU6050_GetStatus(void) {
+    return mpu_rx_status;
+}
+
+void MPU6050_RxCpltCallback(void) {
+    mpu_rx_status = MPU_RX_SUCCESS; // Segnala operazione conclusa con successo
+}
+
 /**
- * @brief Funzione di elaborazione dati chiamata dalla callback globale HAL RxCmplt.
- *        Segnala "Done" alla fine.
+ * @brief Funzione di elaborazione dati chiamata dal Task dopo il completamento.
  */
 void MPU6050_Process_Yaw_IT_Data(void)
 {
@@ -338,24 +345,11 @@ void MPU6050_Process_Yaw_IT_Data(void)
         // 6. Output
         pYawStruct->KalmanAngleZ = (uint16_t)(pYawStruct->_YawAcc);
     }
-    
-    mpu_rx_done = 1; // Segnala operazione conclusa
 }
 
 /**
  * @brief Callback di errore per sbloccare il flag in caso di problemi I2C
  */
 void MPU6050_Error_Callback(void) {
-    mpu_rx_done = 1; // Segnala operazione conclusa (anche se errore)
-}
-
-/**
- * @brief Restituisce 1 se l'operazione è conclusa (Idle), 0 se è in corso (Busy)
- */
-uint8_t MPU6050_IsDone(void) {
-    return mpu_rx_done;
-}
-
-void MPU6050_Set_Done(void) {
-    mpu_rx_done = 1; // Segnala operazione conclusa (anche se errore)
+    mpu_rx_status = MPU_RX_ERROR; // Segnala errore
 }

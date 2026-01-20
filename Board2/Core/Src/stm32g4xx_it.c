@@ -379,7 +379,7 @@ void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 
 	if (hi2c->Instance == I2C3) {
-		MPU6050_Set_Done();
+		MPU6050_RxCpltCallback();
 	}
 }
 

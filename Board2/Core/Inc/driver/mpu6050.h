@@ -72,16 +72,38 @@ void MPU6050_Read_Yaw(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct);
 
 double Kalman_getAngle(Kalman_t *Kalman, double newAngle, double newRate, double dt);
 
+// Define per return status
+#define MPU_OK      (0)
+#define MPU_ERR     (-1)
+
+// Enum per lo stato della ricezione asincrona
+typedef enum {
+    MPU_RX_NOT_RECEIVED = 0, // Idle
+    MPU_RX_IN_PROGRESS,      // Busy
+    MPU_RX_SUCCESS,          // Done OK
+    MPU_RX_ERROR             // Done Error
+} MPU_RxStatus_t;
+
 // *** GESTIONE ASINCRONA / INTERRUPT (Logica PadReceiver) ***
 /**
  * @brief Avvia la lettura dello Yaw in modalità Interrupt (Non-Blocking).
- * @return 1 se avviata con successo, 0 se occupato o errore.
+ * @return MPU_OK se avviata con successo, MPU_ERR se occupato o errore.
  */
-uint8_t MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct);
+int8_t MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct);
+
+/**
+ * @brief Restituisce lo stato dell'operazione.
+ */
+MPU_RxStatus_t MPU6050_GetStatus(void);
 
 /**
  * @brief Da chiamare dentro HAL_I2C_MemRxCpltCallback (o RxCpltCallback) nel main.c 
- *        per elaborare i dati appena ricevuti.
+ *        per segnalare il completamento della RX.
+ */
+void MPU6050_RxCpltCallback(void);
+
+/**
+ * @brief Elabora i dati ricevuti (da chiamare nel task dopo SUCCESS).
  */
 void MPU6050_Process_Yaw_IT_Data(void);
 
@@ -89,13 +111,5 @@ void MPU6050_Process_Yaw_IT_Data(void);
  * @brief Da chiamare nella HAL_I2C_ErrorCallback per gestire errori e sbloccare il bus.
  */
 void MPU6050_Error_Callback(void);
-
-/**
- * @brief Restituisce lo stato dell'operazione.
- * @return 1 se completato/idle (RxDone), 0 se in corso.
- */
-uint8_t MPU6050_IsDone(void);
-
-void MPU6050_Set_Done(void);
 
 #endif /* INC_GY521_H_ */
