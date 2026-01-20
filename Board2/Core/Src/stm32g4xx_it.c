@@ -27,7 +27,6 @@
 #include "mpu6050.h"
 #include "print.h"
 #include "uart_functions.h"
-#include "SEGGER_SYSVIEW.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +43,7 @@
 #if VERBOSE_DEBUG == 1
 #define PRINT_DBG(msg) printMsg(msg)
 #else
-#define PRINT_DBG(msg) ((void)0)
+    #define PRINT_DBG(msg) ((void)0)
 #endif
 /* ---------------------------- */
 /* USER CODE END PD */
@@ -187,11 +186,11 @@ void TIM2_IRQHandler(void) {
  */
 void I2C1_EV_IRQHandler(void) {
 	/* USER CODE BEGIN I2C1_EV_IRQn 0 */
-	SEGGER_SYSVIEW_RecordEnterISR();
+
 	/* USER CODE END I2C1_EV_IRQn 0 */
 	HAL_I2C_EV_IRQHandler(&hi2c1);
 	/* USER CODE BEGIN I2C1_EV_IRQn 1 */
-	SEGGER_SYSVIEW_RecordExitISR();
+
 	/* USER CODE END I2C1_EV_IRQn 1 */
 }
 
@@ -200,11 +199,11 @@ void I2C1_EV_IRQHandler(void) {
  */
 void I2C1_ER_IRQHandler(void) {
 	/* USER CODE BEGIN I2C1_ER_IRQn 0 */
-	SEGGER_SYSVIEW_RecordEnterISR();
+
 	/* USER CODE END I2C1_ER_IRQn 0 */
 	HAL_I2C_ER_IRQHandler(&hi2c1);
 	/* USER CODE BEGIN I2C1_ER_IRQn 1 */
-	SEGGER_SYSVIEW_RecordExitISR();
+
 	/* USER CODE END I2C1_ER_IRQn 1 */
 }
 
@@ -213,11 +212,11 @@ void I2C1_ER_IRQHandler(void) {
  */
 void USART2_IRQHandler(void) {
 	/* USER CODE BEGIN USART2_IRQn 0 */
-	SEGGER_SYSVIEW_RecordEnterISR();
+
 	/* USER CODE END USART2_IRQn 0 */
 	HAL_UART_IRQHandler(&huart2);
 	/* USER CODE BEGIN USART2_IRQn 1 */
-	SEGGER_SYSVIEW_RecordExitISR();
+
 	/* USER CODE END USART2_IRQn 1 */
 }
 
@@ -252,11 +251,11 @@ void TIM7_DAC_IRQHandler(void) {
  */
 void LPUART1_IRQHandler(void) {
 	/* USER CODE BEGIN LPUART1_IRQn 0 */
-	SEGGER_SYSVIEW_RecordEnterISR();
+
 	/* USER CODE END LPUART1_IRQn 0 */
 	HAL_UART_IRQHandler(&hlpuart1);
 	/* USER CODE BEGIN LPUART1_IRQn 1 */
-	SEGGER_SYSVIEW_RecordExitISR();
+
 	/* USER CODE END LPUART1_IRQn 1 */
 }
 
@@ -265,11 +264,11 @@ void LPUART1_IRQHandler(void) {
  */
 void I2C3_EV_IRQHandler(void) {
 	/* USER CODE BEGIN I2C3_EV_IRQn 0 */
-	SEGGER_SYSVIEW_RecordEnterISR();
+
 	/* USER CODE END I2C3_EV_IRQn 0 */
 	HAL_I2C_EV_IRQHandler(&hi2c3);
 	/* USER CODE BEGIN I2C3_EV_IRQn 1 */
-	SEGGER_SYSVIEW_RecordExitISR();
+
 	/* USER CODE END I2C3_EV_IRQn 1 */
 }
 
@@ -278,11 +277,11 @@ void I2C3_EV_IRQHandler(void) {
  */
 void I2C3_ER_IRQHandler(void) {
 	/* USER CODE BEGIN I2C3_ER_IRQn 0 */
-	SEGGER_SYSVIEW_RecordEnterISR();
+
 	/* USER CODE END I2C3_ER_IRQn 0 */
 	HAL_I2C_ER_IRQHandler(&hi2c3);
 	/* USER CODE BEGIN I2C3_ER_IRQn 1 */
-	SEGGER_SYSVIEW_RecordExitISR();
+
 	/* USER CODE END I2C3_ER_IRQn 1 */
 }
 
