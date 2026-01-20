@@ -502,18 +502,24 @@ static inline void change_regulator(void)
 {
     const uint8_t action = Board1_DW.board1Decision.roverAction;
 
-    if (action == RA_BRAKING_SMOOTH) {
-        for (int i = 0; i < N_MOTORS; i++) {
-            MotorControl_SetRegulator(&motors[i], &pid_slow[i]);
-        }
-    } else if (action == RA_ROTATE_RIGHT) {
-        for (int i = 0; i < N_MOTORS; i++) {
-            MotorControl_SetRegulator(&motors[i], &pid_medium[i]);
-        }
-    } else {
-        for (int i = 0; i < N_MOTORS; i++) {
-            MotorControl_SetRegulator(&motors[i], &pid_fast[i]);
-        }
+    switch (action) {
+        case RA_BRAKING_SMOOTH:
+            for (int i = 0; i < N_MOTORS; i++) {
+                MotorControl_SetRegulator(&motors[i], &pid_slow[i]);
+            }
+            break;
+
+        case RA_ROTATE_RIGHT:
+            for (int i = 0; i < N_MOTORS; i++) {
+                MotorControl_SetRegulator(&motors[i], &pid_medium[i]);
+            }
+            break;
+
+        default:
+            for (int i = 0; i < N_MOTORS; i++) {
+                MotorControl_SetRegulator(&motors[i], &pid_fast[i]);
+            }
+            break;
     }
 }
 /* USER CODE END Application */
