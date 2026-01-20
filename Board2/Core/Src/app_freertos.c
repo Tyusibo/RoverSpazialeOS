@@ -48,7 +48,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 
 #define REAL_TASK 1
 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
-#define PRINT 1
+#define PRINT 0
 // 1: Abilita stampe di debug, 0: Disabilita stampe di debug
 
 /* USER CODE END PD */
@@ -159,21 +159,21 @@ void MX_FREERTOS_Init(void) {
 	ReadControllerHandle = osThreadNew(StartReadController, NULL,
 			&ReadController_attributes);
 
-//	/* creation of ReadGyroscope */
-//	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
-//			&ReadGyroscope_attributes);
-//
-//	/* creation of Supervisor */
-//	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
-//			&Supervisor_attributes);
-//
-//	/* creation of ReadSonars */
-//	ReadSonarsHandle = osThreadNew(StartReadSonars, NULL,
-//			&ReadSonars_attributes);
-//
-//	/* creation of StartSegger */
-//	StartSeggerHandle = osThreadNew(StartSeggerTask, NULL,
-//			&StartSegger_attributes);
+	/* creation of ReadGyroscope */
+	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
+			&ReadGyroscope_attributes);
+
+	/* creation of Supervisor */
+	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
+			&Supervisor_attributes);
+
+	/* creation of ReadSonars */
+	ReadSonarsHandle = osThreadNew(StartReadSonars, NULL,
+			&ReadSonars_attributes);
+
+	/* creation of StartSegger */
+	StartSeggerHandle = osThreadNew(StartSeggerTask, NULL,
+			&StartSegger_attributes);
 
 	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -315,6 +315,7 @@ void StartSupervisor(void *argument) {
 		Board2_U.continua = (Board2_U.continua == 0) ? 1 : 0;
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 
+#if PRINT
 		static uint32_t counter_print = 0;
 		counter_print++;
 		if (counter_print >= 40) { // Approx 2 seconds (50ms * 40)
@@ -329,7 +330,7 @@ void StartSupervisor(void *argument) {
 			printInt(MissReadSonars);
 			counter_print = 0;
 		}
-
+#endif
 		periodic_wait(&next, T, &MissSupervisor);
 
 	}
