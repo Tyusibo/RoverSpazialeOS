@@ -5,17 +5,28 @@ extern TIM_HandleTypeDef htim1;
 
 MotorControl motors[N_MOTORS];
 
+PIDController pid_fast[N_MOTORS];
+PIDController pid_medium[N_MOTORS];
+PIDController pid_slow[N_MOTORS];
+
 
 void Motors_InitAll(void)
 {
-	Coefficients fastGains[N_MOTORS] = {
+	float fastGains[N_MOTORS][2] = {
 	    [MOTOR_FRONT_LEFT]  = { FAST_MOT1_K_ERR, FAST_MOT1_K_LAST_ERR },
 	    [MOTOR_FRONT_RIGHT] = { FAST_MOT2_K_ERR, FAST_MOT2_K_LAST_ERR },
 	    [MOTOR_REAR_RIGHT]  = { FAST_MOT3_K_ERR, FAST_MOT3_K_LAST_ERR },
 	    [MOTOR_REAR_LEFT]   = { FAST_MOT4_K_ERR, FAST_MOT4_K_LAST_ERR }
 	};
 
-	Coefficients slowGains[N_MOTORS] = {
+    float mediumGains[N_MOTORS][2] = {
+	    [MOTOR_FRONT_LEFT]  = { MEDIUM_MOT1_K_ERR, MEDIUM_MOT1_K_LAST_ERR },
+	    [MOTOR_FRONT_RIGHT] = { MEDIUM_MOT2_K_ERR, MEDIUM_MOT2_K_LAST_ERR },
+	    [MOTOR_REAR_RIGHT]  = { MEDIUM_MOT3_K_ERR, MEDIUM_MOT3_K_LAST_ERR },
+	    [MOTOR_REAR_LEFT]   = { MEDIUM_MOT4_K_ERR, MEDIUM_MOT4_K_LAST_ERR }
+	};
+
+	float slowGains[N_MOTORS][2] = {
 	    [MOTOR_FRONT_LEFT]  = { SLOW_MOT1_K_ERR, SLOW_MOT1_K_LAST_ERR },
 	    [MOTOR_FRONT_RIGHT] = { SLOW_MOT2_K_ERR, SLOW_MOT2_K_LAST_ERR },
 	    [MOTOR_REAR_RIGHT]  = { SLOW_MOT3_K_ERR, SLOW_MOT3_K_LAST_ERR },
@@ -38,6 +49,10 @@ void Motors_InitAll(void)
 
     for (int i = 0; i < N_MOTORS; i++)
     {
+        PID_Init(&pid_fast[i], fastGains[i][0], fastGains[i][1]);
+        PID_Init(&pid_medium[i], mediumGains[i][0], mediumGains[i][1]);
+        PID_Init(&pid_slow[i], slowGains[i][0], slowGains[i][1]);
+
         MotorControl_Init(&motors[i],
                           &htim1, pwm_ch[i],
                           TS, MIN_VOLT, MAX_VOLT,
@@ -45,7 +60,7 @@ void Motors_InitAll(void)
                           dc_gains[i],
 						  PULSE_THEO_MIN, PULSE_THEO_MAX,
 						  PULSE_REAL_MIN, PULSE_REAL_MAX,
-                          fastGains[i], slowGains[i]);
+                          &pid_fast[i]);
     }
 }
 

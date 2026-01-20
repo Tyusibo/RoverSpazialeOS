@@ -118,6 +118,25 @@ static const float PULSE_REAL_MAX = 920.0f;
 #define FAST_MOT4_K_LAST_ERR  (-0.06302f)
 
 
+/* --------------------------- MEDIUM MODE GAINS ------------------------------ */
+
+/** Front Left (Motore 1) */
+#define MEDIUM_MOT1_K_ERR        (0.1167f)
+#define MEDIUM_MOT1_K_LAST_ERR  (-0.06302f)
+
+/** Front Right (Motore 2) */
+#define MEDIUM_MOT2_K_ERR        (0.1167f)
+#define MEDIUM_MOT2_K_LAST_ERR  (-0.06302f)
+
+/** Rear Right (Motore 3) */
+#define MEDIUM_MOT3_K_ERR        (0.1167f)
+#define MEDIUM_MOT3_K_LAST_ERR  (-0.06302f)
+
+/** Rear Left (Motore 4) */
+#define MEDIUM_MOT4_K_ERR        (0.1167f)
+#define MEDIUM_MOT4_K_LAST_ERR  (-0.06302f)
+
+
 /* --------------------------- SLOW MODE GAINS ------------------------------ */
 
 /** Front Left (Motore 1) */
