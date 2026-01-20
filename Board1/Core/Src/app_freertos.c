@@ -500,11 +500,20 @@ static inline void change_set_point(void)
 
 static inline void change_regulator(void)
 {
-    const uint8_t use_slow =
-        (Board1_DW.board1Decision.roverAction == RA_BRAKING_SMOOTH);
+    const uint8_t action = Board1_DW.board1Decision.roverAction;
 
-    for (int i = 0; i < N_MOTORS; i++) {
-        MotorControl_SelectSlow(&motors[i], 0);
+    if (action == RA_BRAKING_SMOOTH) {
+        for (int i = 0; i < N_MOTORS; i++) {
+            MotorControl_SetRegulator(&motors[i], &pid_slow[i]);
+        }
+    } else if (action == RA_ROTATE_RIGHT) {
+        for (int i = 0; i < N_MOTORS; i++) {
+            MotorControl_SetRegulator(&motors[i], &pid_medium[i]);
+        }
+    } else {
+        for (int i = 0; i < N_MOTORS; i++) {
+            MotorControl_SetRegulator(&motors[i], &pid_fast[i]);
+        }
     }
 }
 /* USER CODE END Application */

@@ -5,6 +5,7 @@
 
 #include "motor_control.h"
 #include "motor_constants.h"
+#include "regulator.h"
 
 
 typedef enum {
@@ -16,6 +17,10 @@ typedef enum {
 } MotorId;
 
  extern MotorControl motors[N_MOTORS];
+
+ extern PIDController pid_fast[N_MOTORS];
+ extern PIDController pid_medium[N_MOTORS];
+ extern PIDController pid_slow[N_MOTORS];
 
 
 void Motors_InitAll(void);
