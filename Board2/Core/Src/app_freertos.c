@@ -291,7 +291,6 @@ void StartReadGyroscope(void *argument) {
 }
 
 /* USER CODE BEGIN Header_StartSupervisor */
-#define Board2_IN_Execution            ((uint8_T)2U)
 /**
  * @brief Function implementing the Supervisor thread.
  * @param argument: Not used
@@ -309,11 +308,12 @@ void StartSupervisor(void *argument) {
 
 		do {
 			Board2_step();
-		} while (Board2_DW.is_ExchangeDecision != Board2_IN_Execution);
+		} while (Board2_Y.supervision_ended != 1);
 
 		// Per permettere al modello di ripartire
 		Board2_U.continua = (Board2_U.continua == 0) ? 1 : 0;
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+
 
 #if PRINT
 		static uint32_t counter_print = 0;

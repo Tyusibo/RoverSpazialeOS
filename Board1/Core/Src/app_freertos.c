@@ -62,7 +62,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define REAL_TASK 1 
+#define REAL_TASK 1
 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
 #define PRINT 0
  // 1: Abilita stampe di debug, 0: Disabilita stampe di debug
@@ -270,7 +270,6 @@ void StartPID(void *argument)
 }
 
 /* USER CODE BEGIN Header_StartSupervisor */
-#define Board1_IN_Execution            ((uint8_T)3U)
 
 /**
  * @brief Function implementing the Supervisor thread.
@@ -298,7 +297,7 @@ void StartSupervisor(void *argument)
 //				break;
 //			}
 			Board1_step();
-		} while (Board1_DW.is_ExchangeDecision != Board1_IN_Execution);
+		} while (Board1_Y.supervision_ended != 1);
 
 		Board1_U.continua = (Board1_U.continua == 0) ? 1 : 0;
 
