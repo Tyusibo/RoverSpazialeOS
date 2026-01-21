@@ -13,6 +13,12 @@ void PID_Reset(PIDController *pid)
     pid->z = 0.0f;
 }
 
+void PID_Change_Context(PIDController *pid_1, PIDController *pid_2)
+{
+	pid_1->last_error = pid_2->last_error;
+	pid_1->z = pid_2->z;
+}
+
 float PID_Compute(PIDController *pid, float error, float min_sat, float max_sat)
 {
   // Control law: q = k_err * e + k_last_err * e_prev
