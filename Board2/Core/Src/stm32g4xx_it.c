@@ -41,7 +41,7 @@
 #define VERBOSE_DEBUG 0
 
 #if VERBOSE_DEBUG == 1
-#define PRINT_DBG(msg) printMsg(msg)
+#define PRINT_DBG(msg) PRINT_DBG(msg)
 #else
     #define PRINT_DBG(msg) ((void)0)
 #endif
@@ -336,22 +336,22 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
 		uint32_t err = huart->ErrorCode;
 
-		printMsg("UART ERROR: ");
+		PRINT_DBG("UART ERROR: ");
 
 		if (err & HAL_UART_ERROR_ORE) {
-			printMsg("ORE ");
+			PRINT_DBG("ORE ");
 		}
 		if (err & HAL_UART_ERROR_FE) {
-			printMsg("FE ");
+			PRINT_DBG("FE ");
 		}
 		if (err & HAL_UART_ERROR_NE) {
-			printMsg("NE ");
+			PRINT_DBG("NE ");
 		}
 		if (err & HAL_UART_ERROR_PE) {
-			printMsg("PE ");
+			PRINT_DBG("PE ");
 		}
 
-		printMsg("\r\n");
+		PRINT_DBG("\r\n");
 
 		// --- recovery minimo indispensabile ---
 		__HAL_UART_CLEAR_OREFLAG(huart);

@@ -52,6 +52,9 @@
 
 // DWT
 #include "DWT.h"
+
+/* debug configurations include */
+#include "debug.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,11 +64,22 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#if SEGGER_BUILD
+/* DWT Registers for Cortex-M4 (STM32G4) */
+#define DEMCR           (*((volatile uint32_t *)0xE000EDFC))
+#define DWT_CTRL        (*((volatile uint32_t *)0xE0001000))
+#define DWT_CYCCNT      (*((volatile uint32_t *)0xE0001004))
+
+/* Bitmask */
+#define TRCENA          (1 << 24)
+#define DWT_CYCCNTENA   (1 << 0)
+#endif
+
 #define Board2_IN_Execution ((uint8_T)2U)
 
 /* --- CONFIGURAZIONE DEBUG --- */
 // 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 1
+#define VERBOSE_DEBUG 0
 
 #if VERBOSE_DEBUG == 1
 #define PRINT_DBG(msg) printMsg(msg)
@@ -108,14 +122,6 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-/* Definizioni Registri DWT per Cortex-M4 (STM32G4) */
-#define DEMCR           (*((volatile uint32_t *)0xE000EDFC))
-#define DWT_CTRL        (*((volatile uint32_t *)0xE0001000))
-#define DWT_CYCCNT      (*((volatile uint32_t *)0xE0001004))
-
-/* Bitmask */
-#define TRCENA          (1 << 24)
-#define DWT_CYCCNTENA   (1 << 0)
 /* USER CODE END 0 */
 
 /**
@@ -126,14 +132,16 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	/* 1. Abilita l'accesso ai registri di Trace (TRCENA) */
+  #if SEGGER_BUILD
+	/* 1. Enable Trace Registers access (TRCENA) */
 	  DEMCR |= TRCENA;
 
-	  /* 2. Reset del contatore cicli a 0 */
+	  /* 2. Reset the cycle counter to 0 */
 	  DWT_CYCCNT = 0;
 
-	  /* 3. Abilita il contatore dei cicli (CYCCNTENA) */
+	  /* 3. Enable the cycle counter (CYCCNTENA) */
 	  DWT_CTRL |= DWT_CYCCNTENA;
+  #endif
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -182,14 +190,12 @@ int main(void)
 	// Init Sonar
 	if (Sonar_InitAll() == 1) {
 		PRINT_DBG("ERROR SONAR INIT\r\n");
-		return -1;
 	}
 	StartSonarTimer();
 
 	// Init Gyroscope (IMU)
 	if (MPU6050_Init(&hi2c3) == 1) {
 		PRINT_DBG("ERROR GYRO INIT\r\n");
-		return -1;
 	}
 
 	// Init Motori

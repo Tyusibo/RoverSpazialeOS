@@ -35,6 +35,8 @@
 /* Utility */
 #include "DWT.h"
 #include "print.h"
+#include "SEGGER_SYSVIEW_FreeRTOS.h"
+#include "debug.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,7 +48,7 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define REAL_TASK 1
+#define REAL_TASK 0
 // 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
 #define PRINT 0
 // 1: Abilita stampe di debug, 0: Disabilita stampe di debug
@@ -426,8 +428,11 @@ void StartReadSonars(void *argument) {
 /* USER CODE END Header_StartSeggerTask */
 void StartSeggerTask(void *argument) {
 	/* USER CODE BEGIN StartSeggerTask */
+	
+	#if SEGGER_BUILD
 	SEGGER_SYSVIEW_Conf();
 	SEGGER_SYSVIEW_Start();
+	#endif
 
 	/* Infinite loop */
 	for (;;) {
