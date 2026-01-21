@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 4.64
+ * Model version                  : 4.66
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Wed Jan 21 15:25:37 2026
+ * C/C++ source code generated on : Wed Jan 21 18:01:36 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -619,7 +619,6 @@ void Board2_step(void)
          *  Outport: '<Root>/roverAction'
          *  Outport: '<Root>/safeAction'
          *  Outport: '<Root>/setPoint'
-         *  Outport: '<Root>/statusObstacles'
          */
         ActionsModel_ComputeRoverAction(&Board2_Y.currentUserAction,
           &Board2_B.board2GlobalState.localStateB1.speed,
@@ -627,8 +626,7 @@ void Board2_step(void)
           &Board2_B.board2GlobalState.localStateB2.remoteController.y_lever,
           &Board2_B.board2GlobalState.localStateB2.gyroscope,
           &Board2_B.board2GlobalState.localStateB2.sonar, &Board2_Y.setPoint,
-          &Board2_Y.roverAction, &Board2_Y.safeAction, &Board2_Y.statusObstacles,
-          &Board2_B.redLeds);
+          &Board2_Y.roverAction, &Board2_Y.safeAction, &Board2_B.redLeds);
         Board2_DW.board2Decision.roverAction = Board2_Y.roverAction;
         Board2_DW.board2Decision.safeAction = Board2_Y.safeAction;
         Board2_DW.board2Decision.setPoint = Board2_Y.setPoint;
@@ -655,13 +653,15 @@ void Board2_step(void)
      case Board2_IN_ExchangeDecision:
       switch (Board2_DW.is_ExchangeDecision) {
        case Board2_IN_CompareDecision:
-        Board2_DW.is_ExchangeDecision = Board2_IN_SupervisionEnded;
+        if ((Board2_DW.result == 1) || (Board2_DW.result == 0)) {
+          Board2_DW.is_ExchangeDecision = Board2_IN_SupervisionEnded;
 
-        /* Outport: '<Root>/supervision_ended' */
-        Board2_Y.supervision_ended = 1U;
+          /* Outport: '<Root>/supervision_ended' */
+          Board2_Y.supervision_ended = 1U;
 
-        /* printGlobalState(board1GlobalState); printGlobalState(board2GlobalState);
-           printDecision(board1Decision); printDecision(board2Decision); */
+          /* printGlobalState(board1GlobalState); printGlobalState(board2GlobalState);
+             printDecision(board1Decision); printDecision(board2Decision); */
+        }
         break;
 
        case Board2_IN_D_Receive:
@@ -827,8 +827,8 @@ void Board2_step(void)
         if (Board2_DW.exit_port_index_D_Transmit == 2U) {
           Board2_DW.exit_port_index_D_Transmit = 0U;
           Board2_DW.is_ExchangeDecision = Board2_IN_CompareDecision;
-          BUS_Decision_Equals(&Board2_DW.board1Decision,
-                              &Board2_DW.board2Decision);
+          Board2_DW.result = BUS_Decision_Equals(&Board2_DW.board1Decision,
+            &Board2_DW.board2Decision);
         }
         break;
 
@@ -898,10 +898,8 @@ void Board2_initialize(void)
    *  Outport: '<Root>/roverAction'
    *  Outport: '<Root>/safeAction'
    *  Outport: '<Root>/setPoint'
-   *  Outport: '<Root>/statusObstacles'
    */
-  ActionsModel_Init(&Board2_Y.setPoint, &Board2_Y.roverAction,
-                    &Board2_Y.statusObstacles, &Board2_B.redLeds);
+  ActionsModel_Init(&Board2_Y.setPoint, &Board2_Y.roverAction, &Board2_B.redLeds);
 }
 
 /* Model terminate function */

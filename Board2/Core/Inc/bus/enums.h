@@ -142,9 +142,8 @@ typedef enum {
  * ========================= */
 typedef enum {
     NOT_TRACKING = 0,
-    NO_OBSTACLE = 1,
-    OBSTACLE_FROM_LEFT = 2,
-    OBSTACLE_FROM_RIGHT = 3
+    NO_OBSTACLE_MOVING = 1,
+    OBSTACLE_MOVING = 2
 } ENUM_TrackingObstacles;
 
 /* =========================

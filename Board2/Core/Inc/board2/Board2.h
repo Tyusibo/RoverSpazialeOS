@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 4.64
+ * Model version                  : 4.66
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Wed Jan 21 15:25:37 2026
+ * C/C++ source code generated on : Wed Jan 21 18:01:36 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -90,6 +90,7 @@ typedef struct {
   uint8_T rxPayload;                   /* '<Root>/SupervisorB2' */
   uint8_T flagCRC;                     /* '<Root>/SupervisorB2' */
   uint8_T receiveArmed;                /* '<Root>/SupervisorB2' */
+  uint8_T result;                      /* '<Root>/SupervisorB2' */
   uint8_T is_active_c3_Board2;         /* '<Root>/SupervisorB2' */
   uint8_T is_RoverState;               /* '<Root>/SupervisorB2' */
   uint8_T is_CommunicationPhase;       /* '<Root>/SupervisorB2' */
@@ -119,7 +120,6 @@ typedef struct {
   BUS_SetPoint setPoint;               /* '<Root>/setPoint' */
   ENUM_RoverAction roverAction;        /* '<Root>/roverAction' */
   ENUM_SafeAction safeAction;          /* '<Root>/safeAction' */
-  ENUM_TrackingObstacles statusObstacles;/* '<Root>/statusObstacles' */
   ENUM_UserAction currentUserAction;   /* '<Root>/currentUserAction' */
   uint8_T supervision_ended;           /* '<Root>/supervision_ended' */
 } ExtY_Board2_T;

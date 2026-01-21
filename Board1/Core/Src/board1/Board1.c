@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 5.10
+ * Model version                  : 5.12
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Wed Jan 21 15:22:39 2026
+ * C/C++ source code generated on : Wed Jan 21 17:59:54 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -616,7 +616,6 @@ void Board1_step(void)
          *  Outport: '<Root>/roverAction'
          *  Outport: '<Root>/safeAction'
          *  Outport: '<Root>/setPoint'
-         *  Outport: '<Root>/statusObstacles'
          */
         ActionsModel_ComputeRoverAction(&Board1_Y.currentUserAction,
           &Board1_B.board1GlobalState.localStateB1.speed,
@@ -624,8 +623,7 @@ void Board1_step(void)
           &Board1_B.board1GlobalState.localStateB2.remoteController.y_lever,
           &Board1_B.board1GlobalState.localStateB2.gyroscope,
           &Board1_B.board1GlobalState.localStateB2.sonar, &Board1_Y.setPoint,
-          &Board1_Y.roverAction, &Board1_Y.safeAction, &Board1_Y.statusObstacles,
-          &Board1_B.redLeds);
+          &Board1_Y.roverAction, &Board1_Y.safeAction, &Board1_B.redLeds);
         Board1_DW.board1Decision.roverAction = Board1_Y.roverAction;
         Board1_DW.board1Decision.safeAction = Board1_Y.safeAction;
         Board1_DW.board1Decision.setPoint = Board1_Y.setPoint;
@@ -652,7 +650,7 @@ void Board1_step(void)
      case Board1_IN_ExchangeDecision:
       switch (Board1_DW.is_ExchangeDecision) {
        case Board1_IN_CompareDecision:
-        if (Board1_DW.result == 1) {
+        if ((Board1_DW.result == 1) || (Board1_DW.result == 0)) {
           Board1_DW.is_ExchangeDecision = Board1_IN_SupervisionEnded;
 
           /* Outport: '<Root>/supervision_ended' */
@@ -897,10 +895,8 @@ void Board1_initialize(void)
    *  Outport: '<Root>/roverAction'
    *  Outport: '<Root>/safeAction'
    *  Outport: '<Root>/setPoint'
-   *  Outport: '<Root>/statusObstacles'
    */
-  ActionsModel_Init(&Board1_Y.setPoint, &Board1_Y.roverAction,
-                    &Board1_Y.statusObstacles, &Board1_B.redLeds);
+  ActionsModel_Init(&Board1_Y.setPoint, &Board1_Y.roverAction, &Board1_B.redLeds);
 }
 
 /* Model terminate function */

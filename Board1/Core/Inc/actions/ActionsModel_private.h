@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 4.10
+ * Model version                  : 4.25
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Wed Jan 21 15:22:08 2026
+ * C/C++ source code generated on : Wed Jan 21 17:57:34 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -27,11 +27,15 @@
 /* Block states (default storage) for system '<Root>/MovingObstacles' */
 typedef struct {
   uint8_T is_c2_ActionsModel;          /* '<Root>/MovingObstacles' */
-  uint8_T is_TrackingMovingObstacles;  /* '<Root>/MovingObstacles' */
+  uint8_T is_LeftSide;                 /* '<Root>/MovingObstacles' */
+  uint8_T is_RightSide;                /* '<Root>/MovingObstacles' */
 } DW_MovingObstacles_ActionsMod_T;
 
 /* Block signals for model 'ActionsModel' */
 typedef struct {
+  ENUM_TrackingObstacles statusLeftObstacle;/* '<Root>/MovingObstacles' */
+  ENUM_StatusRedLed leftLed;           /* '<Root>/MovingObstacles' */
+  ENUM_StatusRedLed rightLed;          /* '<Root>/MovingObstacles' */
   uint8_T set;                         /* '<Root>/RoverAction' */
 } B_ActionsModel_c_T;
 
@@ -94,10 +98,14 @@ typedef struct {
 } MdlrefDW_ActionsModel_T;
 
 extern void ActionsMod_MovingObstacles_Init(ENUM_TrackingObstacles
-  *rty_statusObstacles, DW_MovingObstacles_ActionsMod_T *localDW);
-extern void ActionsModel_MovingObstacles(uint8_T rtu_set, const BUS_Sonar
-  *rtu_sonar, ENUM_TrackingObstacles *rty_statusObstacles,
+  *rty_statusLeftObstacle, ENUM_TrackingObstacles *rty_statusRightObstacle,
+  ENUM_StatusRedLed *rty_leftLed, ENUM_StatusRedLed *rty_rightLed,
   DW_MovingObstacles_ActionsMod_T *localDW);
+extern void ActionsModel_MovingObstacles(uint8_T rtu_set, const BUS_Sonar
+  *rtu_sonar, ENUM_TrackingObstacles *rty_statusLeftObstacle,
+  ENUM_TrackingObstacles *rty_statusRightObstacle, ENUM_StatusRedLed
+  *rty_leftLed, ENUM_StatusRedLed *rty_rightLed, DW_MovingObstacles_ActionsMod_T
+  *localDW);
 extern MdlrefDW_ActionsModel_T ActionsModel_MdlrefDW;
 
 /* Block signals (default storage) */

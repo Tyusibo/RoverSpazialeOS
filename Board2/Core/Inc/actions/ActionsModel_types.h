@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 4.10
+ * Model version                  : 4.25
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Wed Jan 21 15:22:08 2026
+ * C/C++ source code generated on : Wed Jan 21 17:57:34 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M

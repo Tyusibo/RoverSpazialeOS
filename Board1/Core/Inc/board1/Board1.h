@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 5.10
+ * Model version                  : 5.12
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Wed Jan 21 15:22:39 2026
+ * C/C++ source code generated on : Wed Jan 21 17:59:54 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -120,7 +120,6 @@ typedef struct {
   BUS_SetPoint setPoint;               /* '<Root>/setPoint' */
   ENUM_RoverAction roverAction;        /* '<Root>/roverAction' */
   ENUM_SafeAction safeAction;          /* '<Root>/safeAction' */
-  ENUM_TrackingObstacles statusObstacles;/* '<Root>/statusObstacles' */
   ENUM_UserAction currentUserAction;   /* '<Root>/currentUserAction' */
   uint8_T supervision_ended;           /* '<Root>/supervision_ended' */
 } ExtY_Board1_T;

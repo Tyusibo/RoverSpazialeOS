@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 4.10
+ * Model version                  : 4.25
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Wed Jan 21 15:22:08 2026
+ * C/C++ source code generated on : Wed Jan 21 17:57:34 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -26,14 +26,17 @@
 #include <math.h>
 
 /* Named constants for Chart: '<Root>/MovingObstacles' */
-#define Ac_IN_PossibleStartingFromRight ((uint8_T)4U)
-#define Act_IN_PossibleStartingFromLeft ((uint8_T)3U)
-#define Acti_IN_TrackingMovingObstacles ((uint8_T)2U)
-#define ActionsMod_IN_StartingFromRight ((uint8_T)5U)
-#define ActionsModel_IN_Inactive       ((uint8_T)1U)
-#define ActionsModel_IN_Monitoring     ((uint8_T)1U)
-#define ActionsModel_IN_MovedFromLeft  ((uint8_T)2U)
+#define Ac_IN_PossibleStartingFromRight ((uint8_T)2U)
+#define Act_IN_PossibleStartingFromLeft ((uint8_T)4U)
+#define ActionsMod_IN_RightSideDetected ((uint8_T)4U)
+#define ActionsMode_IN_LeftSideDetected ((uint8_T)2U)
+#define ActionsModel_IN_LeftSideClear  ((uint8_T)1U)
+#define ActionsModel_IN_MovedFromLeft  ((uint8_T)3U)
+#define ActionsModel_IN_MovedFromRight ((uint8_T)1U)
 #define ActionsModel_IN_NO_ACTIVE_CHILD ((uint8_T)0U)
+#define ActionsModel_IN_NotTracking    ((uint8_T)1U)
+#define ActionsModel_IN_RightSideClear ((uint8_T)3U)
+#define ActionsModel_IN_Tracking       ((uint8_T)2U)
 #define ActionsModel_OBSTACLE_DETECTED ((uint16_T)300U)
 #define ActionsModel_OFF               ((uint8_T)0U)
 #define ActionsModel_ON                ((uint8_T)1U)
@@ -106,7 +109,6 @@ B_ActionsModel_c_T ActionsModel_B;
 DW_ActionsModel_f_T ActionsModel_DW;
 
 /* Forward declaration for local functions */
-static ENUM_SafeAction ActionsMo_checkSafetyFromRotate(uint16_T obstacleDetected);
 static ENUM_SafeAction ActionsM_checkSafetyFromForward(ENUM_TrackingObstacles
   movingObstacle, uint16_T sonarFront);
 static uint8_T ActionsModel_areAllSpeedsZero(real32_T speed1, real32_T speed2,
@@ -120,146 +122,227 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
   const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const real32_T
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
-  ENUM_TrackingObstacles *rty_statusObstacles);
+  BUS_RedLeds *rty_redLeds);
+static ENUM_SafeAction ActionsMo_checkSafetyFromRotate(uint16_T obstacleDetected);
+static void ActionsModel_BW_RR_RotateRight(const ENUM_UserAction
+  *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever,
+  const real32_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
+  *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
+  *rty_safeAction, BUS_RedLeds *rty_redLeds);
 static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever,
   const real32_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
   *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
-  *rty_safeAction);
+  *rty_safeAction, BUS_RedLeds *rty_redLeds);
 static void Ac_enter_internal_FW_SafeAction(const real32_T *rtu_gyroscope,
   BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction);
+static void ActionsM_enter_internal_Forward(const int16_T *rtu_y_lever, const
+  real32_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
+  *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
+  *rty_safeAction, BUS_RedLeds *rty_redLeds);
 static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
   const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const real32_T
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
-  ENUM_TrackingObstacles *rty_statusObstacles, BUS_RedLeds *rty_redLeds);
+  BUS_RedLeds *rty_redLeds);
 static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
   const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const real32_T
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
-  ENUM_TrackingObstacles *rty_statusObstacles, BUS_RedLeds *rty_redLeds);
+  BUS_RedLeds *rty_redLeds);
 static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction,
   const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever, const int16_T
   *rtu_y_lever, const real32_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar,
   BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
-  *rty_safeAction, ENUM_TrackingObstacles *rty_statusObstacles, BUS_RedLeds
-  *rty_redLeds);
+  *rty_safeAction, BUS_RedLeds *rty_redLeds);
 static void ActionsModel_RotateRight(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever,
   const int16_T *rtu_y_lever, const real32_T *rtu_gyroscope, const BUS_Sonar
   *rtu_sonar, BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction,
-  ENUM_SafeAction *rty_safeAction, ENUM_TrackingObstacles *rty_statusObstacles,
-  BUS_RedLeds *rty_redLeds);
+  ENUM_SafeAction *rty_safeAction, BUS_RedLeds *rty_redLeds);
 
 /* System initialize for function-call system: '<Root>/MovingObstacles' */
-void ActionsMod_MovingObstacles_Init(ENUM_TrackingObstacles *rty_statusObstacles,
+void ActionsMod_MovingObstacles_Init(ENUM_TrackingObstacles
+  *rty_statusLeftObstacle, ENUM_TrackingObstacles *rty_statusRightObstacle,
+  ENUM_StatusRedLed *rty_leftLed, ENUM_StatusRedLed *rty_rightLed,
   DW_MovingObstacles_ActionsMod_T *localDW)
 {
   /* Chart: '<Root>/MovingObstacles' */
-  /*  Il chart deve attivarsi all'avvio, e il rover all'avvio sarï¿½ in IDLE
-     [set == 0] */
-  localDW->is_c2_ActionsModel = ActionsModel_IN_Inactive;
-  *rty_statusObstacles = NOT_TRACKING;
+  localDW->is_c2_ActionsModel = ActionsModel_IN_NotTracking;
+  *rty_statusLeftObstacle = NOT_TRACKING;
+  *rty_statusRightObstacle = NOT_TRACKING;
+  *rty_leftLed = RED_OFF;
+  *rty_rightLed = RED_OFF;
 }
 
 /* Output and update for function-call system: '<Root>/MovingObstacles' */
 void ActionsModel_MovingObstacles(uint8_T rtu_set, const BUS_Sonar *rtu_sonar,
-  ENUM_TrackingObstacles *rty_statusObstacles, DW_MovingObstacles_ActionsMod_T
-  *localDW)
+  ENUM_TrackingObstacles *rty_statusLeftObstacle, ENUM_TrackingObstacles
+  *rty_statusRightObstacle, ENUM_StatusRedLed *rty_leftLed, ENUM_StatusRedLed
+  *rty_rightLed, DW_MovingObstacles_ActionsMod_T *localDW)
 {
-  if (localDW->is_c2_ActionsModel == ActionsModel_IN_Inactive) {
-    *rty_statusObstacles = NOT_TRACKING;
+  if (localDW->is_c2_ActionsModel == ActionsModel_IN_NotTracking) {
+    *rty_statusLeftObstacle = NOT_TRACKING;
+    *rty_leftLed = RED_OFF;
     if (rtu_set == ActionsModel_ON) {
-      localDW->is_c2_ActionsModel = Acti_IN_TrackingMovingObstacles;
-      if ((rtu_sonar->left <= ActionsModel_OBSTACLE_DETECTED) &&
+      localDW->is_c2_ActionsModel = ActionsModel_IN_Tracking;
+      if ((rtu_sonar->right <= ActionsModel_OBSTACLE_DETECTED) &&
           (rtu_sonar->front <= ActionsModel_OBSTACLE_DETECTED)) {
-        localDW->is_TrackingMovingObstacles = Act_IN_PossibleStartingFromLeft;
-        *rty_statusObstacles = NO_OBSTACLE;
+        localDW->is_LeftSide = Act_IN_PossibleStartingFromLeft;
+        localDW->is_RightSide = Ac_IN_PossibleStartingFromRight;
+        *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+        *rty_rightLed = RED_BLINKING;
       } else if ((rtu_sonar->right <= ActionsModel_OBSTACLE_DETECTED) &&
-                 (rtu_sonar->front <= ActionsModel_OBSTACLE_DETECTED)) {
-        localDW->is_TrackingMovingObstacles = Ac_IN_PossibleStartingFromRight;
-        *rty_statusObstacles = NO_OBSTACLE;
+                 (rtu_sonar->front > ActionsModel_OBSTACLE_DETECTED)) {
+        localDW->is_LeftSide = ActionsMode_IN_LeftSideDetected;
+        localDW->is_RightSide = ActionsMod_IN_RightSideDetected;
+        *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+        *rty_rightLed = RED_BLINKING;
       } else {
-        localDW->is_TrackingMovingObstacles = ActionsModel_IN_Monitoring;
-        *rty_statusObstacles = NO_OBSTACLE;
+        localDW->is_LeftSide = ActionsModel_IN_LeftSideClear;
+        localDW->is_RightSide = ActionsModel_IN_RightSideClear;
+        *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+        *rty_rightLed = RED_OFF;
       }
     }
 
-    /* case IN_TrackingMovingObstacles: */
+    /* case IN_Tracking: */
   } else if (rtu_set == ActionsModel_OFF) {
-    localDW->is_TrackingMovingObstacles = ActionsModel_IN_NO_ACTIVE_CHILD;
-    localDW->is_c2_ActionsModel = ActionsModel_IN_Inactive;
-    *rty_statusObstacles = NOT_TRACKING;
+    localDW->is_RightSide = ActionsModel_IN_NO_ACTIVE_CHILD;
+    localDW->is_LeftSide = ActionsModel_IN_NO_ACTIVE_CHILD;
+    localDW->is_c2_ActionsModel = ActionsModel_IN_NotTracking;
+    *rty_statusLeftObstacle = NOT_TRACKING;
+    *rty_statusRightObstacle = NOT_TRACKING;
+    *rty_leftLed = RED_OFF;
+    *rty_rightLed = RED_OFF;
   } else {
-    switch (localDW->is_TrackingMovingObstacles) {
-     case ActionsModel_IN_Monitoring:
-      *rty_statusObstacles = NO_OBSTACLE;
-      if ((rtu_sonar->left <= ActionsModel_OBSTACLE_DETECTED) &&
-          (rtu_sonar->front <= ActionsModel_OBSTACLE_DETECTED)) {
-        localDW->is_TrackingMovingObstacles = Act_IN_PossibleStartingFromLeft;
-        *rty_statusObstacles = NO_OBSTACLE;
-      } else if ((rtu_sonar->right <= ActionsModel_OBSTACLE_DETECTED) &&
-                 (rtu_sonar->front <= ActionsModel_OBSTACLE_DETECTED)) {
-        localDW->is_TrackingMovingObstacles = Ac_IN_PossibleStartingFromRight;
-        *rty_statusObstacles = NO_OBSTACLE;
+    switch (localDW->is_LeftSide) {
+     case ActionsModel_IN_LeftSideClear:
+      if (rtu_sonar->right <= ActionsModel_OBSTACLE_DETECTED) {
+        if (rtu_sonar->front <= ActionsModel_OBSTACLE_DETECTED) {
+          localDW->is_LeftSide = Act_IN_PossibleStartingFromLeft;
+          *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+          *rty_rightLed = RED_BLINKING;
+        } else {
+          /* [sonar.front > OBSTACLE_DETECTED] */
+          localDW->is_LeftSide = ActionsMode_IN_LeftSideDetected;
+          *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+          *rty_rightLed = RED_BLINKING;
+        }
+      }
+      break;
+
+     case ActionsMode_IN_LeftSideDetected:
+      if (rtu_sonar->front <= ActionsModel_OBSTACLE_DETECTED) {
+        if (rtu_sonar->right > ActionsModel_OBSTACLE_DETECTED) {
+          localDW->is_LeftSide = ActionsModel_IN_MovedFromLeft;
+          *rty_statusRightObstacle = OBSTACLE_MOVING;
+          *rty_rightLed = RED_OFF;
+
+          /*  Lo stato è bloccante in quanto Model Action provvederà a resettarlo */
+        } else {
+          /*  [sonar.right <= OBSTACLE_DETECTED] */
+          localDW->is_LeftSide = Act_IN_PossibleStartingFromLeft;
+          *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+          *rty_rightLed = RED_BLINKING;
+        }
+      } else if (rtu_sonar->right > ActionsModel_OBSTACLE_DETECTED) {
+        localDW->is_LeftSide = ActionsModel_IN_LeftSideClear;
+        *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+        *rty_rightLed = RED_OFF;
       }
       break;
 
      case ActionsModel_IN_MovedFromLeft:
-      *rty_statusObstacles = OBSTACLE_FROM_LEFT;
-      if (rtu_sonar->front > ActionsModel_OBSTACLE_DETECTED) {
-        localDW->is_TrackingMovingObstacles = ActionsModel_IN_Monitoring;
-        *rty_statusObstacles = NO_OBSTACLE;
-      }
       break;
 
-     case Act_IN_PossibleStartingFromLeft:
-      *rty_statusObstacles = NO_OBSTACLE;
-      if ((rtu_sonar->left > ActionsModel_OBSTACLE_DETECTED) &&
+     default:
+      /* case IN_PossibleStartingFromLeft: */
+      if ((rtu_sonar->right > ActionsModel_OBSTACLE_DETECTED) &&
           (rtu_sonar->front <= ActionsModel_OBSTACLE_DETECTED)) {
-        localDW->is_TrackingMovingObstacles = ActionsModel_IN_MovedFromLeft;
-        *rty_statusObstacles = OBSTACLE_FROM_LEFT;
+        localDW->is_LeftSide = ActionsModel_IN_MovedFromLeft;
+        *rty_statusRightObstacle = OBSTACLE_MOVING;
+        *rty_rightLed = RED_OFF;
+
+        /*  Lo stato è bloccante in quanto Model Action provvederà a resettarlo */
       } else if (rtu_sonar->front > ActionsModel_OBSTACLE_DETECTED) {
-        localDW->is_TrackingMovingObstacles = ActionsModel_IN_Monitoring;
-        *rty_statusObstacles = NO_OBSTACLE;
+        if (rtu_sonar->right <= ActionsModel_OBSTACLE_DETECTED) {
+          localDW->is_LeftSide = ActionsMode_IN_LeftSideDetected;
+          *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+          *rty_rightLed = RED_BLINKING;
+        } else {
+          localDW->is_LeftSide = ActionsModel_IN_LeftSideClear;
+          *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+          *rty_rightLed = RED_OFF;
+        }
       }
+      break;
+    }
+
+    switch (localDW->is_RightSide) {
+     case ActionsModel_IN_MovedFromRight:
       break;
 
      case Ac_IN_PossibleStartingFromRight:
-      *rty_statusObstacles = NO_OBSTACLE;
       if ((rtu_sonar->right > ActionsModel_OBSTACLE_DETECTED) &&
           (rtu_sonar->front <= ActionsModel_OBSTACLE_DETECTED)) {
-        localDW->is_TrackingMovingObstacles = ActionsMod_IN_StartingFromRight;
-        *rty_statusObstacles = OBSTACLE_FROM_RIGHT;
+        localDW->is_RightSide = ActionsModel_IN_MovedFromRight;
+        *rty_statusRightObstacle = OBSTACLE_MOVING;
+        *rty_rightLed = RED_OFF;
+
+        /*  Lo stato è bloccante in quanto Model Action provvederà a resettarlo */
       } else if (rtu_sonar->front > ActionsModel_OBSTACLE_DETECTED) {
-        localDW->is_TrackingMovingObstacles = ActionsModel_IN_Monitoring;
-        *rty_statusObstacles = NO_OBSTACLE;
+        if (rtu_sonar->right <= ActionsModel_OBSTACLE_DETECTED) {
+          localDW->is_RightSide = ActionsMod_IN_RightSideDetected;
+          *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+          *rty_rightLed = RED_BLINKING;
+        } else {
+          localDW->is_RightSide = ActionsModel_IN_RightSideClear;
+          *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+          *rty_rightLed = RED_OFF;
+        }
+      }
+      break;
+
+     case ActionsModel_IN_RightSideClear:
+      if (rtu_sonar->right <= ActionsModel_OBSTACLE_DETECTED) {
+        if (rtu_sonar->front <= ActionsModel_OBSTACLE_DETECTED) {
+          localDW->is_RightSide = Ac_IN_PossibleStartingFromRight;
+          *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+          *rty_rightLed = RED_BLINKING;
+        } else {
+          /* [sonar.front > OBSTACLE_DETECTED] */
+          localDW->is_RightSide = ActionsMod_IN_RightSideDetected;
+          *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+          *rty_rightLed = RED_BLINKING;
+        }
       }
       break;
 
      default:
-      /* case IN_StartingFromRight: */
-      *rty_statusObstacles = OBSTACLE_FROM_RIGHT;
-      if (rtu_sonar->front > ActionsModel_OBSTACLE_DETECTED) {
-        localDW->is_TrackingMovingObstacles = ActionsModel_IN_Monitoring;
-        *rty_statusObstacles = NO_OBSTACLE;
+      /* case IN_RightSideDetected: */
+      if (rtu_sonar->front <= ActionsModel_OBSTACLE_DETECTED) {
+        if (rtu_sonar->right > ActionsModel_OBSTACLE_DETECTED) {
+          localDW->is_RightSide = ActionsModel_IN_MovedFromRight;
+          *rty_statusRightObstacle = OBSTACLE_MOVING;
+          *rty_rightLed = RED_OFF;
+
+          /*  Lo stato è bloccante in quanto Model Action provvederà a resettarlo */
+        } else {
+          /*  [sonar.right <= OBSTACLE_DETECTED] */
+          localDW->is_RightSide = Ac_IN_PossibleStartingFromRight;
+          *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+          *rty_rightLed = RED_BLINKING;
+        }
+      } else if (rtu_sonar->right > ActionsModel_OBSTACLE_DETECTED) {
+        localDW->is_RightSide = ActionsModel_IN_RightSideClear;
+        *rty_statusRightObstacle = NO_OBSTACLE_MOVING;
+        *rty_rightLed = RED_OFF;
       }
       break;
     }
   }
-}
-
-/* Function for Chart: '<Root>/RoverAction' */
-static ENUM_SafeAction ActionsMo_checkSafetyFromRotate(uint16_T obstacleDetected)
-{
-  ENUM_SafeAction emergencyAction;
-  emergencyAction = SA_NONE;
-  if (obstacleDetected <= ActionsM_MIN_DISTANCE_TO_ROTATE) {
-    emergencyAction = SA_BRAKING_HARD;
-  }
-
-  return emergencyAction;
 }
 
 /* Function for Chart: '<Root>/RoverAction' */
@@ -275,16 +358,8 @@ static ENUM_SafeAction ActionsM_checkSafetyFromForward(ENUM_TrackingObstacles
       } else {
         emergencyAction = SA_BRAKING_SMOOTH;
       }
-    } else {
-      switch (movingObstacle) {
-       case OBSTACLE_FROM_LEFT:
-        emergencyAction = SA_SWERVE_LEFT;
-        break;
-
-       case OBSTACLE_FROM_RIGHT:
-        emergencyAction = SA_SWERVE_RIGHT;
-        break;
-      }
+    } else if (movingObstacle == OBSTACLE_MOVING) {
+      emergencyAction = SA_SWERVE_LEFT;
     }
   }
 
@@ -370,18 +445,19 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
   const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const real32_T
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
-  ENUM_TrackingObstacles *rty_statusObstacles)
+  BUS_RedLeds *rty_redLeds)
 {
   uint8_T rotation_ended;
-  *rty_safeAction = ActionsM_checkSafetyFromForward(*rty_statusObstacles,
-    rtu_sonar->front);
+  ENUM_TrackingObstacles statusRightObstacle;
+  *rty_safeAction = ActionsM_checkSafetyFromForward
+    (ActionsModel_B.statusLeftObstacle, rtu_sonar->front);
   switch (ActionsModel_DW.is_BW_Forward) {
    case Action_IN_BW_FW_EndedSafeAction:
     if (*rtu_currentUserAction != UA_BACKWARD) {
       ActionsModel_DW.is_BW_Forward = ActionsMod_IN_NO_ACTIVE_CHILD_k;
       ActionsModel_DW.exit_port_index_BW_Forward = 2U;
     } else if (*rty_safeAction == SA_NONE) {
-      /* l'utente vorrebbe continuare ad andare avanti e non c'ï¿½ piï¿½ l'ostacolo */
+      /* l'utente vorrebbe continuare ad andare avanti e non c'è più l'ostacolo */
       ActionsModel_DW.is_BW_Forward = ActionsMode_IN_BW_FW_UserAction;
 
       /*  Start tracking */
@@ -389,7 +465,9 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
 
       /* Chart: '<Root>/MovingObstacles' */
       /* Chart: '<Root>/MovingObstacles' */
-      ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
+      ActionsModel_MovingObstacles(1, rtu_sonar,
+        &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+        &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
         &ActionsModel_DW.sf_MovingObstacles);
 
       /*  Action */
@@ -399,6 +477,10 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
       rty_setPoint->rightAxis = (real32_T)-*rtu_y_lever / 512.0F *
         ActionsModel_MAX_SPEED_Y;
       rty_setPoint->leftAxis = rty_setPoint->rightAxis;
+
+      /*  Led */
+      rty_redLeds->left = ActionsModel_B.leftLed;
+      rty_redLeds->right = ActionsModel_B.rightLed;
     }
     break;
 
@@ -495,7 +577,7 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
         ActionsModel_DW.is_BW_Forward = ActionsMod_IN_NO_ACTIVE_CHILD_k;
         ActionsModel_DW.exit_port_index_BW_Forward = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe continuare ad andare avanti e non c'ï¿½ piï¿½ l'ostacolo */
+        /* l'utente vorrebbe continuare ad andare avanti e non c'è più l'ostacolo */
         ActionsModel_DW.is_BW_Forward = ActionsMode_IN_BW_FW_UserAction;
 
         /*  Start tracking */
@@ -503,7 +585,9 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
 
         /* Chart: '<Root>/MovingObstacles' */
         /* Chart: '<Root>/MovingObstacles' */
-        ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
+        ActionsModel_MovingObstacles(1, rtu_sonar,
+          &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+          &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
           &ActionsModel_DW.sf_MovingObstacles);
 
         /*  Action */
@@ -513,6 +597,10 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
         rty_setPoint->rightAxis = (real32_T)-*rtu_y_lever / 512.0F *
           ActionsModel_MAX_SPEED_Y;
         rty_setPoint->leftAxis = rty_setPoint->rightAxis;
+
+        /*  Led */
+        rty_redLeds->left = ActionsModel_B.leftLed;
+        rty_redLeds->right = ActionsModel_B.rightLed;
       } else {
         ActionsModel_DW.is_BW_Forward = Action_IN_BW_FW_EndedSafeAction;
         *rty_roverAction = RA_IDLE;
@@ -532,9 +620,15 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
 
       /* Chart: '<Root>/MovingObstacles' */
       /* Chart: '<Root>/MovingObstacles' */
-      ActionsModel_MovingObstacles(0, rtu_sonar, rty_statusObstacles,
+      ActionsModel_MovingObstacles(0, rtu_sonar,
+        &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+        &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
         &ActionsModel_DW.sf_MovingObstacles);
       ActionsModel_DW.is_BW_Forward = ActionsMode_IN_BW_FW_SafeAction;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       enter_internal_BW_FW_SafeAction(rtu_gyroscope, rty_setPoint,
         rty_roverAction, rty_safeAction);
     } else if (*rtu_currentUserAction != UA_BACKWARD) {
@@ -543,7 +637,9 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
 
       /* Chart: '<Root>/MovingObstacles' */
       /* Chart: '<Root>/MovingObstacles' */
-      ActionsModel_MovingObstacles(0, rtu_sonar, rty_statusObstacles,
+      ActionsModel_MovingObstacles(0, rtu_sonar,
+        &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+        &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
         &ActionsModel_DW.sf_MovingObstacles);
       ActionsModel_DW.is_BW_Forward = ActionsMod_IN_NO_ACTIVE_CHILD_k;
       ActionsModel_DW.exit_port_index_BW_Forward = 2U;
@@ -552,7 +648,9 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
       /* Chart: '<Root>/MovingObstacles' */
       /*  Keep tracking */
       ActionsModel_MovingObstacles(ActionsModel_B.set, rtu_sonar,
-        rty_statusObstacles, &ActionsModel_DW.sf_MovingObstacles);
+        &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+        &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
+        &ActionsModel_DW.sf_MovingObstacles);
 
       /*  Action */
       *rty_roverAction = RA_FORWARD;
@@ -561,6 +659,10 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
       rty_setPoint->rightAxis = (real32_T)-*rtu_y_lever / 512.0F *
         ActionsModel_MAX_SPEED_Y;
       rty_setPoint->leftAxis = rty_setPoint->rightAxis;
+
+      /*  Led */
+      rty_redLeds->left = ActionsModel_B.leftLed;
+      rty_redLeds->right = ActionsModel_B.rightLed;
     }
     break;
   }
@@ -573,21 +675,174 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
 }
 
 /* Function for Chart: '<Root>/RoverAction' */
+static ENUM_SafeAction ActionsMo_checkSafetyFromRotate(uint16_T obstacleDetected)
+{
+  ENUM_SafeAction emergencyAction;
+  emergencyAction = SA_NONE;
+  if (obstacleDetected <= ActionsM_MIN_DISTANCE_TO_ROTATE) {
+    emergencyAction = SA_BRAKING_HARD;
+  }
+
+  return emergencyAction;
+}
+
+/* Function for Chart: '<Root>/RoverAction' */
+static void ActionsModel_BW_RR_RotateRight(const ENUM_UserAction
+  *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever,
+  const real32_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
+  *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
+  *rty_safeAction, BUS_RedLeds *rty_redLeds)
+{
+  uint8_T rotation_ended;
+  *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->right);
+  switch (ActionsModel_DW.is_BW_RR_RotateRight) {
+   case Action_IN_BW_RR_EndedSafeAction:
+    if (*rtu_currentUserAction != UA_BACKWARD) {
+      ActionsModel_DW.is_BW_RR_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_k;
+      ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 2U;
+    } else if (*rty_safeAction == SA_NONE) {
+      /* l'utente vorrebbe continuare a ruotare a DX e non c'è più l'ostacolo */
+      ActionsModel_DW.is_BW_RR_RotateRight = ActionsMode_IN_BW_RR_UserAction;
+
+      /*  Degrees */
+      ActionsModel_DW.previousGyroscope = *rtu_gyroscope;
+
+      /*  Action */
+      *rty_roverAction = RA_ROTATE_RIGHT;
+
+      /*  Set point */
+      rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
+        ActionsModel_MAX_SPEED_X;
+      rty_setPoint->leftAxis = -rty_setPoint->rightAxis;
+
+      /*  Led */
+      rty_redLeds->left = RED_BLINKING;
+      rty_redLeds->right = RED_BLINKING;
+    }
+    break;
+
+   case ActionsMode_IN_BW_RR_SafeAction:
+    /*     */
+    if (ActionsModel_areAllSpeedsZero(rtu_speed->motor1, rtu_speed->motor2,
+         rtu_speed->motor3, rtu_speed->motor4, ActionsModel_NO_SPEED) != 0) {
+      ActionsModel_DW.exit_port_index_BW_RR_SafeActio = 2U;
+    }
+
+    if (ActionsModel_DW.exit_port_index_BW_RR_SafeActio == 2U) {
+      ActionsModel_DW.exit_port_index_BW_RR_SafeActio = 0U;
+      if (*rtu_currentUserAction != UA_BACKWARD) {
+        ActionsModel_DW.is_BW_RR_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_k;
+        ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 2U;
+      } else if (*rty_safeAction == SA_NONE) {
+        /* l'utente vorrebbe continuare a ruotare a DX e non c'è più l'ostacolo */
+        ActionsModel_DW.is_BW_RR_RotateRight = ActionsMode_IN_BW_RR_UserAction;
+
+        /*  Degrees */
+        ActionsModel_DW.previousGyroscope = *rtu_gyroscope;
+
+        /*  Action */
+        *rty_roverAction = RA_ROTATE_RIGHT;
+
+        /*  Set point */
+        rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
+          ActionsModel_MAX_SPEED_X;
+        rty_setPoint->leftAxis = -rty_setPoint->rightAxis;
+
+        /*  Led */
+        rty_redLeds->left = RED_BLINKING;
+        rty_redLeds->right = RED_BLINKING;
+      } else {
+        ActionsModel_DW.is_BW_RR_RotateRight = Action_IN_BW_RR_EndedSafeAction;
+        *rty_roverAction = RA_IDLE;
+
+        /*  Set point */
+        rty_setPoint->rightAxis = 0.0F;
+        rty_setPoint->leftAxis = 0.0F;
+      }
+    }
+    break;
+
+   default:
+    /* case IN_BW_RR_UserAction: */
+    if (*rty_safeAction != SA_NONE) {
+      ActionsModel_DW.is_BW_RR_RotateRight = ActionsMode_IN_BW_RR_SafeAction;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
+      *rty_roverAction = RA_BRAKING_HARD;
+
+      /*  Set point */
+      rty_setPoint->rightAxis = 0.0F;
+      rty_setPoint->leftAxis = 0.0F;
+    } else if (*rtu_currentUserAction != UA_BACKWARD) {
+      ActionsModel_DW.is_BW_RR_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_k;
+      ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 2U;
+    } else {
+      rotation_ended = Acti_trackGyroAngleChangeRobust
+        (&ActionsModel_DW.accumulated_change, ActionsModel_DW.previousGyroscope,
+         *rtu_gyroscope, ActionsModel_BACKWARD_DEGREE);
+      if (rotation_ended == 1) {
+        ActionsModel_DW.is_BW_RR_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_k;
+        ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 3U;
+      } else {
+        /*  Degrees */
+        ActionsModel_DW.previousGyroscope = *rtu_gyroscope;
+
+        /*  Action */
+        *rty_roverAction = RA_ROTATE_RIGHT;
+
+        /*  Set point */
+        rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
+          ActionsModel_MAX_SPEED_X;
+        rty_setPoint->leftAxis = -rty_setPoint->rightAxis;
+      }
+    }
+    break;
+  }
+
+  switch (ActionsModel_DW.exit_port_index_BW_RR_RotateRig) {
+   case 2:
+    ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 0U;
+    ActionsModel_DW.is_Backward = ActionsMod_IN_NO_ACTIVE_CHILD_k;
+    ActionsModel_DW.exit_port_index_Backward = 2U;
+    break;
+
+   case 3:
+    ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 0U;
+    ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors2;
+
+    /*  Actions */
+    *rty_roverAction = RA_BRAKING_HARD;
+    *rty_safeAction = SA_NONE;
+
+    /*  Set point */
+    rty_setPoint->rightAxis = 0.0F;
+    rty_setPoint->leftAxis = 0.0F;
+
+    /*  Led */
+    rty_redLeds->left = RED_OFF;
+    rty_redLeds->right = RED_OFF;
+    break;
+  }
+}
+
+/* Function for Chart: '<Root>/RoverAction' */
 static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever,
   const real32_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
   *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
-  *rty_safeAction)
+  *rty_safeAction, BUS_RedLeds *rty_redLeds)
 {
   uint8_T rotation_ended;
-  *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->left);
+  *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->right);
   switch (ActionsModel_DW.is_BW_RotateLeft) {
    case Action_IN_BW_RL_EndedSafeAction:
     if (*rtu_currentUserAction != UA_BACKWARD) {
       ActionsModel_DW.is_BW_RotateLeft = ActionsMod_IN_NO_ACTIVE_CHILD_k;
       ActionsModel_DW.exit_port_index_BW_RotateLeft = 2U;
     } else if (*rty_safeAction == SA_NONE) {
-      /* l'utente vorrebbe ruotare a SX e non c'ï¿½ piï¿½ l'ostacolo */
+      /* l'utente vorrebbe ruotare a SX e non c'è più l'ostacolo */
       ActionsModel_DW.is_BW_RotateLeft = ActionsMode_IN_BW_RL_UserAction;
 
       /*  Degrees */
@@ -600,6 +855,10 @@ static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
       rty_setPoint->leftAxis = (real32_T)*rtu_y_lever / 512.0F *
         ActionsModel_MAX_SPEED_X;
       rty_setPoint->rightAxis = -rty_setPoint->leftAxis;
+
+      /*  Led */
+      rty_redLeds->left = RED_BLINKING;
+      rty_redLeds->right = RED_BLINKING;
     }
     break;
 
@@ -616,7 +875,7 @@ static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
         ActionsModel_DW.is_BW_RotateLeft = ActionsMod_IN_NO_ACTIVE_CHILD_k;
         ActionsModel_DW.exit_port_index_BW_RotateLeft = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe ruotare a SX e non c'ï¿½ piï¿½ l'ostacolo */
+        /* l'utente vorrebbe ruotare a SX e non c'è più l'ostacolo */
         ActionsModel_DW.is_BW_RotateLeft = ActionsMode_IN_BW_RL_UserAction;
 
         /*  Degrees */
@@ -629,6 +888,10 @@ static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
         rty_setPoint->leftAxis = (real32_T)*rtu_y_lever / 512.0F *
           ActionsModel_MAX_SPEED_X;
         rty_setPoint->rightAxis = -rty_setPoint->leftAxis;
+
+        /*  Led */
+        rty_redLeds->left = RED_BLINKING;
+        rty_redLeds->right = RED_BLINKING;
       } else {
         ActionsModel_DW.is_BW_RotateLeft = Action_IN_BW_RL_EndedSafeAction;
         *rty_roverAction = RA_IDLE;
@@ -644,6 +907,10 @@ static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
     /* case IN_BW_RL_UserAction: */
     if (*rty_safeAction != SA_NONE) {
       ActionsModel_DW.is_BW_RotateLeft = ActionsMode_IN_BW_RL_SafeAction;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       *rty_roverAction = RA_BRAKING_HARD;
 
       /*  Set point */
@@ -687,12 +954,16 @@ static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
     ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors2;
 
     /*  Actions */
-    *rty_roverAction = RA_BRAKING_MODERATE;
+    *rty_roverAction = RA_BRAKING_HARD;
     *rty_safeAction = SA_NONE;
 
     /*  Set point */
     rty_setPoint->rightAxis = 0.0F;
     rty_setPoint->leftAxis = 0.0F;
+
+    /*  Led */
+    rty_redLeds->left = RED_OFF;
+    rty_redLeds->right = RED_OFF;
     break;
   }
 }
@@ -747,13 +1018,56 @@ static void Ac_enter_internal_FW_SafeAction(const real32_T *rtu_gyroscope,
 }
 
 /* Function for Chart: '<Root>/RoverAction' */
+static void ActionsM_enter_internal_Forward(const int16_T *rtu_y_lever, const
+  real32_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
+  *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
+  *rty_safeAction, BUS_RedLeds *rty_redLeds)
+{
+  ENUM_TrackingObstacles statusRightObstacle;
+  if (*rty_safeAction != SA_NONE) {
+    ActionsModel_DW.is_Forward = ActionsModel_IN_FW_SafeAction;
+
+    /*  Led */
+    rty_redLeds->left = RED_ON;
+    rty_redLeds->right = RED_ON;
+    Ac_enter_internal_FW_SafeAction(rtu_gyroscope, rty_setPoint, rty_roverAction,
+      rty_safeAction);
+  } else {
+    /*  [safeAction == ENUM_SafeAction.SA_NONE] */
+    ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
+
+    /*  Start tracking */
+    ActionsModel_B.set = 1U;
+
+    /* Chart: '<Root>/MovingObstacles' */
+    /* Chart: '<Root>/MovingObstacles' */
+    ActionsModel_MovingObstacles(1, rtu_sonar,
+      &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+      &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
+      &ActionsModel_DW.sf_MovingObstacles);
+
+    /*  Action */
+    *rty_roverAction = RA_FORWARD;
+
+    /*  Set point */
+    rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
+      ActionsModel_MAX_SPEED_Y;
+    rty_setPoint->leftAxis = rty_setPoint->rightAxis;
+
+    /*  Led */
+    rty_redLeds->left = ActionsModel_B.leftLed;
+    rty_redLeds->right = ActionsModel_B.rightLed;
+  }
+}
+
+/* Function for Chart: '<Root>/RoverAction' */
 static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
   const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const real32_T
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
-  ENUM_TrackingObstacles *rty_statusObstacles, BUS_RedLeds *rty_redLeds)
+  BUS_RedLeds *rty_redLeds)
 {
-  uint8_T rotation_ended;
+  ENUM_TrackingObstacles statusRightObstacle;
   switch (ActionsModel_DW.is_Backward) {
    case ActionsModel_IN_BW_Forward:
     /* RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
@@ -762,7 +1076,7 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
     /* Chart: '<Root>/RoverAction' */
     ActionsModel_BW_Forward(rtu_currentUserAction, rtu_speed, rtu_y_lever,
       rtu_gyroscope, rtu_sonar, rty_setPoint, rty_roverAction, rty_safeAction,
-      rty_statusObstacles);
+      rty_redLeds);
 
     /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
     break;
@@ -772,154 +1086,11 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
      *  Chart: '<Root>/RoverAction'
      */
     /* Chart: '<Root>/RoverAction' */
-    *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->right);
+    ActionsModel_BW_RR_RotateRight(rtu_currentUserAction, rtu_speed, rtu_y_lever,
+      rtu_gyroscope, rtu_sonar, rty_setPoint, rty_roverAction, rty_safeAction,
+      rty_redLeds);
 
     /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
-    switch (ActionsModel_DW.is_BW_RR_RotateRight) {
-     case Action_IN_BW_RR_EndedSafeAction:
-      /* RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
-       *  Chart: '<Root>/RoverAction'
-       */
-      /* Chart: '<Root>/RoverAction' */
-      if (*rtu_currentUserAction != UA_BACKWARD) {
-        ActionsModel_DW.is_BW_RR_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_k;
-        ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 2U;
-      } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe continuare a ruotare a DX e non c'ï¿½ piï¿½ l'ostacolo */
-        ActionsModel_DW.is_BW_RR_RotateRight = ActionsMode_IN_BW_RR_UserAction;
-
-        /*  Degrees */
-        ActionsModel_DW.previousGyroscope = *rtu_gyroscope;
-
-        /*  Action */
-        *rty_roverAction = RA_ROTATE_RIGHT;
-
-        /*  Set point */
-        rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-          ActionsModel_MAX_SPEED_X;
-        rty_setPoint->leftAxis = -rty_setPoint->rightAxis;
-      }
-
-      /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
-      break;
-
-     case ActionsMode_IN_BW_RR_SafeAction:
-      /* RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
-       *  Chart: '<Root>/RoverAction'
-       */
-      /* Chart: '<Root>/RoverAction' */
-      /*     */
-      if (ActionsModel_areAllSpeedsZero(rtu_speed->motor1, rtu_speed->motor2,
-           rtu_speed->motor3, rtu_speed->motor4, ActionsModel_NO_SPEED) != 0) {
-        ActionsModel_DW.exit_port_index_BW_RR_SafeActio = 2U;
-      }
-
-      /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
-      if (ActionsModel_DW.exit_port_index_BW_RR_SafeActio == 2U) {
-        ActionsModel_DW.exit_port_index_BW_RR_SafeActio = 0U;
-
-        /* RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
-         *  Chart: '<Root>/RoverAction'
-         */
-        /* Chart: '<Root>/RoverAction' */
-        if (*rtu_currentUserAction != UA_BACKWARD) {
-          ActionsModel_DW.is_BW_RR_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_k;
-          ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 2U;
-        } else if (*rty_safeAction == SA_NONE) {
-          /* l'utente vorrebbe continuare a ruotare a DX e non c'ï¿½ piï¿½ l'ostacolo */
-          ActionsModel_DW.is_BW_RR_RotateRight = ActionsMode_IN_BW_RR_UserAction;
-
-          /*  Degrees */
-          ActionsModel_DW.previousGyroscope = *rtu_gyroscope;
-
-          /*  Action */
-          *rty_roverAction = RA_ROTATE_RIGHT;
-
-          /*  Set point */
-          rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-            ActionsModel_MAX_SPEED_X;
-          rty_setPoint->leftAxis = -rty_setPoint->rightAxis;
-        } else {
-          ActionsModel_DW.is_BW_RR_RotateRight = Action_IN_BW_RR_EndedSafeAction;
-          *rty_roverAction = RA_IDLE;
-
-          /*  Set point */
-          rty_setPoint->rightAxis = 0.0F;
-          rty_setPoint->leftAxis = 0.0F;
-        }
-
-        /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
-      }
-      break;
-
-     default:
-      /* RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
-       *  Chart: '<Root>/RoverAction'
-       */
-      /* Chart: '<Root>/RoverAction' */
-      /* case IN_BW_RR_UserAction: */
-      if (*rty_safeAction != SA_NONE) {
-        ActionsModel_DW.is_BW_RR_RotateRight = ActionsMode_IN_BW_RR_SafeAction;
-        *rty_roverAction = RA_BRAKING_HARD;
-
-        /*  Set point */
-        rty_setPoint->rightAxis = 0.0F;
-        rty_setPoint->leftAxis = 0.0F;
-      } else if (*rtu_currentUserAction != UA_BACKWARD) {
-        ActionsModel_DW.is_BW_RR_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_k;
-        ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 2U;
-      } else {
-        rotation_ended = Acti_trackGyroAngleChangeRobust
-          (&ActionsModel_DW.accumulated_change,
-           ActionsModel_DW.previousGyroscope, *rtu_gyroscope,
-           ActionsModel_BACKWARD_DEGREE);
-        if (rotation_ended == 1) {
-          ActionsModel_DW.is_BW_RR_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_k;
-          ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 3U;
-        } else {
-          /*  Degrees */
-          ActionsModel_DW.previousGyroscope = *rtu_gyroscope;
-
-          /*  Action */
-          *rty_roverAction = RA_ROTATE_RIGHT;
-
-          /*  Set point */
-          rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-            ActionsModel_MAX_SPEED_X;
-          rty_setPoint->leftAxis = -rty_setPoint->rightAxis;
-        }
-      }
-
-      /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
-      break;
-    }
-
-    switch (ActionsModel_DW.exit_port_index_BW_RR_RotateRig) {
-     case 2:
-      ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 0U;
-      ActionsModel_DW.is_Backward = ActionsMod_IN_NO_ACTIVE_CHILD_k;
-      ActionsModel_DW.exit_port_index_Backward = 2U;
-      break;
-
-     case 3:
-      ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 0U;
-      ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors2;
-
-      /* RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
-       *  Chart: '<Root>/RoverAction'
-       */
-      /* Chart: '<Root>/RoverAction' */
-      /*  Actions */
-      *rty_roverAction = RA_BRAKING_MODERATE;
-      *rty_safeAction = SA_NONE;
-
-      /*  Set point */
-      rty_setPoint->rightAxis = 0.0F;
-      rty_setPoint->leftAxis = 0.0F;
-
-      /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
-      break;
-    }
     break;
 
    case ActionsModel_IN_BW_RotateLeft:
@@ -928,7 +1099,8 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
      */
     /* Chart: '<Root>/RoverAction' */
     ActionsModel_BW_RotateLeft(rtu_currentUserAction, rtu_speed, rtu_y_lever,
-      rtu_gyroscope, rtu_sonar, rty_setPoint, rty_roverAction, rty_safeAction);
+      rtu_gyroscope, rtu_sonar, rty_setPoint, rty_roverAction, rty_safeAction,
+      rty_redLeds);
 
     /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
     break;
@@ -943,67 +1115,45 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.exit_port_index_Backward = 2U;
 
       /*     */
-    } else if (ActionsModel_areAllSpeedsZero(rtu_speed->motor1,
-                rtu_speed->motor2, rtu_speed->motor3, rtu_speed->motor4,
-                ActionsModel_NO_SPEED) != 0) {
-      if (rtu_sonar->left > ActionsM_MIN_DISTANCE_TO_ROTATE) {
-        ActionsModel_DW.is_Backward = ActionsModel_IN_BW_RotateLeft;
-        *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->left);
+    } else if ((ActionsModel_areAllSpeedsZero(rtu_speed->motor1,
+                 rtu_speed->motor2, rtu_speed->motor3, rtu_speed->motor4,
+                 ActionsModel_NO_SPEED) != 0) && (rtu_sonar->right >
+                ActionsM_MIN_DISTANCE_TO_ROTATE)) {
+      ActionsModel_DW.is_Backward = ActionsModel_IN_BW_RotateLeft;
+      *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->right);
 
-        /*  I valori per la rotazione vanno resettati nel Superstate
-           Se interrompessi la user action per eseguire la safe action, al mio ritorno non devo perdere gli accumulated change del delta  */
-        ActionsModel_DW.accumulated_change = 0.0F;
-        if (*rty_safeAction != SA_NONE) {
-          ActionsModel_DW.is_BW_RotateLeft = ActionsMode_IN_BW_RL_SafeAction;
-          *rty_roverAction = RA_BRAKING_HARD;
+      /*  I valori per la rotazione vanno resettati nel Superstate
+         Se interrompessi la user action per eseguire la safe action, al mio ritorno non devo perdere gli accumulated change del delta  */
+      ActionsModel_DW.accumulated_change = 0.0F;
+      if (*rty_safeAction != SA_NONE) {
+        ActionsModel_DW.is_BW_RotateLeft = ActionsMode_IN_BW_RL_SafeAction;
 
-          /*  Set point */
-          rty_setPoint->rightAxis = 0.0F;
-          rty_setPoint->leftAxis = 0.0F;
-        } else {
-          /* [safeAction == ENUM_SafeAction.SA_NONE] */
-          ActionsModel_DW.is_BW_RotateLeft = ActionsMode_IN_BW_RL_UserAction;
+        /*  Led */
+        rty_redLeds->left = RED_ON;
+        rty_redLeds->right = RED_ON;
+        *rty_roverAction = RA_BRAKING_HARD;
 
-          /*  Degrees */
-          ActionsModel_DW.previousGyroscope = *rtu_gyroscope;
+        /*  Set point */
+        rty_setPoint->rightAxis = 0.0F;
+        rty_setPoint->leftAxis = 0.0F;
+      } else {
+        /* [safeAction == ENUM_SafeAction.SA_NONE] */
+        ActionsModel_DW.is_BW_RotateLeft = ActionsMode_IN_BW_RL_UserAction;
 
-          /*  Action */
-          *rty_roverAction = RA_ROTATE_LEFT;
+        /*  Degrees */
+        ActionsModel_DW.previousGyroscope = *rtu_gyroscope;
 
-          /*  Set point */
-          rty_setPoint->leftAxis = (real32_T)*rtu_y_lever / 512.0F *
-            ActionsModel_MAX_SPEED_X;
-          rty_setPoint->rightAxis = -rty_setPoint->leftAxis;
-        }
-      } else if (rtu_sonar->right > ActionsM_MIN_DISTANCE_TO_ROTATE) {
-        ActionsModel_DW.is_Backward = ActionsMod_IN_BW_RR_RotateRight;
-        *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->right);
+        /*  Action */
+        *rty_roverAction = RA_ROTATE_LEFT;
 
-        /*  I valori per la rotazione vanno resettati nel Superstate
-           Se interrompessi la user action per eseguire la safe action, al mio ritorno non devo perdere gli accumulated change del delta  */
-        ActionsModel_DW.accumulated_change = 0.0F;
-        if (*rty_safeAction != SA_NONE) {
-          ActionsModel_DW.is_BW_RR_RotateRight = ActionsMode_IN_BW_RR_SafeAction;
-          *rty_roverAction = RA_BRAKING_HARD;
+        /*  Set point */
+        rty_setPoint->leftAxis = (real32_T)*rtu_y_lever / 512.0F *
+          ActionsModel_MAX_SPEED_X;
+        rty_setPoint->rightAxis = -rty_setPoint->leftAxis;
 
-          /*  Set point */
-          rty_setPoint->rightAxis = 0.0F;
-          rty_setPoint->leftAxis = 0.0F;
-        } else {
-          /* [safeAction == ENUM_SafeAction.SA_NONE] */
-          ActionsModel_DW.is_BW_RR_RotateRight = ActionsMode_IN_BW_RR_UserAction;
-
-          /*  Degrees */
-          ActionsModel_DW.previousGyroscope = *rtu_gyroscope;
-
-          /*  Action */
-          *rty_roverAction = RA_ROTATE_RIGHT;
-
-          /*  Set point */
-          rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-            ActionsModel_MAX_SPEED_X;
-          rty_setPoint->leftAxis = -rty_setPoint->rightAxis;
-        }
+        /*  Led */
+        rty_redLeds->left = RED_BLINKING;
+        rty_redLeds->right = RED_BLINKING;
       }
     }
 
@@ -1025,10 +1175,14 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
                 rtu_speed->motor2, rtu_speed->motor3, rtu_speed->motor4,
                 ActionsModel_NO_SPEED) != 0) {
       ActionsModel_DW.is_Backward = ActionsModel_IN_BW_Forward;
-      *rty_safeAction = ActionsM_checkSafetyFromForward(*rty_statusObstacles,
-        rtu_sonar->front);
+      *rty_safeAction = ActionsM_checkSafetyFromForward
+        (ActionsModel_B.statusLeftObstacle, rtu_sonar->front);
       if (*rty_safeAction != SA_NONE) {
         ActionsModel_DW.is_BW_Forward = ActionsMode_IN_BW_FW_SafeAction;
+
+        /*  Led */
+        rty_redLeds->left = RED_ON;
+        rty_redLeds->right = RED_ON;
         enter_internal_BW_FW_SafeAction(rtu_gyroscope, rty_setPoint,
           rty_roverAction, rty_safeAction);
       } else {
@@ -1040,7 +1194,9 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
 
         /* Chart: '<Root>/MovingObstacles' */
         /* Chart: '<Root>/MovingObstacles' */
-        ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
+        ActionsModel_MovingObstacles(1, rtu_sonar,
+          &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+          &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
           &ActionsModel_DW.sf_MovingObstacles);
 
         /*  Action */
@@ -1050,6 +1206,10 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
         rty_setPoint->rightAxis = (real32_T)-*rtu_y_lever / 512.0F *
           ActionsModel_MAX_SPEED_Y;
         rty_setPoint->leftAxis = rty_setPoint->rightAxis;
+
+        /*  Led */
+        rty_redLeds->left = ActionsModel_B.leftLed;
+        rty_redLeds->right = ActionsModel_B.rightLed;
       }
     }
 
@@ -1076,6 +1236,10 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_ROTATE_RIGHT:
@@ -1089,6 +1253,10 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_ROTATE_LEFT:
@@ -1102,36 +1270,18 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_FORWARD:
       ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_Forward;
-      *rty_safeAction = ActionsM_checkSafetyFromForward(*rty_statusObstacles,
-        rtu_sonar->front);
-      if (*rty_safeAction != SA_NONE) {
-        ActionsModel_DW.is_Forward = ActionsModel_IN_FW_SafeAction;
-        Ac_enter_internal_FW_SafeAction(rtu_gyroscope, rty_setPoint,
-          rty_roverAction, rty_safeAction);
-      } else {
-        /*  [safeAction == ENUM_SafeAction.SA_NONE] */
-        ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
-
-        /*  Start tracking */
-        ActionsModel_B.set = 1U;
-
-        /* Chart: '<Root>/MovingObstacles' */
-        /* Chart: '<Root>/MovingObstacles' */
-        ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
-          &ActionsModel_DW.sf_MovingObstacles);
-
-        /*  Action */
-        *rty_roverAction = RA_FORWARD;
-
-        /*  Set point */
-        rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-          ActionsModel_MAX_SPEED_Y;
-        rty_setPoint->leftAxis = rty_setPoint->rightAxis;
-      }
+      *rty_safeAction = ActionsM_checkSafetyFromForward
+        (ActionsModel_B.statusLeftObstacle, rtu_sonar->front);
+      ActionsM_enter_internal_Forward(rtu_y_lever, rtu_gyroscope, rtu_sonar,
+        rty_setPoint, rty_roverAction, rty_safeAction, rty_redLeds);
       break;
 
      case UA_BRAKING_SMOOTH:
@@ -1144,6 +1294,10 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       break;
 
      case UA_BRAKING_HARD:
@@ -1156,6 +1310,10 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       break;
 
      default:
@@ -1186,16 +1344,17 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
   const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const real32_T
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
-  ENUM_TrackingObstacles *rty_statusObstacles, BUS_RedLeds *rty_redLeds)
+  BUS_RedLeds *rty_redLeds)
 {
   uint8_T rotation_ended;
+  ENUM_TrackingObstacles statusRightObstacle;
 
   /* RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
    *  Chart: '<Root>/RoverAction'
    */
   /* Chart: '<Root>/RoverAction' */
-  *rty_safeAction = ActionsM_checkSafetyFromForward(*rty_statusObstacles,
-    rtu_sonar->front);
+  *rty_safeAction = ActionsM_checkSafetyFromForward
+    (ActionsModel_B.statusLeftObstacle, rtu_sonar->front);
 
   /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
   switch (ActionsModel_DW.is_Forward) {
@@ -1208,7 +1367,7 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.is_Forward = ActionsMod_IN_NO_ACTIVE_CHILD_k;
       ActionsModel_DW.exit_port_index_Forward = 2U;
     } else if (*rty_safeAction == SA_NONE) {
-      /* l'utente vorrebbe continuare ad andare avanti e non c'ï¿½ piï¿½ l'ostacolo */
+      /* l'utente vorrebbe continuare ad andare avanti e non c'è più l'ostacolo */
       ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
 
       /*  Start tracking */
@@ -1216,7 +1375,9 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
 
       /* Chart: '<Root>/MovingObstacles' */
       /* Chart: '<Root>/MovingObstacles' */
-      ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
+      ActionsModel_MovingObstacles(1, rtu_sonar,
+        &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+        &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
         &ActionsModel_DW.sf_MovingObstacles);
 
       /*  Action */
@@ -1226,6 +1387,10 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
         ActionsModel_MAX_SPEED_Y;
       rty_setPoint->leftAxis = rty_setPoint->rightAxis;
+
+      /*  Led */
+      rty_redLeds->left = ActionsModel_B.leftLed;
+      rty_redLeds->right = ActionsModel_B.rightLed;
     }
 
     /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
@@ -1373,7 +1538,7 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
         ActionsModel_DW.is_Forward = ActionsMod_IN_NO_ACTIVE_CHILD_k;
         ActionsModel_DW.exit_port_index_Forward = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe continuare ad andare avanti e non c'ï¿½ piï¿½ l'ostacolo */
+        /* l'utente vorrebbe continuare ad andare avanti e non c'è più l'ostacolo */
         ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
 
         /*  Start tracking */
@@ -1381,7 +1546,9 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
 
         /* Chart: '<Root>/MovingObstacles' */
         /* Chart: '<Root>/MovingObstacles' */
-        ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
+        ActionsModel_MovingObstacles(1, rtu_sonar,
+          &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+          &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
           &ActionsModel_DW.sf_MovingObstacles);
 
         /*  Action */
@@ -1391,6 +1558,10 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
         rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
           ActionsModel_MAX_SPEED_Y;
         rty_setPoint->leftAxis = rty_setPoint->rightAxis;
+
+        /*  Led */
+        rty_redLeds->left = ActionsModel_B.leftLed;
+        rty_redLeds->right = ActionsModel_B.rightLed;
       } else {
         ActionsModel_DW.is_Forward = ActionsMo_IN_FW_EndedSafeAction;
         *rty_roverAction = RA_IDLE;
@@ -1416,9 +1587,15 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
 
       /* Chart: '<Root>/MovingObstacles' */
       /* Chart: '<Root>/MovingObstacles' */
-      ActionsModel_MovingObstacles(0, rtu_sonar, rty_statusObstacles,
+      ActionsModel_MovingObstacles(0, rtu_sonar,
+        &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+        &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
         &ActionsModel_DW.sf_MovingObstacles);
       ActionsModel_DW.is_Forward = ActionsModel_IN_FW_SafeAction;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       Ac_enter_internal_FW_SafeAction(rtu_gyroscope, rty_setPoint,
         rty_roverAction, rty_safeAction);
     } else if (*rtu_currentUserAction != UA_FORWARD) {
@@ -1427,7 +1604,9 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
 
       /* Chart: '<Root>/MovingObstacles' */
       /* Chart: '<Root>/MovingObstacles' */
-      ActionsModel_MovingObstacles(0, rtu_sonar, rty_statusObstacles,
+      ActionsModel_MovingObstacles(0, rtu_sonar,
+        &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+        &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
         &ActionsModel_DW.sf_MovingObstacles);
       ActionsModel_DW.is_Forward = ActionsMod_IN_NO_ACTIVE_CHILD_k;
       ActionsModel_DW.exit_port_index_Forward = 2U;
@@ -1436,7 +1615,9 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       /* Chart: '<Root>/MovingObstacles' */
       /*  Keep tracking */
       ActionsModel_MovingObstacles(ActionsModel_B.set, rtu_sonar,
-        rty_statusObstacles, &ActionsModel_DW.sf_MovingObstacles);
+        &ActionsModel_B.statusLeftObstacle, &statusRightObstacle,
+        &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
+        &ActionsModel_DW.sf_MovingObstacles);
 
       /*  Action */
       *rty_roverAction = RA_FORWARD;
@@ -1445,6 +1626,10 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
         ActionsModel_MAX_SPEED_Y;
       rty_setPoint->leftAxis = rty_setPoint->rightAxis;
+
+      /*  Led */
+      rty_redLeds->left = ActionsModel_B.leftLed;
+      rty_redLeds->right = ActionsModel_B.rightLed;
     }
 
     /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
@@ -1470,6 +1655,10 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_ROTATE_RIGHT:
@@ -1483,6 +1672,10 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_ROTATE_LEFT:
@@ -1496,36 +1689,18 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_FORWARD:
       ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_Forward;
-      *rty_safeAction = ActionsM_checkSafetyFromForward(*rty_statusObstacles,
-        rtu_sonar->front);
-      if (*rty_safeAction != SA_NONE) {
-        ActionsModel_DW.is_Forward = ActionsModel_IN_FW_SafeAction;
-        Ac_enter_internal_FW_SafeAction(rtu_gyroscope, rty_setPoint,
-          rty_roverAction, rty_safeAction);
-      } else {
-        /*  [safeAction == ENUM_SafeAction.SA_NONE] */
-        ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
-
-        /*  Start tracking */
-        ActionsModel_B.set = 1U;
-
-        /* Chart: '<Root>/MovingObstacles' */
-        /* Chart: '<Root>/MovingObstacles' */
-        ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
-          &ActionsModel_DW.sf_MovingObstacles);
-
-        /*  Action */
-        *rty_roverAction = RA_FORWARD;
-
-        /*  Set point */
-        rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-          ActionsModel_MAX_SPEED_Y;
-        rty_setPoint->leftAxis = rty_setPoint->rightAxis;
-      }
+      *rty_safeAction = ActionsM_checkSafetyFromForward
+        (ActionsModel_B.statusLeftObstacle, rtu_sonar->front);
+      ActionsM_enter_internal_Forward(rtu_y_lever, rtu_gyroscope, rtu_sonar,
+        rty_setPoint, rty_roverAction, rty_safeAction, rty_redLeds);
       break;
 
      case UA_BRAKING_SMOOTH:
@@ -1538,6 +1713,10 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       break;
 
      case UA_BRAKING_HARD:
@@ -1550,6 +1729,10 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       break;
 
      default:
@@ -1580,15 +1763,14 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
   const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever, const int16_T
   *rtu_y_lever, const real32_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar,
   BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
-  *rty_safeAction, ENUM_TrackingObstacles *rty_statusObstacles, BUS_RedLeds
-  *rty_redLeds)
+  *rty_safeAction, BUS_RedLeds *rty_redLeds)
 {
   if (ActionsModel_DW.is_RotateLeft == ActionsModel_IN_RL_RotateLeft) {
     /* RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
      *  Chart: '<Root>/RoverAction'
      */
     /* Chart: '<Root>/RoverAction' */
-    *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->left);
+    *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->right);
 
     /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
     switch (ActionsModel_DW.is_RL_RotateLeft) {
@@ -1602,7 +1784,7 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
         ActionsModel_DW.is_RotateLeft = ActionsMod_IN_NO_ACTIVE_CHILD_k;
         ActionsModel_DW.exit_port_index_RotateLeft = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe continuare a ruotare a SX e non c'ï¿½ piï¿½ l'ostacolo */
+        /* l'utente vorrebbe continuare a ruotare a SX e non c'è più l'ostacolo */
         ActionsModel_DW.is_RL_RotateLeft = ActionsModel_IN_RL_UserAction;
         *rty_roverAction = RA_ROTATE_LEFT;
 
@@ -1610,6 +1792,10 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
         rty_setPoint->leftAxis = (real32_T)*rtu_x_lever / 512.0F *
           ActionsModel_MAX_SPEED_X;
         rty_setPoint->rightAxis = -rty_setPoint->leftAxis;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
       }
 
       /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
@@ -1639,7 +1825,7 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
           ActionsModel_DW.is_RotateLeft = ActionsMod_IN_NO_ACTIVE_CHILD_k;
           ActionsModel_DW.exit_port_index_RotateLeft = 2U;
         } else if (*rty_safeAction == SA_NONE) {
-          /* l'utente vorrebbe continuare a ruotare a SX e non c'ï¿½ piï¿½ l'ostacolo */
+          /* l'utente vorrebbe continuare a ruotare a SX e non c'è più l'ostacolo */
           ActionsModel_DW.is_RL_RotateLeft = ActionsModel_IN_RL_UserAction;
           *rty_roverAction = RA_ROTATE_LEFT;
 
@@ -1647,6 +1833,10 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
           rty_setPoint->leftAxis = (real32_T)*rtu_x_lever / 512.0F *
             ActionsModel_MAX_SPEED_X;
           rty_setPoint->rightAxis = -rty_setPoint->leftAxis;
+
+          /*  Led */
+          rty_redLeds->left = RED_OFF;
+          rty_redLeds->right = RED_OFF;
         } else {
           ActionsModel_DW.is_RL_RotateLeft = ActionsMo_IN_RL_EndedSafeAction;
           *rty_roverAction = RA_IDLE;
@@ -1654,6 +1844,8 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
           /*  Set point */
           rty_setPoint->rightAxis = 0.0F;
           rty_setPoint->leftAxis = 0.0F;
+
+          /*  Led */
         }
 
         /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
@@ -1702,7 +1894,7 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
               rtu_speed->motor3, rtu_speed->motor4, ActionsModel_NO_SPEED) != 0)
   {
     ActionsModel_DW.is_RotateLeft = ActionsModel_IN_RL_RotateLeft;
-    *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->left);
+    *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->right);
     if (*rty_safeAction != SA_NONE) {
       ActionsModel_DW.is_RL_RotateLeft = ActionsModel_IN_RL_SafeAction;
       *rty_roverAction = RA_BRAKING_HARD;
@@ -1719,6 +1911,10 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
       rty_setPoint->leftAxis = (real32_T)*rtu_x_lever / 512.0F *
         ActionsModel_MAX_SPEED_X;
       rty_setPoint->rightAxis = -rty_setPoint->leftAxis;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
     }
 
     /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
@@ -1743,6 +1939,10 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_ROTATE_RIGHT:
@@ -1756,6 +1956,10 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_ROTATE_LEFT:
@@ -1769,36 +1973,18 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_FORWARD:
       ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_Forward;
-      *rty_safeAction = ActionsM_checkSafetyFromForward(*rty_statusObstacles,
-        rtu_sonar->front);
-      if (*rty_safeAction != SA_NONE) {
-        ActionsModel_DW.is_Forward = ActionsModel_IN_FW_SafeAction;
-        Ac_enter_internal_FW_SafeAction(rtu_gyroscope, rty_setPoint,
-          rty_roverAction, rty_safeAction);
-      } else {
-        /*  [safeAction == ENUM_SafeAction.SA_NONE] */
-        ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
-
-        /*  Start tracking */
-        ActionsModel_B.set = 1U;
-
-        /* Chart: '<Root>/MovingObstacles' */
-        /* Chart: '<Root>/MovingObstacles' */
-        ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
-          &ActionsModel_DW.sf_MovingObstacles);
-
-        /*  Action */
-        *rty_roverAction = RA_FORWARD;
-
-        /*  Set point */
-        rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-          ActionsModel_MAX_SPEED_Y;
-        rty_setPoint->leftAxis = rty_setPoint->rightAxis;
-      }
+      *rty_safeAction = ActionsM_checkSafetyFromForward
+        (ActionsModel_B.statusLeftObstacle, rtu_sonar->front);
+      ActionsM_enter_internal_Forward(rtu_y_lever, rtu_gyroscope, rtu_sonar,
+        rty_setPoint, rty_roverAction, rty_safeAction, rty_redLeds);
       break;
 
      case UA_BRAKING_SMOOTH:
@@ -1811,6 +1997,10 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       break;
 
      case UA_BRAKING_HARD:
@@ -1823,6 +2013,10 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       break;
 
      default:
@@ -1853,8 +2047,7 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever,
   const int16_T *rtu_y_lever, const real32_T *rtu_gyroscope, const BUS_Sonar
   *rtu_sonar, BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction,
-  ENUM_SafeAction *rty_safeAction, ENUM_TrackingObstacles *rty_statusObstacles,
-  BUS_RedLeds *rty_redLeds)
+  ENUM_SafeAction *rty_safeAction, BUS_RedLeds *rty_redLeds)
 {
   if (ActionsModel_DW.is_RotateRight == ActionsModel_IN_RR_RotateRight) {
     /* RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
@@ -1875,7 +2068,7 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
         ActionsModel_DW.is_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_k;
         ActionsModel_DW.exit_port_index_RotateRight = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe continuare a ruotare a DX e non c'ï¿½ piï¿½ l'ostacolo */
+        /* l'utente vorrebbe continuare a ruotare a DX e non c'è più l'ostacolo */
         ActionsModel_DW.is_RR_RotateRight = ActionsModel_IN_RR_UserAction;
         *rty_roverAction = RA_ROTATE_RIGHT;
 
@@ -1883,6 +2076,10 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
         rty_setPoint->leftAxis = (real32_T)*rtu_x_lever / 512.0F *
           ActionsModel_MAX_SPEED_X;
         rty_setPoint->rightAxis = -rty_setPoint->leftAxis;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
       }
 
       /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
@@ -1912,7 +2109,7 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
           ActionsModel_DW.is_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_k;
           ActionsModel_DW.exit_port_index_RotateRight = 2U;
         } else if (*rty_safeAction == SA_NONE) {
-          /* l'utente vorrebbe continuare a ruotare a DX e non c'ï¿½ piï¿½ l'ostacolo */
+          /* l'utente vorrebbe continuare a ruotare a DX e non c'è più l'ostacolo */
           ActionsModel_DW.is_RR_RotateRight = ActionsModel_IN_RR_UserAction;
           *rty_roverAction = RA_ROTATE_RIGHT;
 
@@ -1920,6 +2117,10 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
           rty_setPoint->leftAxis = (real32_T)*rtu_x_lever / 512.0F *
             ActionsModel_MAX_SPEED_X;
           rty_setPoint->rightAxis = -rty_setPoint->leftAxis;
+
+          /*  Led */
+          rty_redLeds->left = RED_OFF;
+          rty_redLeds->right = RED_OFF;
         } else {
           ActionsModel_DW.is_RR_RotateRight = ActionsMo_IN_RR_EndedSafeAction;
           *rty_roverAction = RA_IDLE;
@@ -1941,6 +2142,10 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       /* case IN_RR_UserAction: */
       if (*rty_safeAction != SA_NONE) {
         ActionsModel_DW.is_RR_RotateRight = ActionsModel_IN_RR_SafeAction;
+
+        /*  Led */
+        rty_redLeds->left = RED_ON;
+        rty_redLeds->right = RED_ON;
         *rty_roverAction = RA_BRAKING_HARD;
 
         /*  Set point */
@@ -1980,6 +2185,10 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
     *rty_safeAction = ActionsMo_checkSafetyFromRotate(rtu_sonar->right);
     if (*rty_safeAction != SA_NONE) {
       ActionsModel_DW.is_RR_RotateRight = ActionsModel_IN_RR_SafeAction;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       *rty_roverAction = RA_BRAKING_HARD;
 
       /*  Set point */
@@ -1994,6 +2203,10 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       rty_setPoint->leftAxis = (real32_T)*rtu_x_lever / 512.0F *
         ActionsModel_MAX_SPEED_X;
       rty_setPoint->rightAxis = -rty_setPoint->leftAxis;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
     }
 
     /* End of Outputs for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
@@ -2018,6 +2231,10 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_ROTATE_RIGHT:
@@ -2031,6 +2248,10 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_ROTATE_LEFT:
@@ -2044,36 +2265,18 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_OFF;
+      rty_redLeds->right = RED_OFF;
       break;
 
      case UA_FORWARD:
       ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_Forward;
-      *rty_safeAction = ActionsM_checkSafetyFromForward(*rty_statusObstacles,
-        rtu_sonar->front);
-      if (*rty_safeAction != SA_NONE) {
-        ActionsModel_DW.is_Forward = ActionsModel_IN_FW_SafeAction;
-        Ac_enter_internal_FW_SafeAction(rtu_gyroscope, rty_setPoint,
-          rty_roverAction, rty_safeAction);
-      } else {
-        /*  [safeAction == ENUM_SafeAction.SA_NONE] */
-        ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
-
-        /*  Start tracking */
-        ActionsModel_B.set = 1U;
-
-        /* Chart: '<Root>/MovingObstacles' */
-        /* Chart: '<Root>/MovingObstacles' */
-        ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
-          &ActionsModel_DW.sf_MovingObstacles);
-
-        /*  Action */
-        *rty_roverAction = RA_FORWARD;
-
-        /*  Set point */
-        rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-          ActionsModel_MAX_SPEED_Y;
-        rty_setPoint->leftAxis = rty_setPoint->rightAxis;
-      }
+      *rty_safeAction = ActionsM_checkSafetyFromForward
+        (ActionsModel_B.statusLeftObstacle, rtu_sonar->front);
+      ActionsM_enter_internal_Forward(rtu_y_lever, rtu_gyroscope, rtu_sonar,
+        rty_setPoint, rty_roverAction, rty_safeAction, rty_redLeds);
       break;
 
      case UA_BRAKING_SMOOTH:
@@ -2086,6 +2289,10 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       break;
 
      case UA_BRAKING_HARD:
@@ -2098,6 +2305,10 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       /*  Set point */
       rty_setPoint->rightAxis = 0.0F;
       rty_setPoint->leftAxis = 0.0F;
+
+      /*  Led */
+      rty_redLeds->left = RED_ON;
+      rty_redLeds->right = RED_ON;
       break;
 
      default:
@@ -2125,9 +2336,10 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
 
 /* System initialize for referenced model: 'ActionsModel' */
 void ActionsModel_Init(BUS_SetPoint *rty_setPoint, ENUM_RoverAction
-  *rty_roverAction, ENUM_TrackingObstacles *rty_statusObstacles, BUS_RedLeds
-  *rty_redLeds)
+  *rty_roverAction, BUS_RedLeds *rty_redLeds)
 {
+  ENUM_TrackingObstacles statusRightObstacle;
+
   /* SystemInitialize for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
    *  Chart: '<Root>/RoverAction'
    */
@@ -2151,7 +2363,8 @@ void ActionsModel_Init(BUS_SetPoint *rty_setPoint, ENUM_RoverAction
    *  Chart: '<Root>/MovingObstacles'
    */
   /* SystemInitialize for Chart: '<Root>/MovingObstacles' */
-  ActionsMod_MovingObstacles_Init(rty_statusObstacles,
+  ActionsMod_MovingObstacles_Init(&ActionsModel_B.statusLeftObstacle,
+    &statusRightObstacle, &ActionsModel_B.leftLed, &ActionsModel_B.rightLed,
     &ActionsModel_DW.sf_MovingObstacles);
 
   /* End of SystemInitialize for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' */
@@ -2162,8 +2375,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever,
   const int16_T *rtu_y_lever, const real32_T *rtu_gyroscope, const BUS_Sonar
   *rtu_sonar, BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction,
-  ENUM_SafeAction *rty_safeAction, ENUM_TrackingObstacles *rty_statusObstacles,
-  BUS_RedLeds *rty_redLeds)
+  ENUM_SafeAction *rty_safeAction, BUS_RedLeds *rty_redLeds)
 {
   /* RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
    *  Chart: '<Root>/RoverAction'
@@ -2173,8 +2385,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
    case ActionsModel_IN_Backward:
     ActionsModel_Backward(rtu_currentUserAction, rtu_speed, rtu_y_lever,
                           rtu_gyroscope, rtu_sonar, rty_setPoint,
-                          rty_roverAction, rty_safeAction, rty_statusObstacles,
-                          rty_redLeds);
+                          rty_roverAction, rty_safeAction, rty_redLeds);
     break;
 
    case ActionsModel_IN_BrakingHard:
@@ -2191,6 +2402,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
         break;
 
        case UA_ROTATE_RIGHT:
@@ -2204,6 +2419,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
         break;
 
        case UA_ROTATE_LEFT:
@@ -2217,36 +2436,18 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
         break;
 
        case UA_FORWARD:
         ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_Forward;
-        *rty_safeAction = ActionsM_checkSafetyFromForward(*rty_statusObstacles,
-          rtu_sonar->front);
-        if (*rty_safeAction != SA_NONE) {
-          ActionsModel_DW.is_Forward = ActionsModel_IN_FW_SafeAction;
-          Ac_enter_internal_FW_SafeAction(rtu_gyroscope, rty_setPoint,
-            rty_roverAction, rty_safeAction);
-        } else {
-          /*  [safeAction == ENUM_SafeAction.SA_NONE] */
-          ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
-
-          /*  Start tracking */
-          ActionsModel_B.set = 1U;
-
-          /* Chart: '<Root>/MovingObstacles' */
-          /* Chart: '<Root>/MovingObstacles' */
-          ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
-            &ActionsModel_DW.sf_MovingObstacles);
-
-          /*  Action */
-          *rty_roverAction = RA_FORWARD;
-
-          /*  Set point */
-          rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-            ActionsModel_MAX_SPEED_Y;
-          rty_setPoint->leftAxis = rty_setPoint->rightAxis;
-        }
+        *rty_safeAction = ActionsM_checkSafetyFromForward
+          (ActionsModel_B.statusLeftObstacle, rtu_sonar->front);
+        ActionsM_enter_internal_Forward(rtu_y_lever, rtu_gyroscope, rtu_sonar,
+          rty_setPoint, rty_roverAction, rty_safeAction, rty_redLeds);
         break;
 
        case UA_BRAKING_SMOOTH:
@@ -2259,6 +2460,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_ON;
+        rty_redLeds->right = RED_ON;
         break;
 
        case UA_BRAKING_HARD:
@@ -2271,6 +2476,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_ON;
+        rty_redLeds->right = RED_ON;
         break;
 
        default:
@@ -2309,6 +2518,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
         break;
 
        case UA_ROTATE_RIGHT:
@@ -2322,6 +2535,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
         break;
 
        case UA_ROTATE_LEFT:
@@ -2335,36 +2552,18 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
         break;
 
        case UA_FORWARD:
         ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_Forward;
-        *rty_safeAction = ActionsM_checkSafetyFromForward(*rty_statusObstacles,
-          rtu_sonar->front);
-        if (*rty_safeAction != SA_NONE) {
-          ActionsModel_DW.is_Forward = ActionsModel_IN_FW_SafeAction;
-          Ac_enter_internal_FW_SafeAction(rtu_gyroscope, rty_setPoint,
-            rty_roverAction, rty_safeAction);
-        } else {
-          /*  [safeAction == ENUM_SafeAction.SA_NONE] */
-          ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
-
-          /*  Start tracking */
-          ActionsModel_B.set = 1U;
-
-          /* Chart: '<Root>/MovingObstacles' */
-          /* Chart: '<Root>/MovingObstacles' */
-          ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
-            &ActionsModel_DW.sf_MovingObstacles);
-
-          /*  Action */
-          *rty_roverAction = RA_FORWARD;
-
-          /*  Set point */
-          rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-            ActionsModel_MAX_SPEED_Y;
-          rty_setPoint->leftAxis = rty_setPoint->rightAxis;
-        }
+        *rty_safeAction = ActionsM_checkSafetyFromForward
+          (ActionsModel_B.statusLeftObstacle, rtu_sonar->front);
+        ActionsM_enter_internal_Forward(rtu_y_lever, rtu_gyroscope, rtu_sonar,
+          rty_setPoint, rty_roverAction, rty_safeAction, rty_redLeds);
         break;
 
        case UA_BRAKING_HARD:
@@ -2377,6 +2576,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_ON;
+        rty_redLeds->right = RED_ON;
         break;
 
        default:
@@ -2403,7 +2606,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
    case ActionsModel_IN_Forward:
     ActionsModel_Forward(rtu_currentUserAction, rtu_speed, rtu_y_lever,
                          rtu_gyroscope, rtu_sonar, rty_setPoint, rty_roverAction,
-                         rty_safeAction, rty_statusObstacles, rty_redLeds);
+                         rty_safeAction, rty_redLeds);
     break;
 
    case ActionsModel_IN_None:
@@ -2420,6 +2623,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
         break;
 
        case UA_ROTATE_RIGHT:
@@ -2433,6 +2640,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
         break;
 
        case UA_ROTATE_LEFT:
@@ -2446,36 +2657,18 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_OFF;
+        rty_redLeds->right = RED_OFF;
         break;
 
        case UA_FORWARD:
         ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_Forward;
-        *rty_safeAction = ActionsM_checkSafetyFromForward(*rty_statusObstacles,
-          rtu_sonar->front);
-        if (*rty_safeAction != SA_NONE) {
-          ActionsModel_DW.is_Forward = ActionsModel_IN_FW_SafeAction;
-          Ac_enter_internal_FW_SafeAction(rtu_gyroscope, rty_setPoint,
-            rty_roverAction, rty_safeAction);
-        } else {
-          /*  [safeAction == ENUM_SafeAction.SA_NONE] */
-          ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
-
-          /*  Start tracking */
-          ActionsModel_B.set = 1U;
-
-          /* Chart: '<Root>/MovingObstacles' */
-          /* Chart: '<Root>/MovingObstacles' */
-          ActionsModel_MovingObstacles(1, rtu_sonar, rty_statusObstacles,
-            &ActionsModel_DW.sf_MovingObstacles);
-
-          /*  Action */
-          *rty_roverAction = RA_FORWARD;
-
-          /*  Set point */
-          rty_setPoint->rightAxis = (real32_T)*rtu_y_lever / 512.0F *
-            ActionsModel_MAX_SPEED_Y;
-          rty_setPoint->leftAxis = rty_setPoint->rightAxis;
-        }
+        *rty_safeAction = ActionsM_checkSafetyFromForward
+          (ActionsModel_B.statusLeftObstacle, rtu_sonar->front);
+        ActionsM_enter_internal_Forward(rtu_y_lever, rtu_gyroscope, rtu_sonar,
+          rty_setPoint, rty_roverAction, rty_safeAction, rty_redLeds);
         break;
 
        case UA_BRAKING_SMOOTH:
@@ -2488,6 +2681,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_ON;
+        rty_redLeds->right = RED_ON;
         break;
 
        default:
@@ -2500,6 +2697,10 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         /*  Set point */
         rty_setPoint->rightAxis = 0.0F;
         rty_setPoint->leftAxis = 0.0F;
+
+        /*  Led */
+        rty_redLeds->left = RED_ON;
+        rty_redLeds->right = RED_ON;
         break;
       }
     }
@@ -2508,14 +2709,14 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
    case ActionsModel_IN_RotateLeft:
     ActionsModel_RotateLeft(rtu_currentUserAction, rtu_speed, rtu_x_lever,
       rtu_y_lever, rtu_gyroscope, rtu_sonar, rty_setPoint, rty_roverAction,
-      rty_safeAction, rty_statusObstacles, rty_redLeds);
+      rty_safeAction, rty_redLeds);
     break;
 
    default:
     /* case IN_RotateRight: */
     ActionsModel_RotateRight(rtu_currentUserAction, rtu_speed, rtu_x_lever,
       rtu_y_lever, rtu_gyroscope, rtu_sonar, rty_setPoint, rty_roverAction,
-      rty_safeAction, rty_statusObstacles, rty_redLeds);
+      rty_safeAction, rty_redLeds);
     break;
   }
 
