@@ -510,7 +510,7 @@ static inline void change_regulator(void)
             }
             break;
 
-        case RA_ROTATE_RIGHT:
+        case RA_BRAKING_HARD:
             for (int i = 0; i < N_MOTORS; i++) {
                 MotorControl_SetRegulator(&motors[i], &pid_medium[i]);
             }
