@@ -25,7 +25,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "debug.h"
+#include "SEGGER_SYSVIEW_FreeRTOS.h"
 #include "scheduling_constants.h"
 
 // Simulink Model
@@ -423,9 +424,10 @@ void StartReadBattery(void *argument)
 void StartSeggerTask(void *argument)
 {
   /* USER CODE BEGIN StartSeggerTask */
+  #if SEGGER_BUILD
 	  SEGGER_SYSVIEW_Conf();
 	  SEGGER_SYSVIEW_Start();
-
+  #endif
   /* Infinite loop */
   for(;;)
   {

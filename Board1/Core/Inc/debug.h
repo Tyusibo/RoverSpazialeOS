@@ -1,0 +1,2 @@
+// SEGGER
+#define SEGGER_BUILD 0
