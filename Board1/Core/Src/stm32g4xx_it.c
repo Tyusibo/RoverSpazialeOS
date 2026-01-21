@@ -24,6 +24,9 @@
 /* USER CODE BEGIN Includes */
 #include "uart_functions.h"
 #include "print.h"
+#include "debug.h"
+#include "lights_init.h"
+#include "Board1.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -35,10 +38,7 @@
 /* USER CODE BEGIN PD */
 
 /* --- CONFIGURAZIONE DEBUG --- */
-// 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 0
-
-#if VERBOSE_DEBUG == 1
+#if VERBOSE_DEBUG_IT == 1
 #define PRINT_DBG(msg) printMsg(msg)
 #else
     #define PRINT_DBG(msg) ((void)0)
@@ -213,9 +213,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	}
 
 }
-
-#include "lights_init.h"
-#include "Board1.h"
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 

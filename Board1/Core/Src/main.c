@@ -63,11 +63,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-/* --- CONFIGURAZIONE DEBUG --- */
-// 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 1
-
-#if VERBOSE_DEBUG == 1
+/* --- DEBUG CONFIGURATIONS --- */
+#if VERBOSE_DEBUG_MAIN == 1
 #define PRINT_DBG(msg) printMsg(msg)
 #else
 	#define PRINT_DBG(msg) ((void)0)
@@ -159,7 +156,7 @@ int main(void) {
 
 	setComunicationHandler(&hlpuart1);
 
-#if VERBOSE_DEBUG
+#if VERBOSE_DEBUG_MAIN
 
 	setPrinterHandler(&huart2);
 	clearScreen();

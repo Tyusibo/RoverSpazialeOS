@@ -2,12 +2,11 @@
 #include "string.h"
 #include "crc.h"
 #include "print.h"
+#include "debug.h"
 
 /* --- CONFIGURAZIONE DEBUG --- */
-// 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 1
 
-#if VERBOSE_DEBUG == 1
+#if VERBOSE_DEBUG_CRC == 1
     #define PRINT_DBG(msg) printMsg(msg)
 #else
     #define PRINT_DBG(msg) ((void)0)

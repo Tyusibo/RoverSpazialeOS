@@ -63,10 +63,6 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define REAL_TASK 1
-// 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
-#define PRINT 0
- // 1: Abilita stampe di debug, 0: Disabilita stampe di debug
 
 /* USER CODE END PD */
 
@@ -253,7 +249,7 @@ void StartPID(void *argument)
         Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
                         current_speed[2], current_speed[3] };
 
-#if PRINT
+#if TASK_PRINT
         printMotorSpeeds(&Board1_U.speed);
         //HAL_Delay(2000); // Per non intasare la seriale
 #endif
@@ -308,7 +304,7 @@ void StartSupervisor(void *argument)
 		change_set_point();
 		change_regulator();
 
-#if PRINT
+#if TASK_PRINT
 
 #endif
 		// Stampa ogni 50 cicli
@@ -360,7 +356,7 @@ void StartReadTemperature(void *argument)
 #if REAL_TASK
         Board1_U.temperature = (Temperature) temp_ky028_read_temperature(&temp_sensor);
 
-#if PRINT
+#if TASK_PRINT
         printTemperature((float)Board1_U.temperature);
         //HAL_Delay(2000);
 #endif
@@ -397,7 +393,7 @@ void StartReadBattery(void *argument)
         Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
                 battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
 
-#if PRINT
+#if TASK_PRINT
         printBattery((float)Board1_U.batteryLevel);
         //HAL_Delay(2000);
 #endif
