@@ -12,13 +12,6 @@ static inline float map_linear(float x, float in_min, float in_max, float out_mi
   return out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min);
 }
 
-static inline float saturate_volt(const MotorControl *m, float u)
-{
-  if (u > m->max_volt) return m->max_volt;
-  if (u < m->min_volt) return m->min_volt;
-  return u;
-}
-
 static inline float volt_to_duty_percent(const MotorControl *m, float volt)
 {
   // 1. Normalizza volt in un valore "grezzo" percentuale (0-100 basato su 12V)
@@ -45,7 +38,7 @@ void MotorControl_Init(
   float dc_gain, 
   float pulse_theo_min, float pulse_theo_max, 
   float pulse_real_min, float pulse_real_max,
-  Coefficients pi_fast, Coefficients pi_slow
+  PIDController *default_regulator
 )
 {
   mc->htim_pwm = htim_pwm;
@@ -66,13 +59,9 @@ void MotorControl_Init(
   mc->pulse_real_min = pulse_real_min;
   mc->pulse_real_max = pulse_real_max;
 
-  mc->pi_fast = pi_fast;
-  mc->pi_slow = pi_slow;
-  mc->use_slow = 0;
+  mc->current_regulator = default_regulator;
 
   mc->reference_rpm = 0.0f;
-  mc->last_error = 0.0f;
-  mc->z = 0.0f;
 
   mc->arr_pwm_plus_one = (uint64_t)__HAL_TIM_GET_AUTORELOAD(htim_pwm) + 1ULL;
 
@@ -85,28 +74,23 @@ void MotorControl_SetReferenceRPM(MotorControl *mc, float ref_rpm)
   mc->reference_rpm = ref_rpm;
 }
 
-void MotorControl_SelectSlow(MotorControl *mc, uint8_t enable)
+void MotorControl_SetRegulator(MotorControl *mc, PIDController *reg)
 {
-  mc->use_slow = enable ? 1U : 0U;
+    if (reg != NULL)
+    {
+        mc->current_regulator = reg;
+    }
 }
 
 float MotorControl_ComputeU(MotorControl *mc, float speed_rpm)
 {
   float e = mc->reference_rpm - speed_rpm;
 
-  Coefficients pi = mc->use_slow ? mc->pi_slow : mc->pi_fast;
+  float u_sat = PID_Compute(mc->current_regulator, e, mc->min_volt, mc->max_volt);
 
-  // stessa forma che usavi: q = k_err*e + k_last_err*e_prev ; u = q + z ; sat ; z=sat
-  float q = pi.k_err * e + pi.k_last_err * mc->last_error;
-  float u = q + mc->z;
+  mc->last_u = u_sat;
 
-  float sat = saturate_volt(mc, u);
-
-  mc->z = sat;
-  mc->last_error = e;
-  mc->last_u = sat;
-
-  return sat;
+  return u_sat;
 }
 
 /* Funzione di ricalibrazione empirica statica basata sui dati dell'istanza */
@@ -126,7 +110,7 @@ int MotorControl_Actuate(MotorControl *mc, float u_volt)
   int pulse = duty_percent_to_pulse(mc, duty);
 
   // Ricalibrazione Hardware-Specific passandogli l'oggetto mc
-  pulse = recalibrate_pulse(mc, pulse);
+  //pulse = recalibrate_pulse(mc, pulse);
 
   // (opzionale ma utile) clamp CCR in [0, ARR]
   if (pulse < 0) pulse = 0;

@@ -1,10 +1,14 @@
 #include "uart_functions.h"
 
-#include "debug.h"
+/* INCLUDE INUTILI SOLO PER DEBUGGING */
 #include "print.h"
+/*************************************/
 
 /* --- CONFIGURAZIONE DEBUG --- */
-#if VERBOSE_DEBUG_UART == 1
+// 1 per abilitare le stampe, 0 per disabilitarle
+#define VERBOSE_DEBUG 0
+
+#if VERBOSE_DEBUG == 1
     #define PRINT_DBG(msg) printMsg(msg)
 #else
     #define PRINT_DBG(msg) ((void)0)
@@ -98,6 +102,7 @@ uint8_t hasReceived(void) {
     return receivedFlag;
 }
 
+// Ritorna se c'è stato un errore di ricezione, abilitato nella callback di errore
 uint8_t errorReceived(void) {
     return errorReceiveFlag;
 }

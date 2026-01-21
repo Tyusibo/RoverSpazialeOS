@@ -197,10 +197,9 @@ int main(void)
 	}
 
 	// Init Motori
-	//Motors_InitAll();
-	//Motors_StartAllPwm();
-	//Motors_SetDefaultCcr((uint32_t) 946);
-
+	Motors_InitAll();
+	Motors_StartAllPwm();
+	Motors_SetDefaultCcr(757);
 
 
 

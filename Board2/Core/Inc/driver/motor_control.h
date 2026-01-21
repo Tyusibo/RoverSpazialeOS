@@ -3,11 +3,7 @@
 
 #include "stm32g4xx_hal.h"
 #include <stdint.h>
-
-typedef struct {
-  float k_err;
-  float k_last_err;
-} Coefficients;
+#include "regulator.h"
 
 typedef struct {
   // --- PWM HW ---
@@ -35,18 +31,14 @@ typedef struct {
   float pulse_real_min;
   float pulse_real_max;
 
-  // --- Regolatori ---
-  Coefficients pi_fast;
-  Coefficients pi_slow;
-  uint8_t use_slow;
+  // --- Regolatore ---
+  PIDController *current_regulator;
 
-  // --- Stato regolatore ---
+  // --- Stato controllore ---
   float reference_rpm;
-  float last_error;
-  float z;           // memoria (ultima u saturata)
 
   // --- Debug opzionale ---
-  float last_u;       // ultima u (prima della saturazione o dopo? scegliamo dopo sat)
+  float last_u;       
   int last_pulse;
 } MotorControl;
 
@@ -60,15 +52,15 @@ void MotorControl_Init(
   float dc_gain, 
   float pulse_theo_min, float pulse_theo_max, 
   float pulse_real_min, float pulse_real_max,
-  Coefficients pi_fast, Coefficients pi_slow
+  PIDController *default_regulator
 );
 
 void MotorControl_SetReferenceRPM(MotorControl *mc, float ref_rpm);
-void MotorControl_SelectSlow(MotorControl *mc, uint8_t enable);
+void MotorControl_SetRegulator(MotorControl *mc, PIDController *reg);
 
 /**
  * Calcola l'uscita di controllo (Volt) usando la misura speed_rpm.
- * - aggiorna last_error e z internamente
+ * - delega il calcolo al PID corrente
  * - ritorna u_saturata (Volt), pronta per l'attuatore
  */
 float MotorControl_ComputeU(MotorControl *mc, float speed_rpm);
