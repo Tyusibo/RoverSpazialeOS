@@ -342,6 +342,7 @@ void StartSupervisor(void *argument)
 			cycle_count = 0;
 			//printMsg("Supervisor Cycle End\r\n");ù
 			printGlobalState(&Board1_B.board1GlobalState);
+			printDecision(&Board1_DW.board1Decision);
 //			printMsg("---- Supervisor Stats ----\r\n");
 //            printLabel("Miss PID");
 //            printInt(MissPID);

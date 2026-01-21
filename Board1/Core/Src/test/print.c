@@ -306,6 +306,7 @@ static const char* getRoverActionName(ENUM_RoverAction v) {
         case RA_ROTATE_LEFT: return "RA_ROTATE_LEFT";
         case RA_ROTATE_RIGHT: return "RA_ROTATE_RIGHT";
         case RA_BRAKING_HARD: return "RA_BRAKING_HARD";
+        case RA_BRAKING_MODERATE: return "RA_BRAKING_MODERATE";
         case RA_BRAKING_SMOOTH: return "RA_BRAKING_SMOOTH";
         default: return "UNKNOWN";
     }
