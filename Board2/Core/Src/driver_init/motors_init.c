@@ -1,49 +1,66 @@
 #include "motors_init.h"
 #include "stm32g4xx_hal.h"
 
-// PWM timer (definito in tim.c / CubeMX)
 extern TIM_HandleTypeDef htim1;
 
 MotorControl motors[N_MOTORS];
 
-static Coefficients fastGains[N_MOTORS] = {
-    { .k_err = 0.097f, .k_last_err = -0.083f },
-    { .k_err = 0.097f, .k_last_err = -0.083f },
-    { .k_err = 0.097f, .k_last_err = -0.083f },
-    { .k_err = 0.097f, .k_last_err = -0.083f },
-};
+PIDController pid_fast[N_MOTORS];
+PIDController pid_medium[N_MOTORS];
+PIDController pid_slow[N_MOTORS];
 
-static Coefficients slowGains[N_MOTORS] = {
-    { .k_err = 0.0002033f, .k_last_err = 0.0002033f },
-    { .k_err = 0.0002033f, .k_last_err = 0.0002033f },
-    { .k_err = 0.0002033f, .k_last_err = 0.0002033f },
-    { .k_err = 0.0002033f, .k_last_err = 0.0002033f },
-};
 
 void Motors_InitAll(void)
 {
-    uint32_t pwm_ch[N_MOTORS] = {
-        TIM_CHANNEL_1, TIM_CHANNEL_2, TIM_CHANNEL_3, TIM_CHANNEL_4
-    };
+	float fastGains[N_MOTORS][2] = {
+	    [MOTOR_FRONT_LEFT]  = { FAST_MOT1_K_ERR, FAST_MOT1_K_LAST_ERR },
+	    [MOTOR_FRONT_RIGHT] = { FAST_MOT2_K_ERR, FAST_MOT2_K_LAST_ERR },
+	    [MOTOR_REAR_RIGHT]  = { FAST_MOT3_K_ERR, FAST_MOT3_K_LAST_ERR },
+	    [MOTOR_REAR_LEFT]   = { FAST_MOT4_K_ERR, FAST_MOT4_K_LAST_ERR }
+	};
 
-    // Vettore dei guadagni statici definito in motor_constants.h
-    float dc_gains[N_MOTORS] = {
-        DC_GAIN_MOT1, 
-        DC_GAIN_MOT2, 
-        DC_GAIN_MOT3, 
-        DC_GAIN_MOT4
-    };
+    float mediumGains[N_MOTORS][2] = {
+	    [MOTOR_FRONT_LEFT]  = { MEDIUM_MOT1_K_ERR, MEDIUM_MOT1_K_LAST_ERR },
+	    [MOTOR_FRONT_RIGHT] = { MEDIUM_MOT2_K_ERR, MEDIUM_MOT2_K_LAST_ERR },
+	    [MOTOR_REAR_RIGHT]  = { MEDIUM_MOT3_K_ERR, MEDIUM_MOT3_K_LAST_ERR },
+	    [MOTOR_REAR_LEFT]   = { MEDIUM_MOT4_K_ERR, MEDIUM_MOT4_K_LAST_ERR }
+	};
+
+	float slowGains[N_MOTORS][2] = {
+	    [MOTOR_FRONT_LEFT]  = { SLOW_MOT1_K_ERR, SLOW_MOT1_K_LAST_ERR },
+	    [MOTOR_FRONT_RIGHT] = { SLOW_MOT2_K_ERR, SLOW_MOT2_K_LAST_ERR },
+	    [MOTOR_REAR_RIGHT]  = { SLOW_MOT3_K_ERR, SLOW_MOT3_K_LAST_ERR },
+	    [MOTOR_REAR_LEFT]   = { SLOW_MOT4_K_ERR, SLOW_MOT4_K_LAST_ERR }
+	};
+
+	static const uint32_t pwm_ch[N_MOTORS] = {
+	    [MOTOR_FRONT_LEFT]  = TIM_CHANNEL_1,
+	    [MOTOR_FRONT_RIGHT] = TIM_CHANNEL_2,
+	    [MOTOR_REAR_RIGHT]  = TIM_CHANNEL_3,
+	    [MOTOR_REAR_LEFT]   = TIM_CHANNEL_4
+	};
+
+	static const float dc_gains[N_MOTORS] = {
+	    [MOTOR_FRONT_LEFT]  = DC_GAIN_MOT1,
+	    [MOTOR_FRONT_RIGHT] = DC_GAIN_MOT2,
+	    [MOTOR_REAR_RIGHT]  = DC_GAIN_MOT3,
+	    [MOTOR_REAR_LEFT]   = DC_GAIN_MOT4
+	};
 
     for (int i = 0; i < N_MOTORS; i++)
     {
+        PID_Init(&pid_fast[i], fastGains[i][0], fastGains[i][1]);
+        PID_Init(&pid_medium[i], mediumGains[i][0], mediumGains[i][1]);
+        PID_Init(&pid_slow[i], slowGains[i][0], slowGains[i][1]);
+
         MotorControl_Init(&motors[i],
                           &htim1, pwm_ch[i],
                           TS, MIN_VOLT, MAX_VOLT,
                           IN_MIN, IN_MAX, OUT_MIN, OUT_MAX,
                           dc_gains[i],
-                          PULSE_THEO_MIN, PULSE_THEO_MAX,
-                          PULSE_REAL_MIN, PULSE_REAL_MAX,
-                          fastGains[i], slowGains[i]);
+						  PULSE_THEO_MIN, PULSE_THEO_MAX,
+						  PULSE_REAL_MIN, PULSE_REAL_MAX,
+                          &pid_fast[i]);
     }
 }
 
