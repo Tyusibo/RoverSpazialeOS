@@ -59,6 +59,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
+typedef StaticTimer_t osStaticTimerDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -144,6 +145,22 @@ const osThreadAttr_t StartSegger_attributes = {
   .cb_size = sizeof(StartSeggerControlBlock),
   .priority = (osPriority_t) osPriorityHigh1,
 };
+/* Definitions for toggleLeftRedLed */
+osTimerId_t toggleLeftRedLedHandle;
+osStaticTimerDef_t toggleLeftRedLedControlBlock;
+const osTimerAttr_t toggleLeftRedLed_attributes = {
+  .name = "toggleLeftRedLed",
+  .cb_mem = &toggleLeftRedLedControlBlock,
+  .cb_size = sizeof(toggleLeftRedLedControlBlock),
+};
+/* Definitions for toggleRightRedLed */
+osTimerId_t toggleRightRedLedHandle;
+osStaticTimerDef_t toggleRightRedLedControlBlock;
+const osTimerAttr_t toggleRightRedLed_attributes = {
+  .name = "toggleRightRedLed",
+  .cb_mem = &toggleRightRedLedControlBlock,
+  .cb_size = sizeof(toggleRightRedLedControlBlock),
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -165,6 +182,8 @@ void StartSupervisor(void *argument);
 void StartReadTemperature(void *argument);
 void StartReadBattery(void *argument);
 void StartSeggerTask(void *argument);
+void callbackToggleLeftRedLed(void *argument);
+void callbackToggleRightRedLed(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -185,6 +204,13 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
+
+  /* Create the timer(s) */
+  /* creation of toggleLeftRedLed */
+  toggleLeftRedLedHandle = osTimerNew(callbackToggleLeftRedLed, osTimerPeriodic, NULL, &toggleLeftRedLed_attributes);
+
+  /* creation of toggleRightRedLed */
+  toggleRightRedLedHandle = osTimerNew(callbackToggleRightRedLed, osTimerPeriodic, NULL, &toggleRightRedLed_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
@@ -298,8 +324,6 @@ void StartSupervisor(void *argument)
 //			}
 			Board1_step();
 		} while (Board1_Y.supervision_ended != 1);
-
-		Board1_U.continua = (Board1_U.continua == 0) ? 1 : 0;
 
 		/* FINALIZZAZIONE DECISIONE */
 		actuate_white_leds();
@@ -435,6 +459,22 @@ void StartSeggerTask(void *argument)
   osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartSeggerTask */
+}
+
+/* callbackToggleLeftRedLed function */
+void callbackToggleLeftRedLed(void *argument)
+{
+  /* USER CODE BEGIN callbackToggleLeftRedLed */
+	  A4WD3_Red_Toggle(&led_left);
+  /* USER CODE END callbackToggleLeftRedLed */
+}
+
+/* callbackToggleRightRedLed function */
+void callbackToggleRightRedLed(void *argument)
+{
+  /* USER CODE BEGIN callbackToggleRightRedLed */
+ 	  A4WD3_Red_Toggle(&led_right);
+  /* USER CODE END callbackToggleRightRedLed */
 }
 
 /* Private application code --------------------------------------------------*/
