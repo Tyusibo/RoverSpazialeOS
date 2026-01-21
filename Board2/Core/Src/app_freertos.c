@@ -48,10 +48,6 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define REAL_TASK 0
-// 1: Esegue il codice reale, 0: Simula il carico con HAL_Delay
-#define PRINT 0
-// 1: Abilita stampe di debug, 0: Disabilita stampe di debug
 
 /* USER CODE END PD */
 
@@ -223,7 +219,7 @@ void StartReadController(void *argument) {
 		// e mai più usata altrove, quindi non ci sono problemi di concorrenza
 		PadReceiver_Read(&Board2_U.remoteController);
 
-#if PRINT
+#if PRINT_TASK
 		printRemoteController(&Board2_U.remoteController);
 		HAL_Delay(2000); // Per non intasare la seriale
 #endif
@@ -274,7 +270,7 @@ void StartReadGyroscope(void *argument) {
 		// rivedere la struttua, magari fare una get come per il padreceiver
 		Board2_U.gyroscope = (double) MPU6050_Yaw.KalmanAngleZ;
 
-#if PRINT
+#if PRINT_TASK
 		printGyroscope((float)Board2_U.gyroscope);
 		HAL_Delay(2000); // Per non intasare la seriale
 #endif
@@ -317,7 +313,7 @@ void StartSupervisor(void *argument) {
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 
 
-#if PRINT
+#if PRINT_TASK
 		static uint32_t counter_print = 0;
 		counter_print++;
 		if (counter_print >= 40) { // Approx 2 seconds (50ms * 40)
@@ -401,7 +397,7 @@ void StartReadSonars(void *argument) {
 			hcsr04_process_distance(&sonarRight);
 		}
 
-#if PRINT
+#if PRINT_TASK
         printSonar(&Board2_U.sonar);
         HAL_Delay(2000); // Per non intasare la seriale
 #endif

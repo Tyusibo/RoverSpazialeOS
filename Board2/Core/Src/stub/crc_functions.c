@@ -1,13 +1,12 @@
 #include "crc_functions.h"
 #include "string.h"
 #include "crc.h"
-#include "print.h" // Da levare se inutile in release
+#include "print.h"
+#include "debug.h"
 
 /* --- CONFIGURAZIONE DEBUG --- */
-// 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 0 
 
-#if VERBOSE_DEBUG == 1
+#if VERBOSE_DEBUG_CRC == 1
     #define PRINT_DBG(msg) printMsg(msg)
     #define UART_PRINT(msg) uartPrint(msg)
 #else
@@ -36,7 +35,7 @@ uint8_t compareCRC(uint8_t* buffer, uint32_t bufferLength){
     crc_computed = HAL_CRC_Calculate(&hcrc, (uint32_t*) buffer, bufferLength);
 
     /* Blocco stampe di debug esteso */
-    #if VERBOSE_DEBUG == 1
+    #if VERBOSE_DEBUG_CRC == 1
         char msg[50];
         sprintf(msg, "CRC computed: 0x%08lX\r\n", crc_computed);
         UART_PRINT(msg);

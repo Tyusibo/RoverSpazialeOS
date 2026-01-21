@@ -27,6 +27,7 @@
 #include "mpu6050.h"
 #include "print.h"
 #include "uart_functions.h"
+#include "debug.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,10 +38,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 /* --- CONFIGURAZIONE DEBUG --- */
-// 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 0
 
-#if VERBOSE_DEBUG == 1
+#if VERBOSE_DEBUG_IT == 1
 #define PRINT_DBG(msg) PRINT_DBG(msg)
 #else
     #define PRINT_DBG(msg) ((void)0)
