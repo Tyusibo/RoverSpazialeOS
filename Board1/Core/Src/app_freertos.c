@@ -26,7 +26,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "debug.h"
+#if SEGGER_BUILD
 #include "SEGGER_SYSVIEW_FreeRTOS.h"
+#endif
+
 #include "scheduling_constants.h"
 
 // Simulink Model
