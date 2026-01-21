@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 4.55
+ * Model version                  : 4.64
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Tue Jan 20 22:12:22 2026
+ * C/C++ source code generated on : Wed Jan 21 15:25:37 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -18,34 +18,33 @@
  */
 
 #include "Board2.h"
-#include "enums.h"
 #include "rtwtypes.h"
+#include "enums.h"
 #include "controller_masks.h"
 #include "crc_functions.h"
 #include "frame_size.h"
 #include "ActionsModel.h"
 
 /* Named constants for Chart: '<Root>/SupervisorB2' */
-#define B_IN_StateCoherenceVerification ((uint8_T)5U)
+#define B_IN_StateCoherenceVerification ((uint8_T)4U)
 #define Boar_IN_ComputingOwnGlobalState ((uint8_T)1U)
-#define Board2_IN_ActuatorSelection    ((uint8_T)1U)
 #define Board2_IN_ArmingReceive        ((uint8_T)1U)
 #define Board2_IN_CheckCRC             ((uint8_T)2U)
 #define Board2_IN_CommunicationPhase   ((uint8_T)1U)
+#define Board2_IN_CompareDecision      ((uint8_T)1U)
 #define Board2_IN_ComputeDecision      ((uint8_T)1U)
-#define Board2_IN_D_Receive            ((uint8_T)1U)
-#define Board2_IN_D_Transmit           ((uint8_T)2U)
+#define Board2_IN_D_Receive            ((uint8_T)2U)
+#define Board2_IN_D_Transmit           ((uint8_T)3U)
 #define Board2_IN_EnterDegraded        ((uint8_T)3U)
 #define Board2_IN_EnterDegraded_e      ((uint8_T)1U)
 #define Board2_IN_ExchangeDecision     ((uint8_T)2U)
 #define Board2_IN_ExchangeGlobalState  ((uint8_T)3U)
 #define Board2_IN_ExchangeLocalState   ((uint8_T)4U)
-#define Board2_IN_Execution            ((uint8_T)3U)
 #define Board2_IN_GL_Receive           ((uint8_T)2U)
 #define Board2_IN_GL_Transmit          ((uint8_T)3U)
 #define Board2_IN_LS_Receive           ((uint8_T)1U)
 #define Board2_IN_LS_Transmit          ((uint8_T)2U)
-#define Board2_IN_LightEvaluation      ((uint8_T)3U)
+#define Board2_IN_LightEvaluation      ((uint8_T)2U)
 #define Board2_IN_NO_ACTIVE_CHILD      ((uint8_T)0U)
 #define Board2_IN_NotCommunicating     ((uint8_T)2U)
 #define Board2_IN_R_ArmingReceive      ((uint8_T)4U)
@@ -59,12 +58,12 @@
 #define Board2_IN_ReceivingRTR         ((uint8_T)5U)
 #define Board2_IN_SendAck              ((uint8_T)9U)
 #define Board2_IN_SendNack             ((uint8_T)10U)
+#define Board2_IN_SupervisionEnded     ((uint8_T)4U)
 #define Board2_IN_Trasmit              ((uint8_T)6U)
-#define Board2_IN_UserActionComputation ((uint8_T)6U)
+#define Board2_IN_UserActionComputation ((uint8_T)5U)
 #define Board2_IN_WaitAck              ((uint8_T)7U)
-#define Board2_TRESHOLD_ACTUATOR_SWITCH (1000U)
-#define Board_IN_EmergencyStateAnalysis ((uint8_T)2U)
-#define Board_IN_RoverActionComputation ((uint8_T)4U)
+#define Board_IN_EmergencyStateAnalysis ((uint8_T)1U)
+#define Board_IN_RoverActionComputation ((uint8_T)3U)
 
 /* Block signals (default storage) */
 B_Board2_T Board2_B;
@@ -86,11 +85,6 @@ RT_MODEL_Board2_T *const Board2_M = &Board2_M_;
 static void Board2_ExchangeLocalState(void);
 static ENUM_UserAction Board2_computeUserAction(int16_T x_lever, int16_T y_lever,
   uint16_T buttons, uint16_T braking_hard_mask, uint16_T braking_smooth_mask);
-static ENUM_UserAction Board2_continueBraking(ENUM_UserAction currentUserAction,
-  ENUM_UserAction lastUserAction);
-static void Board2_actuatorSelection(ENUM_Actuator lastActuator, uint32_T
-  lastCounter, uint32_T treshold, ENUM_Actuator *nextActuator, uint32_T
-  *nextCounter);
 static ENUM_StatusWhiteLed Board2_evaluateLed(uint16_T buttons, uint16_T
   lastButtons, ENUM_StatusWhiteLed previousLedStatus, uint16_T button_mask);
 static void Board2_ExchangeGlobalState(void);
@@ -315,44 +309,6 @@ static ENUM_UserAction Board2_computeUserAction(int16_T x_lever, int16_T y_lever
   }
 
   return userAction;
-}
-
-/* Function for Chart: '<Root>/SupervisorB2' */
-static ENUM_UserAction Board2_continueBraking(ENUM_UserAction currentUserAction,
-  ENUM_UserAction lastUserAction)
-{
-  ENUM_UserAction userAction;
-  userAction = currentUserAction;
-  if (currentUserAction == UA_NONE) {
-    switch (lastUserAction) {
-     case UA_BRAKING_SMOOTH:
-      userAction = UA_BRAKING_SMOOTH;
-      break;
-
-     case UA_BRAKING_HARD:
-      userAction = UA_BRAKING_HARD;
-      break;
-    }
-  }
-
-  return userAction;
-}
-
-/* Function for Chart: '<Root>/SupervisorB2' */
-static void Board2_actuatorSelection(ENUM_Actuator lastActuator, uint32_T
-  lastCounter, uint32_T treshold, ENUM_Actuator *nextActuator, uint32_T
-  *nextCounter)
-{
-  *nextActuator = lastActuator;
-  *nextCounter = lastCounter + 1U;
-  if (lastCounter + 1U == treshold) {
-    *nextCounter = 0U;
-    if (lastActuator == BOARD1) {
-      *nextActuator = BOARD2;
-    } else {
-      *nextActuator = BOARD1;
-    }
-  }
 }
 
 /* Function for Chart: '<Root>/SupervisorB2' */
@@ -586,31 +542,22 @@ static void Board2_ExchangeGlobalState(void)
 /* Model step function */
 void Board2_step(void)
 {
-  real_T continua_prev;
-  uint32_T tmp;
-  ENUM_Actuator nextActuator;
-
   /* Chart: '<Root>/SupervisorB2' incorporates:
-   *  Inport: '<Root>/continua'
    *  Inport: '<Root>/gyroscope'
    *  Inport: '<Root>/remoteController'
    *  Inport: '<Root>/rx_buffer'
    *  Inport: '<Root>/sonar'
-   *  Outport: '<Root>/currentUserAction'
    *  Outport: '<Root>/roverAction'
    *  Outport: '<Root>/safeAction'
    *  Outport: '<Root>/setPoint'
    *  Outport: '<Root>/tx_buffer'
    */
-  continua_prev = Board2_DW.continua_start;
-  Board2_DW.continua_start = Board2_U.continua;
   if (Board2_DW.is_active_c3_Board2 == 0U) {
     Board2_DW.is_active_c3_Board2 = 1U;
     Board2_DW.board2Decision.actuator = BOARD1;
 
     /* Outport: '<Root>/currentUserAction' */
     Board2_Y.currentUserAction = UA_NONE;
-    Board2_DW.actuatorCounter = 0U;
     Board2_DW.previousButtons = 0U;
     Board2_DW.previousWhiteLeftLed = WHITE_OFF;
     Board2_DW.previousWhiteRightLed = WHITE_OFF;
@@ -622,11 +569,6 @@ void Board2_step(void)
     switch (Board2_DW.is_CommunicationPhase) {
      case Board2_IN_ComputeDecision:
       switch (Board2_DW.is_ComputeDecision) {
-       case Board2_IN_ActuatorSelection:
-        Board2_DW.is_ComputeDecision = Board2_IN_NO_ACTIVE_CHILD;
-        Board2_DW.exit_port_index_ComputeDecision = 2U;
-        break;
-
        case Board_IN_EmergencyStateAnalysis:
         Board2_DW.is_ComputeDecision = Board2_IN_UserActionComputation;
         Board2_DW.board2Decision.userAction = Board2_computeUserAction
@@ -634,20 +576,14 @@ void Board2_step(void)
            Board2_B.board2GlobalState.localStateB2.remoteController.y_lever,
            Board2_B.board2GlobalState.localStateB2.remoteController.buttons,
            ((uint16_T)BRAKING_HARD_MASK), ((uint16_T)BRAKING_SMOOTH_MASK));
-        Board2_DW.board2Decision.userAction = Board2_continueBraking
-          (Board2_DW.board2Decision.userAction, Board2_Y.currentUserAction);
 
         /* Outport: '<Root>/currentUserAction' */
         Board2_Y.currentUserAction = Board2_DW.board2Decision.userAction;
         break;
 
        case Board2_IN_LightEvaluation:
-        Board2_DW.is_ComputeDecision = Board2_IN_ActuatorSelection;
-        Board2_actuatorSelection(Board2_DW.board2Decision.actuator,
-          Board2_DW.actuatorCounter, Board2_TRESHOLD_ACTUATOR_SWITCH,
-          &nextActuator, &tmp);
-        Board2_DW.actuatorCounter = tmp;
-        Board2_DW.board2Decision.actuator = nextActuator;
+        Board2_DW.is_ComputeDecision = Board2_IN_NO_ACTIVE_CHILD;
+        Board2_DW.exit_port_index_ComputeDecision = 2U;
         break;
 
        case Board_IN_RoverActionComputation:
@@ -718,6 +654,16 @@ void Board2_step(void)
 
      case Board2_IN_ExchangeDecision:
       switch (Board2_DW.is_ExchangeDecision) {
+       case Board2_IN_CompareDecision:
+        Board2_DW.is_ExchangeDecision = Board2_IN_SupervisionEnded;
+
+        /* Outport: '<Root>/supervision_ended' */
+        Board2_Y.supervision_ended = 1U;
+
+        /* printGlobalState(board1GlobalState); printGlobalState(board2GlobalState);
+           printDecision(board1Decision); printDecision(board2Decision); */
+        break;
+
        case Board2_IN_D_Receive:
         switch (Board2_DW.is_D_Receive) {
          case Board2_IN_ArmingReceive:
@@ -880,24 +826,18 @@ void Board2_step(void)
 
         if (Board2_DW.exit_port_index_D_Transmit == 2U) {
           Board2_DW.exit_port_index_D_Transmit = 0U;
-          Board2_DW.is_ExchangeDecision = Board2_IN_Execution;
-
-          /* Outport: '<Root>/supervision_ended' */
-          Board2_Y.supervision_ended = 1U;
-
-          /* printGlobalState(board1GlobalState); printGlobalState(board2GlobalState);
-             printDecision(board1Decision); printDecision(board2Decision); */
+          Board2_DW.is_ExchangeDecision = Board2_IN_CompareDecision;
+          BUS_Decision_Equals(&Board2_DW.board1Decision,
+                              &Board2_DW.board2Decision);
         }
         break;
 
        default:
         /* Outport: '<Root>/supervision_ended' */
-        /* case IN_Execution: */
+        /* case IN_SupervisionEnded: */
         Board2_Y.supervision_ended = 1U;
-        if (continua_prev != Board2_DW.continua_start) {
-          Board2_DW.is_ExchangeDecision = Board2_IN_NO_ACTIVE_CHILD;
-          Board2_DW.exit_port_index_ExchangeDecisio = 2U;
-        }
+        Board2_DW.is_ExchangeDecision = Board2_IN_NO_ACTIVE_CHILD;
+        Board2_DW.exit_port_index_ExchangeDecisio = 2U;
         break;
       }
 
@@ -960,8 +900,8 @@ void Board2_initialize(void)
    *  Outport: '<Root>/setPoint'
    *  Outport: '<Root>/statusObstacles'
    */
-  ActionsModel_Init(&Board2_Y.setPoint, &Board2_Y.statusObstacles,
-                    &Board2_B.redLeds);
+  ActionsModel_Init(&Board2_Y.setPoint, &Board2_Y.roverAction,
+                    &Board2_Y.statusObstacles, &Board2_B.redLeds);
 }
 
 /* Model terminate function */

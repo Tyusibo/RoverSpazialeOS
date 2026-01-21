@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 4.75
+ * Model version                  : 5.10
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Tue Jan 20 22:09:20 2026
+ * C/C++ source code generated on : Wed Jan 21 15:22:39 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -48,6 +48,7 @@
 #include "controller_masks.h"
 #include "serialize.h"
 #include "deserialize.h"
+#include "comparator.h"
 #include "uart_functions.h"
 #include "crc_functions.h"
 #include "freeRTOS_functions.h"
@@ -65,8 +66,6 @@ typedef struct {
   BUS_Decision board1Decision;         /* '<Root>/SupervisorB1' */
   BUS_LocalStateB1 board1LocalState;   /* '<Root>/SupervisorB1' */
   BUS_LocalStateB2 board2LocalState;   /* '<Root>/SupervisorB1' */
-  real_T continua_start;               /* '<Root>/SupervisorB1' */
-  uint32_T actuatorCounter;            /* '<Root>/SupervisorB1' */
   uint32_T exit_port_index_CommunicationPh;/* '<Root>/SupervisorB1' */
   uint32_T exit_port_index_ComputeDecision;/* '<Root>/SupervisorB1' */
   uint32_T exit_port_index_ExchangeDecisio;/* '<Root>/SupervisorB1' */
@@ -91,6 +90,7 @@ typedef struct {
   uint8_T rxPayload;                   /* '<Root>/SupervisorB1' */
   uint8_T flagCRC;                     /* '<Root>/SupervisorB1' */
   uint8_T receiveArmed;                /* '<Root>/SupervisorB1' */
+  uint8_T result;                      /* '<Root>/SupervisorB1' */
   uint8_T is_active_c15_Board1;        /* '<Root>/SupervisorB1' */
   uint8_T is_RoverState;               /* '<Root>/SupervisorB1' */
   uint8_T is_CommunicationPhase;       /* '<Root>/SupervisorB1' */
@@ -111,7 +111,6 @@ typedef struct {
   BUS_Speed speed;                     /* '<Root>/speed' */
   real32_T temperature;                /* '<Root>/temperature' */
   real32_T batteryLevel;               /* '<Root>/batteryLevel' */
-  real_T continua;                     /* '<Root>/continua' */
   uint8_T rx_buffer[64];               /* '<Root>/rx_buffer' */
 } ExtU_Board1_T;
 

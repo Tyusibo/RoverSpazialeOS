@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 4.55
+ * Model version                  : 4.64
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Tue Jan 20 22:12:22 2026
+ * C/C++ source code generated on : Wed Jan 21 15:25:37 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -48,6 +48,7 @@
 #include "controller_masks.h"
 #include "serialize.h"
 #include "deserialize.h"
+#include "comparator.h"
 #include "uart_functions.h"
 #include "crc_functions.h"
 #include "freeRTOS_functions.h"
@@ -65,8 +66,6 @@ typedef struct {
   BUS_Decision board2Decision;         /* '<Root>/SupervisorB2' */
   BUS_LocalStateB1 board1LocalState;   /* '<Root>/SupervisorB2' */
   BUS_LocalStateB2 board2LocalState;   /* '<Root>/SupervisorB2' */
-  real_T continua_start;               /* '<Root>/SupervisorB2' */
-  uint32_T actuatorCounter;            /* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_CommunicationPh;/* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_ComputeDecision;/* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_ExchangeDecisio;/* '<Root>/SupervisorB2' */
@@ -111,7 +110,6 @@ typedef struct {
   BUS_Sonar sonar;                     /* '<Root>/sonar' */
   real32_T gyroscope;                  /* '<Root>/gyroscope' */
   BUS_RemoteController remoteController;/* '<Root>/remoteController' */
-  real_T continua;                     /* '<Root>/continua' */
   uint8_T rx_buffer[64];               /* '<Root>/rx_buffer' */
 } ExtU_Board2_T;
 

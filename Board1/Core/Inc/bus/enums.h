@@ -41,8 +41,9 @@ typedef enum {
     RA_FORWARD = 1,
     RA_ROTATE_LEFT = 2,
     RA_ROTATE_RIGHT = 3,
-    RA_BRAKING_HARD = 5,
-    RA_BRAKING_SMOOTH = 6
+    RA_BRAKING_SMOOTH = 4,
+    RA_BRAKING_MODERATE = 5,
+    RA_BRAKING_HARD = 6
 } ENUM_RoverAction;
 
 /* =========================

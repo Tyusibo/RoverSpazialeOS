@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 4.7
+ * Model version                  : 4.10
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Tue Jan 20 22:05:20 2026
+ * C/C++ source code generated on : Wed Jan 21 15:22:08 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -687,7 +687,7 @@ static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
     ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors2;
 
     /*  Actions */
-    *rty_roverAction = RA_BRAKING_SMOOTH;
+    *rty_roverAction = RA_BRAKING_MODERATE;
     *rty_safeAction = SA_NONE;
 
     /*  Set point */
@@ -910,7 +910,7 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
        */
       /* Chart: '<Root>/RoverAction' */
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1070,7 +1070,7 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors1;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1083,7 +1083,7 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.is_RotateRight = ActionsModel_IN_RR_StopMotors;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1096,7 +1096,7 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.is_RotateLeft = ActionsModel_IN_RL_StopMotors;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1164,7 +1164,7 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_None;
 
       /*  Actions */
-      *rty_roverAction = RA_IDLE;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1464,7 +1464,7 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors1;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1477,7 +1477,7 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.is_RotateRight = ActionsModel_IN_RR_StopMotors;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1490,7 +1490,7 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.is_RotateLeft = ActionsModel_IN_RL_StopMotors;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1558,7 +1558,7 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_None;
 
       /*  Actions */
-      *rty_roverAction = RA_IDLE;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1737,7 +1737,7 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
       ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors1;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1750,7 +1750,7 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
       ActionsModel_DW.is_RotateRight = ActionsModel_IN_RR_StopMotors;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1763,7 +1763,7 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
       ActionsModel_DW.is_RotateLeft = ActionsModel_IN_RL_StopMotors;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -1831,7 +1831,7 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
       ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_None;
 
       /*  Actions */
-      *rty_roverAction = RA_IDLE;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -2012,7 +2012,7 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors1;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -2025,7 +2025,7 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       ActionsModel_DW.is_RotateRight = ActionsModel_IN_RR_StopMotors;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -2038,7 +2038,7 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       ActionsModel_DW.is_RotateLeft = ActionsModel_IN_RL_StopMotors;
 
       /*  Actions */
-      *rty_roverAction = RA_BRAKING_SMOOTH;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -2106,7 +2106,7 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
       ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_None;
 
       /*  Actions */
-      *rty_roverAction = RA_IDLE;
+      *rty_roverAction = RA_BRAKING_MODERATE;
       *rty_safeAction = SA_NONE;
 
       /*  Set point */
@@ -2124,8 +2124,9 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
 }
 
 /* System initialize for referenced model: 'ActionsModel' */
-void ActionsModel_Init(BUS_SetPoint *rty_setPoint, ENUM_TrackingObstacles
-  *rty_statusObstacles, BUS_RedLeds *rty_redLeds)
+void ActionsModel_Init(BUS_SetPoint *rty_setPoint, ENUM_RoverAction
+  *rty_roverAction, ENUM_TrackingObstacles *rty_statusObstacles, BUS_RedLeds
+  *rty_redLeds)
 {
   /* SystemInitialize for RootInportFunctionCallGenerator generated from: '<Root>/ComputeRoverAction' incorporates:
    *  Chart: '<Root>/RoverAction'
@@ -2136,6 +2137,8 @@ void ActionsModel_Init(BUS_SetPoint *rty_setPoint, ENUM_TrackingObstacles
   ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_None;
 
   /*  Actions */
+  *rty_roverAction = RA_BRAKING_MODERATE;
+
   /*  Set point */
   rty_setPoint->rightAxis = 0.0F;
   rty_setPoint->leftAxis = 0.0F;
@@ -2182,7 +2185,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors1;
 
         /*  Actions */
-        *rty_roverAction = RA_BRAKING_SMOOTH;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
@@ -2195,7 +2198,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_RotateRight = ActionsModel_IN_RR_StopMotors;
 
         /*  Actions */
-        *rty_roverAction = RA_BRAKING_SMOOTH;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
@@ -2208,7 +2211,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_RotateLeft = ActionsModel_IN_RL_StopMotors;
 
         /*  Actions */
-        *rty_roverAction = RA_BRAKING_SMOOTH;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
@@ -2276,7 +2279,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_None;
 
         /*  Actions */
-        *rty_roverAction = RA_IDLE;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
@@ -2300,7 +2303,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors1;
 
         /*  Actions */
-        *rty_roverAction = RA_BRAKING_SMOOTH;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
@@ -2313,7 +2316,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_RotateRight = ActionsModel_IN_RR_StopMotors;
 
         /*  Actions */
-        *rty_roverAction = RA_BRAKING_SMOOTH;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
@@ -2326,7 +2329,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_RotateLeft = ActionsModel_IN_RL_StopMotors;
 
         /*  Actions */
-        *rty_roverAction = RA_BRAKING_SMOOTH;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
@@ -2382,7 +2385,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_CurrentRoverAction = ActionsModel_IN_None;
 
         /*  Actions */
-        *rty_roverAction = RA_IDLE;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
@@ -2411,7 +2414,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_Backward = ActionsModel_IN_BW_StopMotors1;
 
         /*  Actions */
-        *rty_roverAction = RA_BRAKING_SMOOTH;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
@@ -2424,7 +2427,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_RotateRight = ActionsModel_IN_RR_StopMotors;
 
         /*  Actions */
-        *rty_roverAction = RA_BRAKING_SMOOTH;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
@@ -2437,7 +2440,7 @@ void ActionsModel_ComputeRoverAction(const ENUM_UserAction
         ActionsModel_DW.is_RotateLeft = ActionsModel_IN_RL_StopMotors;
 
         /*  Actions */
-        *rty_roverAction = RA_BRAKING_SMOOTH;
+        *rty_roverAction = RA_BRAKING_MODERATE;
         *rty_safeAction = SA_NONE;
 
         /*  Set point */
