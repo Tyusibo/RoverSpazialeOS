@@ -35,8 +35,11 @@
 /* Utility */
 #include "DWT.h"
 #include "print.h"
-#include "SEGGER_SYSVIEW_FreeRTOS.h"
 #include "debug.h"
+
+#if SEGGER_BUILD
+#include "SEGGER_SYSVIEW_FreeRTOS.h"
+#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
