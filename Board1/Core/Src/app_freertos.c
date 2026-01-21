@@ -67,6 +67,7 @@ typedef StaticTimer_t osStaticTimerDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#define TIMER_SW_PERIOD 500U  // in ms
 
 /* USER CODE END PD */
 
@@ -519,11 +520,35 @@ static inline void actuate_white_leds(void) {
 	A4WD3_White_Set(&led_right, Board1_DW.board1Decision.leds.white.right);
 }
 
-static inline void actuate_red_leds(void) {
-	A4WD3_Red_Set(&led_left, Board1_DW.board1Decision.leds.red.left);
-	A4WD3_Red_Set(&led_right, Board1_DW.board1Decision.leds.red.right);
+// includo i bool
+#include <stdbool.h>
 
-	// Se deve fare toggle allora dopo il set si avvia un timer
+static inline void actuate_red_leds(void)
+{
+    const bool leftBlink  = (Board1_DW.board1Decision.leds.red.left  == RED_BLINKING);
+    const bool rightBlink = (Board1_DW.board1Decision.leds.red.right == RED_BLINKING);
+
+    // LEFT
+    if (leftBlink) {
+        if (!osTimerIsRunning(toggleLeftRedLedHandle)) {
+            A4WD3_Red_On(&led_left); // opzionale: fase iniziale
+            osTimerStart(toggleLeftRedLedHandle, TIMER_SW_PERIOD);
+        }
+    } else {
+        osTimerStop(toggleLeftRedLedHandle);
+        A4WD3_Red_Set(&led_left, Board1_DW.board1Decision.leds.red.left);
+    }
+
+    // RIGHT
+    if (rightBlink) {
+        if (!osTimerIsRunning(toggleRightRedLedHandle)) {
+            A4WD3_Red_On(&led_right); // opzionale
+            osTimerStart(toggleRightRedLedHandle, TIMER_SW_PERIOD);
+        }
+    } else {
+        osTimerStop(toggleRightRedLedHandle);
+        A4WD3_Red_Set(&led_right, Board1_DW.board1Decision.leds.red.right);
+    }
 }
 
 
