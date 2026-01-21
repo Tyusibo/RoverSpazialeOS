@@ -38,4 +38,11 @@ void PID_Reset(PIDController *pid);
  */
 float PID_Compute(PIDController *pid, float error, float min_sat, float max_sat);
 
+/**
+ * @brief Change the internal context of a PID Controller to match another.
+ * @param pid_1 Pointer to the PIDController to be updated.
+ * @param pid_2 Pointer to the PIDController whose context will be copied.
+ */
+void PID_Change_Context(PIDController *pid_1, PIDController *pid_2);
+
 #endif /* INC_DRIVER_REGULATOR_H_ */

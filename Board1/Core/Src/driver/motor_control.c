@@ -78,6 +78,7 @@ void MotorControl_SetRegulator(MotorControl *mc, PIDController *reg)
 {
     if (reg != NULL)
     {
+    	PID_Change_Context(reg, mc->current_regulator);
         mc->current_regulator = reg;
     }
 }
