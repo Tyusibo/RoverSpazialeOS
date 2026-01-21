@@ -306,13 +306,13 @@ void StartSupervisor(void *argument) {
 
 	/* Infinite loop */
 	for (;;) {
+        Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
 
 		do {
 			Board2_step();
 		} while (Board2_Y.supervision_ended != 1);
 
 		// Per permettere al modello di ripartire
-		Board2_U.continua = (Board2_U.continua == 0) ? 1 : 0;
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 
 
@@ -406,7 +406,7 @@ void StartReadSonars(void *argument) {
 #endif
 		//Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
         Board2_U.sonar = (BUS_Sonar){ sonarLeft.distance, sonarFront.distance,sonarRight.distance};
-
+        Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
         periodic_wait(&next, T, &MissReadSonars);
 
 #else
