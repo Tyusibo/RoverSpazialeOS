@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 4.32
+ * Model version                  : 6.14
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Mon Jan  5 01:55:45 2026
+ * C/C++ source code generated on : Thu Jan 22 23:31:09 2026
  */
 
 #ifndef RTWTYPES_H

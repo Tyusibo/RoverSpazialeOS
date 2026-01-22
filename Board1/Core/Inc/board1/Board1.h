@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 6.10
+ * Model version                  : 6.14
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Thu Jan 22 22:18:35 2026
+ * C/C++ source code generated on : Thu Jan 22 23:31:09 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -56,6 +56,7 @@
 /* Block signals (default storage) */
 typedef struct {
   BUS_GlobalState board1GlobalState;   /* '<Root>/SupervisorB1' */
+  BUS_Decision board1Decision;         /* '<Root>/SupervisorB1' */
   BUS_RedLeds redLeds;                 /* '<Root>/ActionsModel' */
 } B_Board1_T;
 
@@ -63,7 +64,6 @@ typedef struct {
 typedef struct {
   BUS_GlobalState board2GlobalState;   /* '<Root>/SupervisorB1' */
   BUS_Decision board2Decision;         /* '<Root>/SupervisorB1' */
-  BUS_Decision board1Decision;         /* '<Root>/SupervisorB1' */
   BUS_LocalStateB1 board1LocalState;   /* '<Root>/SupervisorB1' */
   BUS_LocalStateB2 board2LocalState;   /* '<Root>/SupervisorB1' */
   uint32_T exit_port_index_CommunicationPh;/* '<Root>/SupervisorB1' */

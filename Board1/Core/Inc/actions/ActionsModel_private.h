@@ -9,7 +9,7 @@
  *
  * Model version                  : 5.9
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Thu Jan 22 22:17:52 2026
+ * C/C++ source code generated on : Thu Jan 22 23:30:29 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -56,7 +56,7 @@ typedef struct {
   uint32_T exit_port_index_RL_SafeAction;/* '<Root>/RoverAction' */
   uint32_T exit_port_index_RotateRight;/* '<Root>/RoverAction' */
   uint32_T exit_port_index_RR_SafeAction;/* '<Root>/RoverAction' */
-  uint16_T previousGyroscope;          /* '<Root>/RoverAction' */
+  Gyroscope previousGyroscope;         /* '<Root>/RoverAction' */
   uint8_T is_CurrentRoverAction;       /* '<Root>/RoverAction' */
   uint8_T is_Backward;                 /* '<Root>/RoverAction' */
   uint8_T is_BW_Forward;               /* '<Root>/RoverAction' */

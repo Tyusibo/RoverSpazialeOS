@@ -349,7 +349,7 @@ void StartSupervisor(void *argument)
 
 		/* FINALIZZAZIONE DECISIONE */
 		actuate_white_leds();
-		actuate_red_leds();
+		//actuate_red_leds();
 		change_set_point();
 		change_regulator();
 
