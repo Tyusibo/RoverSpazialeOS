@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 5.6
+ * Model version                  : 5.9
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Thu Jan 22 15:57:00 2026
+ * C/C++ source code generated on : Thu Jan 22 22:17:52 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -19,10 +19,10 @@
 
 #include "ActionsModel.h"
 #include "enums.h"
+#include "decision.h"
 #include "ActionsModel_private.h"
 #include "rtwtypes.h"
 #include "sensors.h"
-#include "decision.h"
 #include <math.h>
 
 /* Named constants for Chart: '<Root>/MovingObstacles' */
@@ -115,50 +115,50 @@ static uint8_T ActionsModel_areAllSpeedsZero(real32_T speed1, real32_T speed2,
   real32_T speed3, real32_T speed4, real32_T zero_velocity);
 static uint8_T ActionsMod_trackGyroAngleChange(int32_T *accumulatedChange,
   uint16_T previousValue, uint16_T currentValue, uint16_T threshold);
-static void enter_internal_BW_FW_SafeAction(const uint16_T *rtu_gyroscope,
+static void enter_internal_BW_FW_SafeAction(const Gyroscope *rtu_gyroscope,
   BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction);
 static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction,
-  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const uint16_T
+  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const Gyroscope
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
   BUS_RedLeds *rty_redLeds);
 static ENUM_SafeAction ActionsMo_checkSafetyFromRotate(uint16_T obstacleDetected);
 static void ActionsModel_BW_RR_RotateRight(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever,
-  const uint16_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
+  const Gyroscope *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
   *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction, BUS_RedLeds *rty_redLeds);
 static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever,
-  const uint16_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
+  const Gyroscope *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
   *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction, BUS_RedLeds *rty_redLeds);
-static void Ac_enter_internal_FW_SafeAction(const uint16_T *rtu_gyroscope,
+static void Ac_enter_internal_FW_SafeAction(const Gyroscope *rtu_gyroscope,
   BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction);
 static void ActionsM_enter_internal_Forward(const int16_T *rtu_y_lever, const
-  uint16_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
+  Gyroscope *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
   *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction, BUS_RedLeds *rty_redLeds);
 static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
-  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const uint16_T
+  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const Gyroscope
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
   BUS_RedLeds *rty_redLeds);
 static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
-  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const uint16_T
+  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const Gyroscope
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
   BUS_RedLeds *rty_redLeds);
 static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction,
   const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever, const int16_T
-  *rtu_y_lever, const uint16_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar,
+  *rtu_y_lever, const Gyroscope *rtu_gyroscope, const BUS_Sonar *rtu_sonar,
   BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction, BUS_RedLeds *rty_redLeds);
 static void ActionsModel_RotateRight(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever,
-  const int16_T *rtu_y_lever, const uint16_T *rtu_gyroscope, const BUS_Sonar
+  const int16_T *rtu_y_lever, const Gyroscope *rtu_gyroscope, const BUS_Sonar
   *rtu_sonar, BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction,
   ENUM_SafeAction *rty_safeAction, BUS_RedLeds *rty_redLeds);
 
@@ -411,7 +411,7 @@ static uint8_T ActionsMod_trackGyroAngleChange(int32_T *accumulatedChange,
 }
 
 /* Function for Chart: '<Root>/RoverAction' */
-static void enter_internal_BW_FW_SafeAction(const uint16_T *rtu_gyroscope,
+static void enter_internal_BW_FW_SafeAction(const Gyroscope *rtu_gyroscope,
   BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction)
 {
@@ -461,7 +461,7 @@ static void enter_internal_BW_FW_SafeAction(const uint16_T *rtu_gyroscope,
 
 /* Function for Chart: '<Root>/RoverAction' */
 static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction,
-  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const uint16_T
+  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const Gyroscope
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
   BUS_RedLeds *rty_redLeds)
@@ -708,7 +708,7 @@ static ENUM_SafeAction ActionsMo_checkSafetyFromRotate(uint16_T obstacleDetected
 /* Function for Chart: '<Root>/RoverAction' */
 static void ActionsModel_BW_RR_RotateRight(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever,
-  const uint16_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
+  const Gyroscope *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
   *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction, BUS_RedLeds *rty_redLeds)
 {
@@ -849,7 +849,7 @@ static void ActionsModel_BW_RR_RotateRight(const ENUM_UserAction
 /* Function for Chart: '<Root>/RoverAction' */
 static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever,
-  const uint16_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
+  const Gyroscope *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
   *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction, BUS_RedLeds *rty_redLeds)
 {
@@ -988,7 +988,7 @@ static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
 }
 
 /* Function for Chart: '<Root>/RoverAction' */
-static void Ac_enter_internal_FW_SafeAction(const uint16_T *rtu_gyroscope,
+static void Ac_enter_internal_FW_SafeAction(const Gyroscope *rtu_gyroscope,
   BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction)
 {
@@ -1038,7 +1038,7 @@ static void Ac_enter_internal_FW_SafeAction(const uint16_T *rtu_gyroscope,
 
 /* Function for Chart: '<Root>/RoverAction' */
 static void ActionsM_enter_internal_Forward(const int16_T *rtu_y_lever, const
-  uint16_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
+  Gyroscope *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint
   *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction, BUS_RedLeds *rty_redLeds)
 {
@@ -1081,7 +1081,7 @@ static void ActionsM_enter_internal_Forward(const int16_T *rtu_y_lever, const
 
 /* Function for Chart: '<Root>/RoverAction' */
 static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
-  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const uint16_T
+  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const Gyroscope
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
   BUS_RedLeds *rty_redLeds)
@@ -1360,7 +1360,7 @@ static void ActionsModel_Backward(const ENUM_UserAction *rtu_currentUserAction,
 
 /* Function for Chart: '<Root>/RoverAction' */
 static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
-  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const uint16_T
+  const BUS_Speed *rtu_speed, const int16_T *rtu_y_lever, const Gyroscope
   *rtu_gyroscope, const BUS_Sonar *rtu_sonar, BUS_SetPoint *rty_setPoint,
   ENUM_RoverAction *rty_roverAction, ENUM_SafeAction *rty_safeAction,
   BUS_RedLeds *rty_redLeds)
@@ -1780,7 +1780,7 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
 /* Function for Chart: '<Root>/RoverAction' */
 static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction,
   const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever, const int16_T
-  *rtu_y_lever, const uint16_T *rtu_gyroscope, const BUS_Sonar *rtu_sonar,
+  *rtu_y_lever, const Gyroscope *rtu_gyroscope, const BUS_Sonar *rtu_sonar,
   BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction, ENUM_SafeAction
   *rty_safeAction, BUS_RedLeds *rty_redLeds)
 {
@@ -2072,7 +2072,7 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
 /* Function for Chart: '<Root>/RoverAction' */
 static void ActionsModel_RotateRight(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever,
-  const int16_T *rtu_y_lever, const uint16_T *rtu_gyroscope, const BUS_Sonar
+  const int16_T *rtu_y_lever, const Gyroscope *rtu_gyroscope, const BUS_Sonar
   *rtu_sonar, BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction,
   ENUM_SafeAction *rty_safeAction, BUS_RedLeds *rty_redLeds)
 {
@@ -2400,7 +2400,7 @@ void ActionsModel_Init(BUS_SetPoint *rty_setPoint, ENUM_RoverAction
 /* Output and update for referenced model: 'ActionsModel' */
 void ActionsModel_ComputeRoverAction(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever,
-  const int16_T *rtu_y_lever, const uint16_T *rtu_gyroscope, const BUS_Sonar
+  const int16_T *rtu_y_lever, const Gyroscope *rtu_gyroscope, const BUS_Sonar
   *rtu_sonar, BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction,
   ENUM_SafeAction *rty_safeAction, BUS_RedLeds *rty_redLeds)
 {

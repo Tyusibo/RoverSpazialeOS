@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 5.6
+ * Model version                  : 5.9
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Thu Jan 22 15:57:00 2026
+ * C/C++ source code generated on : Thu Jan 22 22:17:52 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -21,6 +21,7 @@
 #define ActionsModel_private_h_
 #include "rtwtypes.h"
 #include "enums.h"
+#include "decision.h"
 #include "sensors.h"
 #include "ActionsModel_types.h"
 
