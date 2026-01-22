@@ -1,4 +1,5 @@
 #include "HCSR04.h"
+#include "cmsis_os.h"  // osKernelLock, osKernelRestoreLock
 
 #define SOUND_SPEED_CM_PER_US (0.0343f / 2.0f)  // 0.01715 cm/us
 #define TIM2_TICKS_PER_US     (16.0f)           // 16 MHz -> 16 ticks/us
@@ -79,11 +80,13 @@ int8_t hcsr04_trigger(hcsr04_t *sensor)
     __HAL_TIM_SET_CAPTUREPOLARITY(sensor->echo_tim, sensor->echo_channel, sensor->current_polarity);
 
     // 10us pulse on TRIG (TIM2 @ 16MHz => 160 ticks)
-	__disable_irq();
+    int32_t lock = osKernelLock();   // blocca lo scheduler (no context switch)
+
     HAL_GPIO_WritePin(sensor->trigger_port, sensor->trigger_pin, GPIO_PIN_SET);
     delay_ticks(sensor->echo_tim, TRIG_PULSE_US * (uint32_t)TIM2_TICKS_PER_US, sensor->arr_timer_plus_one);
     HAL_GPIO_WritePin(sensor->trigger_port, sensor->trigger_pin, GPIO_PIN_RESET);
-    __enable_irq();
+
+    osKernelRestoreLock(lock);       // ripristina lo stato precedente
 
     // Enable the correct capture interrupt for this channel
     uint32_t it = channel_to_it(sensor->echo_channel);
