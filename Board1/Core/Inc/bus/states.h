@@ -1,5 +1,5 @@
-#ifndef INC_STATES_H_
-#define INC_STATES_H_
+#ifndef INC_BUS_STATES_H_
+#define INC_BUS_STATES_H_
 
 #include "sensors.h"
 
@@ -23,4 +23,4 @@ typedef struct {
     BUS_LocalStateB2 localStateB2;
 } BUS_GlobalState;
 
-#endif /* INC_STATES_H_ */
+#endif /* INC_BUS_STATES_H_ */

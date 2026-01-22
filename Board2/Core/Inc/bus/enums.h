@@ -1,19 +1,7 @@
-#ifndef ENUMS_H
-#define ENUMS_H
+#ifndef INC_BUS_ENUMS_H_
+#define INC_BUS_ENUMS_H_
 
 #include <stdint.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* =========================
- * ENUM_Actuator
- * ========================= */
-typedef enum {
-    BOARD1 = 0,
-    BOARD2 = 1
-} ENUM_Actuator;
 
 /* =========================
  * ENUM_CoherenceErrors
@@ -33,29 +21,6 @@ typedef enum {
     COMBO_ERROR = 3
 } ENUM_CoherenceErrors;
 
-/* =========================
- * ENUM_RoverAction
- * ========================= */
-typedef enum {
-    RA_IDLE = 0,
-    RA_FORWARD = 1,
-    RA_ROTATE_LEFT = 2,
-    RA_ROTATE_RIGHT = 3,
-    RA_BRAKING_SMOOTH = 4,
-    RA_BRAKING_MODERATE = 5,
-    RA_BRAKING_HARD = 6
-} ENUM_RoverAction;
-
-/* =========================
- * ENUM_SafeAction
- * ========================= */
-typedef enum {
-    SA_NONE = 0,
-    SA_SWERVE_LEFT = 1,
-    SA_SWERVE_RIGHT = 2,
-    SA_BRAKING_HARD = 3,
-    SA_BRAKING_SMOOTH = 4
-} ENUM_SafeAction;
 
 /* =========================
  * ENUM_StatusBattery
@@ -96,14 +61,6 @@ typedef enum {
     STATUS_ALL_FAIL = 15
 } ENUM_StatusEncoder;
 
-/* =========================
- * ENUM_StatusRedLed
- * ========================= */
-typedef enum {
-    RED_OFF = 0,
-    RED_BLINKING = 1,
-    RED_ON = 2
-} ENUM_StatusRedLed;
 
 /* =========================
  * ENUM_StatusRemoteController
@@ -130,14 +87,6 @@ typedef enum {
 } ENUM_StatusTemperature;
 
 /* =========================
- * ENUM_StatusWhiteLed
- * ========================= */
-typedef enum {
-    WHITE_OFF = 0,
-    WHITE_ON = 1
-} ENUM_StatusWhiteLed;
-
-/* =========================
  * ENUM_TrackingObstacles
  * ========================= */
 typedef enum {
@@ -146,21 +95,4 @@ typedef enum {
     OBSTACLE_MOVING = 2
 } ENUM_TrackingObstacles;
 
-/* =========================
- * ENUM_UserAction
- * ========================= */
-typedef enum {
-    UA_NONE = 0,
-    UA_FORWARD = 1,
-    UA_ROTATE_LEFT = 2,
-    UA_ROTATE_RIGHT = 3,
-    UA_BACKWARD = 4,
-    UA_BRAKING_HARD = 5,
-    UA_BRAKING_SMOOTH = 6
-} ENUM_UserAction;
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* ENUMS_H */
+#endif /* INC_BUS_ENUMS_H_ */

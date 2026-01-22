@@ -1,5 +1,5 @@
-#ifndef INC_SENSORS_H_
-#define INC_SENSORS_H_
+#ifndef INC_BUS_SENSORS_H_
+#define INC_BUS_SENSORS_H_
 
 #include <stdint.h>
 
@@ -35,4 +35,4 @@ typedef struct {
     uint16_t buttons;
 } BUS_RemoteController;
 
-#endif /* INC_SENSORS_H_ */
+#endif /* INC_BUS_SENSORS_H_ */

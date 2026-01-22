@@ -3,8 +3,7 @@
 
 #include <stdint.h>
 #include "decision.h"
-#include "sensors.h"
-#include "states.h"
+#include "states.h" // #include "sensors.h"
 
 /* sensors.h structs */
 uint8_t BUS_Speed_Equals(const BUS_Speed *a, const BUS_Speed *b);

@@ -1,8 +1,8 @@
-#ifndef INC_DESERIALIZE_H_
-#define INC_DESERIALIZE_H_
+#ifndef INC_BUS_DESERIALIZE_H_
+#define INC_BUS_DESERIALIZE_H_
 
-#include <states.h>  // #include <sensors.h>
-#include <decision.h> // #include <enums.h>
+#include <states.h>     // #include <sensors.h>
+#include <decision.h> 
 #include "frame_size.h" 
 
 #include <stddef.h>
@@ -14,4 +14,4 @@ int deserializeLocalStateB2(const uint8_t *buf, size_t len, BUS_LocalStateB2 *st
 int deserializeGlobalState(const uint8_t *buf, size_t len, BUS_GlobalState *state);
 int deserializeDecision(const uint8_t *buf, size_t len, BUS_Decision *state);
 
-#endif /* INC_DESERIALIZE_H_ */
+#endif /* INC_BUS_DESERIALIZE_H_ */

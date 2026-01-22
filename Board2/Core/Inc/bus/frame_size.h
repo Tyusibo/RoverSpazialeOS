@@ -1,5 +1,5 @@
-#ifndef INC_FRAME_SIZE_H_
-#define INC_FRAME_SIZE_H_
+#ifndef INC_BUS_FRAME_SIZE_H_
+#define INC_BUS_FRAME_SIZE_H_
 
 /* --- Dimensioni dei tipi elementari --- */
 
@@ -48,5 +48,5 @@
 #define DECISION_FRAME_SIZE              ((4 * ENUM_FRAME_SIZE) + \
                                          BUS_SET_POINT_FRAME_SIZE + 1) // 13
 
-#endif /* INC_FRAME_SIZE_H_ */
+#endif /* INC_BUS_FRAME_SIZE_H_ */
     
