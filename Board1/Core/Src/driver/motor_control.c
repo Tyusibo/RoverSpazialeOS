@@ -1,17 +1,51 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file motor_control.c
+ * @brief Driver implementation for motor control logic.
+ */
+
 #include "motor_control.h"
 #include <math.h>  // roundf
 
 
 /**
- * Funzione generica di mappatura lineare (Arduino style 'map').
- * Mappa il valore x dal range [in_min, in_max] al range [out_min, out_max].
+ * @brief Generic linear mapping function (Arduino style 'map').
+ *
+ * Maps the value x from range [in_min, in_max] to range [out_min, out_max].
  * Formula: out = out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min)
+ *
+ * @param x Input value.
+ * @param in_min Minimum value of input range.
+ * @param in_max Maximum value of input range.
+ * @param out_min Minimum value of output range.
+ * @param out_max Maximum value of output range.
+ * @return Mapped value.
  */
 static inline float map_linear(float x, float in_min, float in_max, float out_min, float out_max)
 {
   return out_min + (x - in_min) * (out_max - out_min) / (in_max - in_min);
 }
 
+/**
+ * @brief Converts voltage to duty cycle percentage based on motor configuration.
+ * @param m Pointer to MotorControl structure.
+ * @param volt Voltage to convert.
+ * @return Duty cycle percentage.
+ */
 static inline float volt_to_duty_percent(const MotorControl *m, float volt)
 {
   // 1. Normalizza volt in un valore "grezzo" percentuale (0-100 basato su 12V)
@@ -22,12 +56,37 @@ static inline float volt_to_duty_percent(const MotorControl *m, float volt)
   return map_linear(duty_raw, m->in_min, m->in_max, m->out_min, m->out_max);
 }
 
+/**
+ * @brief Converts duty cycle percentage to pulse width (CCR value).
+ * @param m Pointer to MotorControl structure.
+ * @param duty_percent Duty cycle percentage.
+ * @return Pulse width value for CCR.
+ */
 static inline int duty_percent_to_pulse(const MotorControl *m, float duty_percent)
 {
   float pulse_f = (duty_percent / 100.0f) * (float)m->arr_pwm_plus_one;
   return (int)roundf(pulse_f);
 }
 
+/**
+ * @brief Initializes the Motor Control structure.
+ * @param mc Pointer to the MotorControl structure.
+ * @param htim_pwm PWM timer handle.
+ * @param pwm_channel PWM channel.
+ * @param Ts Sampling time.
+ * @param min_volt Minimum voltage.
+ * @param max_volt Maximum voltage.
+ * @param in_min Input range minimum (for map).
+ * @param in_max Input range maximum (for map).
+ * @param out_min Output range minimum (for map).
+ * @param out_max Output range maximum (for map).
+ * @param dc_gain Motor DC gain.
+ * @param pulse_theo_min Theoretical min pulse.
+ * @param pulse_theo_max Theoretical max pulse.
+ * @param pulse_real_min Real min pulse.
+ * @param pulse_real_max Real max pulse.
+ * @param default_regulator Default PID regulator.
+ */
 void MotorControl_Init(
   MotorControl *mc,
   TIM_HandleTypeDef *htim_pwm,
@@ -69,11 +128,21 @@ void MotorControl_Init(
   mc->last_pulse = 0;
 }
 
+/**
+ * @brief Sets the reference RPM for the motor.
+ * @param mc Pointer to the MotorControl structure.
+ * @param ref_rpm Reference Speed in RPM.
+ */
 void MotorControl_SetReferenceRPM(MotorControl *mc, float ref_rpm)
 {
   mc->reference_rpm = ref_rpm;
 }
 
+/**
+ * @brief Switches the active PID regulator.
+ * @param mc Pointer to the MotorControl structure.
+ * @param reg Pointer to the new PIDController.
+ */
 void MotorControl_SetRegulator(MotorControl *mc, PIDController *reg)
 {
     if (reg != NULL)
@@ -83,6 +152,12 @@ void MotorControl_SetRegulator(MotorControl *mc, PIDController *reg)
     }
 }
 
+/**
+ * @brief Computes the control signal (Voltage) based on current speed.
+ * @param mc Pointer to the MotorControl structure.
+ * @param speed_rpm Current motor speed in RPM.
+ * @return Control signal (Voltage).
+ */
 float MotorControl_ComputeU(MotorControl *mc, float speed_rpm)
 {
   float e = mc->reference_rpm - speed_rpm;
@@ -95,6 +170,12 @@ float MotorControl_ComputeU(MotorControl *mc, float speed_rpm)
 }
 
 /* Funzione di ricalibrazione empirica statica basata sui dati dell'istanza */
+/**
+ * @brief Empirically recalibrates the pulse width based on instance data.
+ * @param mc Pointer to the MotorControl structure.
+ * @param pulse_theoretical Theoretical pulse width.
+ * @return Corrected pulse width.
+ */
 static int recalibrate_pulse(const MotorControl *mc, int pulse_theoretical)
 {
     // Utilizza la funzione generica map_linear con i parametri della struct
@@ -105,6 +186,12 @@ static int recalibrate_pulse(const MotorControl *mc, int pulse_theoretical)
     return (int)roundf(pulse_corrected);
 }
 
+/**
+ * @brief Actuates the motor with the given voltage.
+ * @param mc Pointer to the MotorControl structure.
+ * @param u_volt Control voltage.
+ * @return The PWM pulse value applied.
+ */
 int MotorControl_Actuate(MotorControl *mc, float u_volt)
 {
   float duty = volt_to_duty_percent(mc, u_volt);
@@ -123,12 +210,22 @@ int MotorControl_Actuate(MotorControl *mc, float u_volt)
   return pulse;
 }
 
+/**
+ * @brief Updates the motor control loop.
+ * @param mc Pointer to the MotorControl structure.
+ * @param speed_rpm Current speed in RPM.
+ * @return The PWM pulse value applied.
+ */
 int MotorControl_Update(MotorControl *mc, float speed_rpm)
 {
   float u = MotorControl_ComputeU(mc, speed_rpm);
   return MotorControl_Actuate(mc, u);
 }
 
+/**
+ * @brief Provides open-loop actuation based on reference RPM and DC gain.
+ * @param mc Pointer to the MotorControl structure.
+ */
 void MotorControl_OpenLoopActuate(MotorControl *mc){
     // Usa il guadagno specifico del motore salvato nella struct
     // u_volt = ref_rpm / k_gain
