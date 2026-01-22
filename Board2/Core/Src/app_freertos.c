@@ -25,7 +25,6 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "scheduling_constants.h"
 
 #include "Board2.h" 	    // Simulink Model
 
@@ -43,6 +42,8 @@
 #include "DWT.h"
 #include "print.h"
 #include "debug.h"
+
+#include "scheduling_constants.h"
 
 #if SEGGER_BUILD
 #include "SEGGER_SYSVIEW_FreeRTOS.h"
@@ -164,16 +165,16 @@ void MX_FREERTOS_Init(void) {
 
 	/* Create the thread(s) */
 	/* creation of ReadController */
-	ReadControllerHandle = osThreadNew(StartReadController, NULL,
-			&ReadController_attributes);
+//	ReadControllerHandle = osThreadNew(StartReadController, NULL,
+//			&ReadController_attributes);
 
 	/* creation of ReadGyroscope */
-	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
-			&ReadGyroscope_attributes);
+//	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
+//			&ReadGyroscope_attributes);
 
 	/* creation of Supervisor */
-	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
-			&Supervisor_attributes);
+//	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
+//			&Supervisor_attributes);
 
 	/* creation of ReadSonars */
 	ReadSonarsHandle = osThreadNew(StartReadSonars, NULL,
@@ -387,26 +388,9 @@ void StartReadSonars(void *argument) {
 		}
 
 		// Valutazione esito lettura per ogni sensore
-		if (hcsr04_is_done(&sonarLeft)) {
-			hcsr04_process_distance(&sonarLeft);
-		} else {
-			hcsr04_set_default_distance(&sonarLeft);
-			hcsr04_reset_sonar(&sonarLeft);
-		}
-
-		if (hcsr04_is_done(&sonarFront)) {
-			hcsr04_process_distance(&sonarFront);
-		} else {
-			hcsr04_set_default_distance(&sonarFront);
-			hcsr04_reset_sonar(&sonarFront);
-		}
-
-		if (hcsr04_is_done(&sonarRight)) {
-			hcsr04_process_distance(&sonarRight);
-		} else {
-			hcsr04_set_default_distance(&sonarRight);
-			hcsr04_reset_sonar(&sonarRight);
-		}
+		hcsr04_handle_reading(&sonarLeft);
+		hcsr04_handle_reading(&sonarFront);
+		hcsr04_handle_reading(&sonarRight);
 
 		Board2_U.sonar = (BUS_Sonar){ sonarLeft.distance, sonarFront.distance, sonarRight.distance };
 

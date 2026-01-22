@@ -26,6 +26,15 @@ void StartSonarTimer(void) {
     HAL_TIM_IC_Start(sonarRight.echo_tim, sonarRight.echo_channel);
 }
 
+void hcsr04_handle_reading(hcsr04_t *sonar) {
+    if (hcsr04_is_done(sonar)) {
+        hcsr04_process_distance(sonar);
+    } else {
+        hcsr04_set_default_distance(sonar);
+        hcsr04_reset_sonar(sonar);
+    }
+}
+
 uint8_t all_sonar_done(void) {
 	return (hcsr04_is_done(&sonarLeft) && hcsr04_is_done(&sonarFront)
 			&& hcsr04_is_done(&sonarRight));
