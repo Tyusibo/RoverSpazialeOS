@@ -31,6 +31,14 @@
  * |---------------------------------------------------------------------------------
  */
 
+/**
+ * @file mpu6050.c
+ * @brief MPU6050 driver implementation for STM32
+ * 
+ * This file contains the implementation of the MPU6050 driver using I2C communication.
+ * It includes initialization, reading accelerometer and gyroscope data, and Kalman filter implementation.
+ */
+
 #include <math.h>
 #include "mpu6050.h"
 
@@ -44,7 +52,7 @@
 #define TEMP_OUT_H_REG 0x41
 #define GYRO_CONFIG_REG 0x1B
 #define GYRO_XOUT_H_REG 0x43
-// Assicurati che il registro Z sia definito
+// Ensure Z register is defined
 #ifndef GYRO_ZOUT_H_REG
 #define GYRO_ZOUT_H_REG 0x47
 #endif
@@ -68,13 +76,18 @@ Kalman_t KalmanY = {
     .R_measure = 0.03f,
 };
 
-// Definizione filtro Kalman per asse Z
+// Kalman filter definition for Z axis
 Kalman_t KalmanZ = {
     .Q_angle = 0.001f,
     .Q_bias = 0.003f,
     .R_measure = 0.03f,
 };
 
+/**
+ * @brief  Initializes the MPU6050 sensor
+ * @param  I2Cx Pointer to I2C handle
+ * @return 0 if successful, 1 if device not found
+ */
 uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx)
 {
     uint8_t check;
@@ -124,6 +137,11 @@ uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx)
     return 1;
 }
 
+/**
+ * @brief  Reads accelerometer data from MPU6050
+ * @param  I2Cx Pointer to I2C handle
+ * @param  DataStruct Pointer to MPU6050 data structure
+ */
 void MPU6050_Read_Accel(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
 {
     uint8_t Rec_Data[6];
@@ -146,6 +164,11 @@ void MPU6050_Read_Accel(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
     DataStruct->Az = DataStruct->Accel_Z_RAW / Accel_Z_corrector;
 }
 
+/**
+ * @brief  Reads gyroscope data from MPU6050
+ * @param  I2Cx Pointer to I2C handle
+ * @param  DataStruct Pointer to MPU6050 data structure
+ */
 void MPU6050_Read_Gyro(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
 {
     uint8_t Rec_Data[6];
@@ -168,6 +191,11 @@ void MPU6050_Read_Gyro(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
     DataStruct->Gz = DataStruct->Gyro_Z_RAW / 131.0;
 }
 
+/**
+ * @brief  Reads temperature data from MPU6050
+ * @param  I2Cx Pointer to I2C handle
+ * @param  DataStruct Pointer to MPU6050 data structure
+ */
 void MPU6050_Read_Temp(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
 {
     uint8_t Rec_Data[2];
@@ -181,6 +209,11 @@ void MPU6050_Read_Temp(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
     DataStruct->Temperature = (float)((int16_t)temp / (float)340.0 + (float)36.53);
 }
 
+/**
+ * @brief  Reads all data (Accel, Gyro, Temp) from MPU6050 and calculates angles using Kalman filter
+ * @param  I2Cx Pointer to I2C handle
+ * @param  DataStruct Pointer to MPU6050 data structure
+ */
 void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
 {
     uint8_t Rec_Data[14];
@@ -235,10 +268,10 @@ void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
         DataStruct->Gx = -DataStruct->Gx;
     DataStruct->KalmanAngleX = Kalman_getAngle(&KalmanX, roll, DataStruct->Gx, dt);
 
-    // Calcolo asse Z (Yaw)
+    // Calculate Z axis (Yaw)
     DataStruct->KalmanAngleZ += DataStruct->Gz * dt;
 
-    // Implementazione circolarità: reset a 0 se supera +/- 360
+    // Implementing circularity: reset to 0 if it exceeds +/- 360
     if (DataStruct->KalmanAngleZ >= 360.0) {
         DataStruct->KalmanAngleZ -= 360.0;
     } else if (DataStruct->KalmanAngleZ <= -360.0) {
@@ -246,6 +279,14 @@ void MPU6050_Read_All(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct)
     }
 }
 
+/**
+ * @brief  Calculates angle using Kalman filter
+ * @param  Kalman Pointer to Kalman filter structure
+ * @param  newAngle New angle measurement
+ * @param  newRate New angular rate measurement
+ * @param  dt Time delta
+ * @return Calculated angle
+ */
 double Kalman_getAngle(Kalman_t *Kalman, double newAngle, double newRate, double dt)
 {
     double rate = newRate - Kalman->bias;
@@ -276,29 +317,31 @@ double Kalman_getAngle(Kalman_t *Kalman, double newAngle, double newRate, double
     return Kalman->angle;
 };
 
-// --- Variabili statiche per la gestione Interrupt ---
-static uint8_t yaw_buffer[2];            // Buffer per i dati grezzi I2C
-static MPU6050_Yaw_t *pYawStruct = NULL; // Puntatore alla struct correntemente in uso
+// --- Static variables for Interrupt management ---
+static uint8_t yaw_buffer[2];            // Buffer for raw I2C data
+static MPU6050_Yaw_t *pYawStruct = NULL; // Pointer to the currently used struct
 static volatile MPU_RxStatus_t mpu_rx_status = MPU_RX_NOT_RECEIVED;
 
 // ---------------------------------------------------------
-// IMPLEMENTAZIONE LETTURA TRAMITE INTERRUPT 
+// INTERRUPT READING IMPLEMENTATION 
 // ---------------------------------------------------------
 
 /**
- * @brief Avvia la lettura dello Yaw in modalità Interrupt.
- * @return MPU_OK se la richiesta è partita con successo, MPU_ERR altrimenti
+ * @brief  Starts Yaw reading in Interrupt mode.
+ * @param  I2Cx Pointer to I2C handle
+ * @param  DataStruct Pointer to MPU6050 Yaw data structure
+ * @return MPU_OK if the request started successfully, MPU_ERR otherwise
  */
 int8_t MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct)
 {
     if (HAL_I2C_GetState(I2Cx) == HAL_I2C_STATE_READY) {
         
-        mpu_rx_status = MPU_RX_IN_PROGRESS; // Reset flag: inizio operazione (Busy)
+        mpu_rx_status = MPU_RX_IN_PROGRESS; // Reset flag: operation start (Busy)
         pYawStruct = DataStruct;
 
-        // Avvia lettura memoria via interrupt (Registro GYRO_ZOUT_H_REG, 2 bytes)
+        // Start memory reading via interrupt (GYRO_ZOUT_H_REG register, 2 bytes)
         if(HAL_I2C_Mem_Read_IT(I2Cx, MPU6050_ADDR, GYRO_ZOUT_H_REG, 1, yaw_buffer, 2) != HAL_OK) {
-             mpu_rx_status = MPU_RX_NOT_RECEIVED; // Errore avvio
+             mpu_rx_status = MPU_RX_NOT_RECEIVED; // Start error
              return MPU_ERR;        // Start failed
         }
         return MPU_OK; // Successfully started
@@ -307,35 +350,43 @@ int8_t MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct)
     }
 }
 
+/**
+ * @brief  Gets the current status of the MPU6050 interrupt operation
+ * @return Current status of the operation
+ */
 MPU_RxStatus_t MPU6050_GetStatus(void) {
     return mpu_rx_status;
 }
 
+/**
+ * @brief  I2C Receive Complete Callback
+ */
 void MPU6050_RxCpltCallback(void) {
-    mpu_rx_status = MPU_RX_SUCCESS; // Segnala operazione conclusa con successo
+    mpu_rx_status = MPU_RX_SUCCESS; // Signal operation successfully received
 }
 
 /**
- * @brief Funzione di elaborazione dati chiamata dal Task dopo il completamento.
+ * @brief  Data processing function called by Task after completion.
+ *         Reconstructs raw data, converts to dps, integrates and normalizes Yaw
  */
 void MPU6050_Process_Yaw_IT_Data(void)
 {
     if (pYawStruct != NULL)
     {
-        // 1. Ricostruzione dato RAW dal buffer
+        // 1. Reconstruct RAW data from buffer
         pYawStruct->Gyro_Z_RAW = (int16_t)(yaw_buffer[0] << 8 | yaw_buffer[1]);
 
-        // 2. Conversione in dps
+        // 2. Convert to dps
         pYawStruct->Gz = pYawStruct->Gyro_Z_RAW / 131.0 - gyroZ_bias;
 
-        // 3. Calcolo DT
+        // 3. Calculate DT
         double dt = (double)(HAL_GetTick() - timer) / 1000;
         timer = HAL_GetTick();
 
-        // 4. Integrazione
+        // 4. Integration
         pYawStruct->_YawAcc += pYawStruct->Gz * dt;
 
-        // 5. Normalizzazione
+        // 5. Normalization
         if (pYawStruct->_YawAcc >= 360.0) {
             pYawStruct->_YawAcc -= 360.0;
         } else if (pYawStruct->_YawAcc < 0.0) {
@@ -348,8 +399,8 @@ void MPU6050_Process_Yaw_IT_Data(void)
 }
 
 /**
- * @brief Callback di errore per sbloccare il flag in caso di problemi I2C
+ * @brief  Error callback to unlock flag in case of I2C problems
  */
 void MPU6050_Error_Callback(void) {
-    mpu_rx_status = MPU_RX_ERROR; // Segnala errore
+    mpu_rx_status = MPU_RX_ERROR; // Signal error
 }
