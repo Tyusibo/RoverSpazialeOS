@@ -51,7 +51,6 @@ typedef StaticTask_t osStaticThreadDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -118,7 +117,8 @@ const osThreadAttr_t StartSegger_attributes = { .name = "StartSegger",
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 static uint32_t ms_to_ticks(uint32_t ms);
-static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatile uint32_t *miss_counter);
+static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
+		volatile uint32_t *miss_counter);
 /* USER CODE END FunctionPrototypes */
 
 void StartReadController(void *argument);
@@ -216,7 +216,6 @@ void StartReadController(void *argument) {
 
 		};
 
-
 		// Trasferisce i dati dal buffer del driver alla struttura locale
 		// La struttura locale del modello Simulink è copiata all'interno di uno stato locale
 		// e mai più usata altrove, quindi non ci sono problemi di concorrenza
@@ -306,7 +305,6 @@ void StartSupervisor(void *argument) {
 
 	/* Infinite loop */
 	for (;;) {
-        Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
 
 		do {
 			Board2_step();
@@ -314,7 +312,6 @@ void StartSupervisor(void *argument) {
 
 		// Per permettere al modello di ripartire
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
-
 
 #if PRINT_TASK
 		static uint32_t counter_print = 0;
@@ -352,62 +349,67 @@ void StartReadSonars(void *argument) {
 	/* USER CODE BEGIN StartReadSonars */
 
 	const uint32_t T = ms_to_ticks(T_SONAR);
+	const uint32_t TIMEOUT_TICKS = ms_to_ticks(40); // 40ms safety timeout
 	uint32_t next = osKernelGetTickCount();
+
+	uint32_t start_wait;
 
 	/* Infinite loop */
 	for (;;) {
 
 #if REAL_TASK
-// 1. Triggera i sensori (questo resetta rx_done a 0)
+
 		hcsr04_trigger(&sonarLeft);
 		hcsr04_trigger(&sonarFront);
 		hcsr04_trigger(&sonarRight);
-
-		// 2. Attesa attiva: il task non si sospende, ma cicla finché i dati non sono pronti.
-		// Aggiungo un timeout di sicurezza usando il tick count per evitare blocchi infiniti
-		// se si stacca un cavo (max 40ms, un sonar ne impiega max ~25ms).
+		
+		start_wait = osKernelGetTickCount();
 
 		while (1) {
-			uint8_t d1 = hcsr04_is_done(&sonarLeft);
-			uint8_t d2 = hcsr04_is_done(&sonarFront);
-			uint8_t d3 = hcsr04_is_done(&sonarRight);
 
-			if (d1 && d2 && d3) {
-				break; // Tutti pronti
+			if (all_sonar_done() == 1) {
+				break; // Tutti i sonar hanno finito
 			}
 
-			// Timeout safety (es. 40ms)
-//			if ((osKernelGetTickCount() - start_wait) > ms_to_ticks(200)) {
-//				printMsg("Sonar read timeout!\r\n");
-//				break;
-//			}
+			// Timeout safety
+			if ((osKernelGetTickCount() - start_wait) > TIMEOUT_TICKS) {
+#if PRINT_TASK
+				printMsg("Sonar read timeout!\r\n");
+#endif
+				break;
+			}
+		}
 
-			// Non mettiamo osDelay qui perché hai chiesto "non voglio che il task si sospenda".
-			// Il task occuperà la CPU in questo loop (utile se è a bassa priorità e viene preempted dagli altri).
-		};
-
-		// 3. Elaborazione condizionale: Aggiorna SOLO se la lettura è conclusa.
-		// Se "is_done" è falso (timeout), saltiamo l'aggiornamento e manteniamo il valore vecchio (hold last value).
+		// Valutazione esito lettura per ogni sensore
 		if (hcsr04_is_done(&sonarLeft)) {
 			hcsr04_process_distance(&sonarLeft);
+		} else {
+			hcsr04_set_default_distance(&sonarLeft);
+			hcsr04_reset_sonar(&sonarLeft);
 		}
 
 		if (hcsr04_is_done(&sonarFront)) {
 			hcsr04_process_distance(&sonarFront);
+		} else {
+			hcsr04_set_default_distance(&sonarFront);
+			hcsr04_reset_sonar(&sonarFront);
 		}
 
 		if (hcsr04_is_done(&sonarRight)) {
 			hcsr04_process_distance(&sonarRight);
+		} else {
+			hcsr04_set_default_distance(&sonarRight);
+			hcsr04_reset_sonar(&sonarRight);
 		}
+
+		Board2_U.sonar = (BUS_Sonar){ sonarLeft.distance, sonarFront.distance, sonarRight.distance };
 
 #if PRINT_TASK
         printSonar(&Board2_U.sonar);
-        HAL_Delay(2000); // Per non intasare la seriale
 #endif
-		//Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
-        Board2_U.sonar = (BUS_Sonar){ sonarLeft.distance, sonarFront.distance,sonarRight.distance};
-        Board2_U.sonar = (BUS_Sonar ) { 500, 500, 500 };
-        periodic_wait(&next, T, &MissReadSonars);
+		
+		
+		periodic_wait(&next, T, &MissReadSonars);
 
 #else
 		HAL_Delay(C_SONAR);
@@ -427,8 +429,8 @@ void StartReadSonars(void *argument) {
 /* USER CODE END Header_StartSeggerTask */
 void StartSeggerTask(void *argument) {
 	/* USER CODE BEGIN StartSeggerTask */
-	
-	#if SEGGER_BUILD
+
+#if SEGGER_BUILD
 	SEGGER_SYSVIEW_Conf();
 	SEGGER_SYSVIEW_Start();
 	#endif
@@ -449,7 +451,8 @@ static uint32_t ms_to_ticks(uint32_t ms) {
 	return (ms * hz + 999u) / 1000u;
 }
 
-static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatile uint32_t *miss_counter) {
+static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
+		volatile uint32_t *miss_counter) {
 	uint32_t now = osKernelGetTickCount();
 
 	/* Calcola il prossimo rilascio */
@@ -461,12 +464,12 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatil
 //		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
 //		return 1;
 //	}
-	if ((int32_t)(now - *next_release) > 0) {
-	    *next_release = now + period_ticks;
-        if(miss_counter != NULL) {
-            (*miss_counter)++;
-        }
-	    return;
+	if ((int32_t) (now - *next_release) > 0) {
+		*next_release = now + period_ticks;
+		if (miss_counter != NULL) {
+			(*miss_counter)++;
+		}
+		return;
 	}
 
 	/* Sleep assoluta fino al prossimo periodo */

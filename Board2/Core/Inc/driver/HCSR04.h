@@ -1,34 +1,47 @@
-#ifndef INC_HCSR04_H_
-#define INC_HCSR04_H_
-
-#define DISTANCE_LIMIT 400  // 400 cm = 4 m
+#ifndef INC_DRIVER_HCSR04_H_
+#define INC_DRIVER_HCSR04_H_
 
 #include "stm32g4xx_hal.h"
 
+#define HCSR04_ERR -1
+#define HCSR04_OK 1
+
 typedef struct {
-	GPIO_TypeDef *gpio_port_sensor;
-	uint16_t gpio_pin_sensor;
+
+	/* Trigger Pin */
+	GPIO_TypeDef *trigger_port;
+	uint16_t trigger_pin;
+
+	/* Echo Timer and Channel */
 	TIM_HandleTypeDef *echo_tim;
 	uint16_t echo_channel;
-	uint8_t capture_flag;
+
+	uint64_t arr_timer_plus_one;
+
 	uint32_t start_counter;
 	uint32_t end_counter;
-	float distance;
-	uint8_t rx_done; // Flag aggiunto
+
+	uint32_t current_polarity;
+
+	uint16_t distance;
+
+	uint8_t rx_done;
 } hcsr04_t;
 
-typedef enum {
-	HCSR04_ERR = -1, HCSR04_OK = 1
-} hcsr04_enum;
 
 int8_t hcsr04_init(hcsr04_t *sensor, GPIO_TypeDef *trigger,
 		uint16_t pin_trigger, TIM_HandleTypeDef *TIM_ECHO,
 		uint16_t echo_channel);
 int8_t hcsr04_trigger(hcsr04_t *sensor);
-int8_t hcsr04_read_distance(hcsr04_t *sensor); // To be called in the callback of the TIMER
-void hcsr04_process_distance(hcsr04_t *sensor);
-uint8_t hcsr04_is_done(hcsr04_t *sensor); // Nuova funzione
-void hcsr04_Set_Done(hcsr04_t *sensor);
+
+int8_t hcsr04_capture_rising_edge(hcsr04_t *sensor);
+int8_t hcsr04_capture_falling_edge(hcsr04_t *sensor);
+
+int8_t hcsr04_process_distance(hcsr04_t *sensor);
+int8_t hcsr04_set_default_distance(hcsr04_t *sensor);
+int8_t hcsr04_reset_sonar(hcsr04_t *sensor);
+
+uint8_t hcsr04_is_done(hcsr04_t *sensor);
 
 
-#endif /* INC_HCSR04_H_ */
+#endif /* INC_DRIVER_HCSR04_H_ */

@@ -42,7 +42,7 @@
 #if VERBOSE_DEBUG_IT == 1
 #define PRINT_DBG(msg) PRINT_DBG(msg)
 #else
-    #define PRINT_DBG(msg) ((void)0)
+#define PRINT_DBG(msg) ((void)0)
 #endif
 /* ---------------------------- */
 /* USER CODE END PD */
@@ -297,19 +297,26 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
 	if (htim->Instance != TIM2)
 		return;
 
-	// La funzione hcsr04_read_distance gestisce i fronti e mette rx_done a 1 alla fine
+	hcsr04_t *sensor = NULL;
 
 	if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_3) {
-		hcsr04_read_distance(&sonarLeft);
+		sensor = &sonarLeft;
 
 	} else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_2) {
-		hcsr04_read_distance(&sonarFront);
+		sensor = &sonarFront;
 
 	} else if (htim->Channel == HAL_TIM_ACTIVE_CHANNEL_4) {
-		hcsr04_read_distance(&sonarRight);
+		sensor = &sonarRight;
+	}
+
+	if (sensor != NULL) {
+		if (sensor->current_polarity == TIM_INPUTCHANNELPOLARITY_RISING) {
+			hcsr04_capture_rising_edge(sensor);
+		} else {
+			hcsr04_capture_falling_edge(sensor);
+		}
 	}
 }
-#include "sonar_test.h"
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	UART_HandleTypeDef *h = getComunicationHandler();
@@ -321,6 +328,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		return;
 	}
 
+	extern volatile uint8_t rx_debug_byte;
+	extern volatile uint8_t flow_control_flag;
+	if (huart->Instance == huart2.Instance) {
+		HAL_UART_Receive_IT(&huart2, &rx_debug_byte, 1); // Abilita ricezione interrupt debug
+		flow_control_flag = 1;
+	}
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {

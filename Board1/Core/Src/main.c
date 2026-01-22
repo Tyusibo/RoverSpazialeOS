@@ -157,11 +157,14 @@ int main(void)
 
 	setComunicationHandler(&hlpuart1);
 
-#if VERBOSE_DEBUG_MAIN
 
 	setPrinterHandler(&huart2);
 	clearScreen();
+
+#if VERBOSE_DEBUG_MAIN
+
 	PRINT_DBG("BEGIN B1 INIT...\r\n");
+
 #endif
 
 	// Init Simulink Model

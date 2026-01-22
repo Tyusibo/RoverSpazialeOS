@@ -25,3 +25,8 @@ void StartSonarTimer(void) {
     HAL_TIM_IC_Start(sonarFront.echo_tim, sonarFront.echo_channel);
     HAL_TIM_IC_Start(sonarRight.echo_tim, sonarRight.echo_channel);
 }
+
+uint8_t all_sonar_done(void) {
+	return (hcsr04_is_done(&sonarLeft) && hcsr04_is_done(&sonarFront)
+			&& hcsr04_is_done(&sonarRight));
+}
