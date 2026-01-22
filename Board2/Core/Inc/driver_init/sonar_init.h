@@ -12,6 +12,8 @@ uint8_t Sonar_InitAll(void);
 
 void StartSonarTimer(void);
 
+void hcsr04_handle_reading(hcsr04_t *sonar);
+
 uint8_t all_sonar_done(void);
 
 #endif /* INC_DRIVER_INIT_SONAR_INIT_H_ */
