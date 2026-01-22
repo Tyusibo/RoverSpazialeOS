@@ -13,6 +13,8 @@
 #endif
 /* ---------------------------- */
 
+volatile uint8_t flagRTR = 0; 					    // Flag RTR
+
 volatile uint8_t receivedFlag = 0;  				// Avvenuta ricezione frame
 volatile uint8_t errorReceiveFlag = 0; 			    // Avvenuto errore di ricezione
 
@@ -36,7 +38,7 @@ UART_HandleTypeDef * getComunicationHandler() {
 
 //ritorna GPIO_PIN_RESET oppure GPIO_PIN_SET. Rispettivamente 0 o 1.
 uint8_t checkRTR(void) {
-    return HAL_GPIO_ReadPin(RTR_IN_GPIO_Port, RTR_IN_Pin);
+	return (flagRTR == 1);
 }
 
 void UART_TransmitIT(uint8_t *pData, size_t size) {

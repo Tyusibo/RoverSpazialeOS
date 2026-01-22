@@ -218,13 +218,27 @@ void LPUART1_IRQHandler(void)
 
 extern volatile uint8_t flagRTR;
 
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
-	if (GPIO_Pin == RTR_IN_Pin) {
-		PRINT_DBG("RTR Interrupt\n\r");
-		flagRTR = 1;
-		return;
-	}
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+    if (GPIO_Pin == RTR_IN_Pin)
+    {
+        GPIO_PinState state = HAL_GPIO_ReadPin(RTR_IN_GPIO_Port, RTR_IN_Pin);
+
+        if (state == GPIO_PIN_SET)
+        {
+            // Rising edge
+            PRINT_DBG("RTR Rising\n\r");
+            flagRTR = 1;
+        }
+        else
+        {
+            // Falling edge
+            PRINT_DBG("RTR Falling\n\r");
+            flagRTR = 0;
+        }
+    }
 }
+
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	UART_HandleTypeDef *h = getComunicationHandler();
