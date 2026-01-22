@@ -1,6 +1,33 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file encoder.c
+ * @brief Driver implementation for encoder handling.
+ */
+
 #include "encoder.h"
 #include <stdlib.h>  // llabs
 
+/**
+ * @brief Initialize the Encoder driver.
+ * @param e Pointer to the Encoder structure.
+ * @param htim_enc Pointer to the timer handle used for the encoder.
+ * @param Ts Sampling time in seconds (used as fallback).
+ * @param counts Counts per revolution.
+ */
 void Encoder_Init(Encoder *e, TIM_HandleTypeDef *htim_enc, float Ts, uint32_t counts)
 {
   e->htim_enc = htim_enc;
@@ -13,6 +40,11 @@ void Encoder_Init(Encoder *e, TIM_HandleTypeDef *htim_enc, float Ts, uint32_t co
   e->speed_rpm = 0.0f;
 }
 
+/**
+ * @brief Update encoder state and calculate speed.
+ * @param e Pointer to the Encoder structure.
+ * @return Delta counts since last update.
+ */
 int64_t Encoder_Update(Encoder *e)
 {
   uint32_t current_cnt = (uint32_t)__HAL_TIM_GET_COUNTER(e->htim_enc);

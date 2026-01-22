@@ -1,8 +1,22 @@
 /*
- * mpu6050.h
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
  *
- *  Created on: Nov 13, 2019
- *      Author: Bulanov Konstantin
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file mpu6050.h
+ * @brief Header file for MPU6050/GY521 accelerometer and gyroscope driver.
+ * @author Bulanov Konstantin
  */
 
 #ifndef INC_GY521_H_
@@ -11,7 +25,9 @@
 #include <stdint.h>
 #include "i2c.h"
 
-// MPU6050 structure
+/**
+ * @brief MPU6050 Data structure
+ */
 typedef struct
 {
 
@@ -33,23 +49,27 @@ typedef struct
 
     double KalmanAngleX;
     double KalmanAngleY;
-    double KalmanAngleZ; // Aggiunto campo per l'asse Z
+    double KalmanAngleZ;
 } MPU6050_t;
 
-// Nuova struct per la lettura esclusiva dello Yaw (asse Z)
+/**
+ * @brief Structure for exclusive Yaw (Z-axis) reading
+ */
 typedef struct
 {
     int16_t Gyro_Z_RAW;
     double Gz;
     
-    // Accumulatore interno 'double' per non perdere precisione durante l'integrazione
+    /** @brief Internal 'double' accumulator to avoid precision loss during integration */
     double _YawAcc; 
     
-    // Output finale in uint16_t (0-360 gradi)
+    /** @brief Final output in uint16_t (0-360 degrees) */
     uint16_t KalmanAngleZ;
 } MPU6050_Yaw_t;
 
-// Kalman structure
+/**
+ * @brief Kalman Filter structure
+ */
 typedef struct
 {
     double Q_angle;
@@ -73,42 +93,49 @@ void MPU6050_Read_Yaw(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct);
 double Kalman_getAngle(Kalman_t *Kalman, double newAngle, double newRate, double dt);
 
 // Define per return status
+/** @brief MPU Operation OK */
 #define MPU_OK      (0)
+/** @brief MPU Operation Error */
 #define MPU_ERR     (-1)
 
-// Enum per lo stato della ricezione asincrona
+/**
+ * @brief Enum for asynchronous reception status
+ */
 typedef enum {
-    MPU_RX_NOT_RECEIVED = 0, // Idle
-    MPU_RX_IN_PROGRESS,      // Busy
-    MPU_RX_SUCCESS,          // Done OK
-    MPU_RX_ERROR             // Done Error
+    MPU_RX_NOT_RECEIVED = 0, /**< Idle */
+    MPU_RX_IN_PROGRESS,      /**< Busy */
+    MPU_RX_SUCCESS,          /**< Done OK */
+    MPU_RX_ERROR             /**< Done Error */
 } MPU_RxStatus_t;
 
-// *** GESTIONE ASINCRONA / INTERRUPT (Logica PadReceiver) ***
+// *** ASYNCHRONOUS / INTERRUPT HANDLING (PadReceiver Logic) ***
 /**
- * @brief Avvia la lettura dello Yaw in modalità Interrupt (Non-Blocking).
- * @return MPU_OK se avviata con successo, MPU_ERR se occupato o errore.
+ * @brief Starts Yaw reading in Interrupt mode (Non-Blocking).
+ * @param I2Cx Pointer to the I2C handle.
+ * @param DataStruct Pointer to the MPU6050 Yaw data structure.
+ * @return MPU_OK if started successfully, MPU_ERR if busy or error.
  */
 int8_t MPU6050_Read_Yaw_IT(I2C_HandleTypeDef *I2Cx, MPU6050_Yaw_t *DataStruct);
 
 /**
- * @brief Restituisce lo stato dell'operazione.
+ * @brief Returns the operation status.
+ * @return Current reception status.
  */
 MPU_RxStatus_t MPU6050_GetStatus(void);
 
 /**
- * @brief Da chiamare dentro HAL_I2C_MemRxCpltCallback (o RxCpltCallback) nel main.c 
- *        per segnalare il completamento della RX.
+ * @brief To be called inside HAL_I2C_MemRxCpltCallback (or RxCpltCallback) in main.c 
+ *        to signal RX completion.
  */
 void MPU6050_RxCpltCallback(void);
 
 /**
- * @brief Elabora i dati ricevuti (da chiamare nel task dopo SUCCESS).
+ * @brief Processes received data (to be called in the task after SUCCESS).
  */
 void MPU6050_Process_Yaw_IT_Data(void);
 
 /**
- * @brief Da chiamare nella HAL_I2C_ErrorCallback per gestire errori e sbloccare il bus.
+ * @brief To be called in HAL_I2C_ErrorCallback to handle errors and unlock the bus.
  */
 void MPU6050_Error_Callback(void);
 

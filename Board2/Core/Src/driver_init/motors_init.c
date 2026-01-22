@@ -9,6 +9,10 @@ PIDController pid_fast[N_MOTORS];
 PIDController pid_medium[N_MOTORS];
 PIDController pid_slow[N_MOTORS];
 
+/**
+ * @file motors_init.c
+ * @brief Initialization source file for motors and PID controllers.
+ */
 
 void Motors_InitAll(void)
 {

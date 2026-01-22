@@ -1,15 +1,46 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file motors_init.c
+ * @brief Initialization source file for motors and PID controllers.
+ */
+
 #include "motors_init.h"
 #include "stm32g4xx_hal.h"
 
+/** @brief PWM Timer Handle (TIM1) */
 extern TIM_HandleTypeDef htim1;
 
+/** @brief Array of Motor Control structures */
 MotorControl motors[N_MOTORS];
 
+/** @brief Fast PID controllers for each motor */
 PIDController pid_fast[N_MOTORS];
+/** @brief Medium PID controllers for each motor */
 PIDController pid_medium[N_MOTORS];
+/** @brief Slow PID controllers for each motor */
 PIDController pid_slow[N_MOTORS];
 
 
+/**
+ * @brief Initialize all motors and their PID controllers.
+ * 
+ * Configures PID gains (fast, medium, slow), PWM channels, DC gains,
+ * and initializes the MotorControl structures with the default parameters.
+ */
 void Motors_InitAll(void)
 {
 	float fastGains[N_MOTORS][2] = {
@@ -64,6 +95,9 @@ void Motors_InitAll(void)
     }
 }
 
+/**
+ * @brief Starts PWM generation for all motors.
+ */
 void Motors_StartAllPwm(void)
 {
     for (int i = 0; i < N_MOTORS; i++)
@@ -72,6 +106,10 @@ void Motors_StartAllPwm(void)
     }
 }
 
+/**
+ * @brief Sets a default Capture Compare Register (CCR) value for all motors.
+ * @param ccr The CCR value to set (pulse width).
+ */
 void Motors_SetDefaultCcr(uint32_t ccr)
 {
     for (int i = 0; i < N_MOTORS; i++)
