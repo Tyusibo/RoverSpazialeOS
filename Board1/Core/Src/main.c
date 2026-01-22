@@ -188,54 +188,6 @@ int main(void)
 	temperature_sensor_init();
 	battery_sensor_init();
 
-	//float current_speed[4] = { 1, 2, 3, 4 };
-
-	float current_speed[4] = { 0, 0, 0, 0 };
-//	while (1) {
-//
-//		// for sui motori
-//
-//		for (int i = 0; i < N_MOTORS; i++) {
-//			MotorControl_SetReferenceRPM(&motors[i], 0.0f);
-//			MotorControl_OpenLoopActuate(&motors[i]);
-//			Encoder_Update(&encoders[i]);
-//			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-//		}
-//		BUS_Speed sp = { current_speed[0], current_speed[1], current_speed[2],
-//				current_speed[3] };
-//		printMotorSpeeds(&sp);
-//		HAL_Delay(1000);
-//
-//	}
-//
-//#define LOOP_PERIOD_MS  10
-//
-//uint32_t nextWakeTime = HAL_GetTick();
-//
-//while (1)
-//{
-//    for (int i = 0; i < 4; i++) {
-//
-//        Encoder_Update(&encoders[i]);
-//        current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-//
-//        MotorControl_SetReferenceRPM(&motors[i], 0.0f);
-//        MotorControl_Update(&motors[i], current_speed[i]);
-//    }
-//
-//    BUS_Speed sp = {
-//        current_speed[0],
-//        current_speed[1],
-//        current_speed[2],
-//        current_speed[3]
-//    };
-//    printMotorSpeeds(&sp);
-//
-//    nextWakeTime += LOOP_PERIOD_MS;
-//    while (HAL_GetTick() < nextWakeTime) {
-//        /* busy wait oppure __WFI(); */
-//    }
-//}
 
   /* USER CODE END 2 */
 
