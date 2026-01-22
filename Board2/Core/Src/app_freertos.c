@@ -44,6 +44,7 @@
 #include "debug.h"
 
 #include "scheduling_constants.h"
+#include "event_flags_constant.h"
 
 #if SEGGER_BUILD
 #include "SEGGER_SYSVIEW_FreeRTOS.h"
@@ -52,6 +53,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
+typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -134,12 +136,22 @@ const osThreadAttr_t StartSegger_attributes = {
   .cb_size = sizeof(StartSeggerControlBlock),
   .priority = (osPriority_t) osPriorityHigh1,
 };
+/* Definitions for flagsOS */
+osEventFlagsId_t flagsOSHandle;
+osStaticEventGroupDef_t flagsOSControlBlock;
+const osEventFlagsAttr_t flagsOS_attributes = {
+  .name = "flagsOS",
+  .cb_mem = &flagsOSControlBlock,
+  .cb_size = sizeof(flagsOSControlBlock),
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 static uint32_t ms_to_ticks(uint32_t ms);
 static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 		volatile uint32_t *miss_counter);
+static void waitForSynchonization(void);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartReadController(void *argument);
@@ -196,6 +208,10 @@ void MX_FREERTOS_Init(void) {
 	/* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
+  /* Create the event(s) */
+  /* creation of flagsOS */
+  flagsOSHandle = osEventFlagsNew(&flagsOS_attributes);
+
   /* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
   /* USER CODE END RTOS_EVENTS */
@@ -212,6 +228,8 @@ void MX_FREERTOS_Init(void) {
 void StartReadController(void *argument)
 {
   /* USER CODE BEGIN StartReadController */
+
+	waitForSynchonization();
 
 	const uint32_t T = ms_to_ticks(T_REMOTE_CONTROLLER);
 	uint32_t next = osKernelGetTickCount();
@@ -264,6 +282,8 @@ void StartReadController(void *argument)
 void StartReadGyroscope(void *argument)
 {
   /* USER CODE BEGIN StartReadGyroscope */
+
+	waitForSynchonization();
 
 	const uint32_t T = ms_to_ticks(T_GYROSCOPE);
 	uint32_t next = osKernelGetTickCount();
@@ -318,6 +338,8 @@ void StartSupervisor(void *argument)
 {
   /* USER CODE BEGIN StartSupervisor */
 
+	waitForSynchonization();
+
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
 
@@ -366,6 +388,8 @@ void StartSupervisor(void *argument)
 void StartReadSonars(void *argument)
 {
   /* USER CODE BEGIN StartReadSonars */
+
+	waitForSynchonization();
 
 	const uint32_t T = ms_to_ticks(T_SONAR);
 	const uint32_t TIMEOUT_TICKS = ms_to_ticks(40); // 40ms safety timeout
@@ -442,6 +466,7 @@ void StartSeggerTask(void *argument)
 	for (;;) {
 		break;
 	}
+	osEventFlagsSet(flagsOSHandle, SYNCHRONIZATION_FLAG);
 	osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartSeggerTask */
@@ -478,6 +503,31 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 	/* Sleep assoluta fino al prossimo periodo */
 	osDelayUntil(*next_release);
 	//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
+}
+
+static void waitForSynchonization(void)
+{
+    uint32_t flags = osEventFlagsWait(
+        flagsOSHandle,
+        SYNCHRONIZATION_FLAG,
+        osFlagsWaitAny | osFlagsNoClear,
+        osWaitForever
+    );
+
+    /* Se osEventFlagsWait fallisce ritorna un codice errore (valore negativo) */
+    if ((int32_t)flags < 0) {
+        osThreadTerminate(osThreadGetId());
+        return;
+    }
+
+    /* Se per qualche motivo il flag non è presente (non dovrebbe accadere) */
+    if ((flags & SYNCHRONIZATION_FLAG) == 0U) {
+        osThreadTerminate(osThreadGetId());
+        return;
+    }
+
+    /* OK */
+    return;
 }
 
 /* USER CODE END Application */

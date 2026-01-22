@@ -31,6 +31,7 @@
 #endif
 
 #include "scheduling_constants.h"
+#include "event_flags_constant.h"
 
 // Simulink Model
 #include "Board1.h"
@@ -60,6 +61,7 @@
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
 typedef StaticTimer_t osStaticTimerDef_t;
+typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
@@ -162,6 +164,14 @@ const osTimerAttr_t toggleRightRedLed_attributes = {
   .cb_mem = &toggleRightRedLedControlBlock,
   .cb_size = sizeof(toggleRightRedLedControlBlock),
 };
+/* Definitions for flagsOS */
+osEventFlagsId_t flagsOSHandle;
+osStaticEventGroupDef_t flagsOSControlBlock;
+const osEventFlagsAttr_t flagsOS_attributes = {
+  .name = "flagsOS",
+  .cb_mem = &flagsOSControlBlock,
+  .cb_size = sizeof(flagsOSControlBlock),
+};
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -169,6 +179,7 @@ const osTimerAttr_t toggleRightRedLed_attributes = {
 /* SCHEDULING FUNCTIONS */
 static uint32_t ms_to_ticks(uint32_t ms);
 static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatile uint32_t *miss_counter);
+static void waitForSynchonization(void);
 
 /* DECISION FUNCTIONS */
 static inline void actuate_white_leds(void);
@@ -241,6 +252,10 @@ void MX_FREERTOS_Init(void) {
 	/* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
+  /* Create the event(s) */
+  /* creation of flagsOS */
+  flagsOSHandle = osEventFlagsNew(&flagsOS_attributes);
+
   /* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
 
@@ -258,6 +273,9 @@ void MX_FREERTOS_Init(void) {
 void StartPID(void *argument)
 {
   /* USER CODE BEGIN StartPID */
+
+	waitForSynchonization();
+
     const uint32_t T = ms_to_ticks(T_PID);
     uint32_t next = osKernelGetTickCount();
 
@@ -307,6 +325,9 @@ void StartPID(void *argument)
 void StartSupervisor(void *argument)
 {
   /* USER CODE BEGIN StartSupervisor */
+
+	waitForSynchonization();
+
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
 	uint32_t wait_start;
@@ -377,6 +398,8 @@ void StartReadTemperature(void *argument)
 {
   /* USER CODE BEGIN StartReadTemperature */
 
+	waitForSynchonization();
+
     const uint32_t T = ms_to_ticks(T_TEMPERATURE);
     uint32_t next = osKernelGetTickCount();
 
@@ -412,6 +435,8 @@ void StartReadTemperature(void *argument)
 void StartReadBattery(void *argument)
 {
   /* USER CODE BEGIN StartReadBattery */
+
+	waitForSynchonization();
 
     const uint32_t T = ms_to_ticks(T_BATTERY);
     uint32_t next = osKernelGetTickCount();
@@ -458,6 +483,7 @@ void StartSeggerTask(void *argument)
   {
     break;
   }
+  osEventFlagsSet(flagsOSHandle, SYNCHRONIZATION_FLAG);
   osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartSeggerTask */
@@ -512,6 +538,31 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatil
 	/* Sleep assoluta fino al prossimo periodo */
 	osDelayUntil(*next_release);
 	//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
+}
+
+static void waitForSynchonization(void)
+{
+    uint32_t flags = osEventFlagsWait(
+        flagsOSHandle,
+        SYNCHRONIZATION_FLAG,
+        osFlagsWaitAny | osFlagsNoClear,
+        osWaitForever
+    );
+
+    /* Se osEventFlagsWait fallisce ritorna un codice errore (valore negativo) */
+    if ((int32_t)flags < 0) {
+        osThreadTerminate(osThreadGetId());
+        return;
+    }
+
+    /* Se per qualche motivo il flag non è presente (non dovrebbe accadere) */
+    if ((flags & SYNCHRONIZATION_FLAG) == 0U) {
+        osThreadTerminate(osThreadGetId());
+        return;
+    }
+
+    /* OK */
+    return;
 }
 
 /* DECISION FUNCTIONS */

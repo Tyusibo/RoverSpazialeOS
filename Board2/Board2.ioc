@@ -2,8 +2,9 @@
 CAD.formats=
 CAD.pinconfig=
 CAD.provider=
+FREERTOS.Events01=flagsOS,Static,flagsOSControlBlock
 FREERTOS.FootprintOK=true
-FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,FootprintOK
+FREERTOS.IPParameters=Tasks01,configUSE_NEWLIB_REENTRANT,FootprintOK,Events01
 FREERTOS.Tasks01=ReadController,40,1024,StartReadController,Default,NULL,Static,ReadControllerBuffer,ReadControllerControlBlock;ReadGyroscope,32,1024,StartReadGyroscope,Default,NULL,Static,ReadGyroscopeBuffer,ReadGyroscopeControlBlock;Supervisor,24,1024,StartSupervisor,Default,NULL,Static,SupervisorBuffer,SupervisorControlBlock;ReadSonars,8,1024,StartReadSonars,Default,NULL,Static,ReadSonarsBuffer,ReadSonarsControlBlock;StartSegger,41,128,StartSeggerTask,Default,NULL,Static,StartSeggerBuffer,StartSeggerControlBlock
 FREERTOS.configUSE_NEWLIB_REENTRANT=1
 File.Version=6

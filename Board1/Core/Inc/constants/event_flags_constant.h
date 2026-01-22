@@ -1,0 +1,11 @@
+#ifndef INC_CONSTANTS_EVENT_FLAGS_CONSTANT_H_
+#define INC_CONSTANTS_EVENT_FLAGS_CONSTANT_H_
+
+/* Event Flags (CMSIS-RTOS v2 / FreeRTOS)
+ * Bitmask definitions
+ */
+
+#define SYNCHRONIZATION_FLAG   (1U << 0)
+
+
+#endif /* INC_CONSTANTS_EVENT_FLAGS_CONSTANT_H_ */
