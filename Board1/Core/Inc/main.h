@@ -95,6 +95,7 @@ void Error_Handler(void);
 #define Encoder3B_GPIO_Port GPIOA
 #define RTR_IN_Pin GPIO_PIN_10
 #define RTR_IN_GPIO_Port GPIOC
+#define RTR_IN_EXTI_IRQn EXTI15_10_IRQn
 #define RTR_OUT_Pin GPIO_PIN_11
 #define RTR_OUT_GPIO_Port GPIOC
 #define Actuator_Pin GPIO_PIN_12
