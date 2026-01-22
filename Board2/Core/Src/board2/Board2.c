@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 4.66
+ * Model version                  : 5.2
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Wed Jan 21 18:01:36 2026
+ * C/C++ source code generated on : Thu Jan 22 16:01:00 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -36,7 +36,7 @@
 #define Board2_IN_D_Receive            ((uint8_T)2U)
 #define Board2_IN_D_Transmit           ((uint8_T)3U)
 #define Board2_IN_EnterDegraded        ((uint8_T)3U)
-#define Board2_IN_EnterDegraded_e      ((uint8_T)1U)
+#define Board2_IN_EnterDegraded_i      ((uint8_T)1U)
 #define Board2_IN_ExchangeDecision     ((uint8_T)2U)
 #define Board2_IN_ExchangeGlobalState  ((uint8_T)3U)
 #define Board2_IN_ExchangeLocalState   ((uint8_T)4U)
@@ -207,7 +207,7 @@ static void Board2_ExchangeLocalState(void)
   } else {
     /* case IN_LS_Transmit: */
     switch (Board2_DW.is_LS_Transmit) {
-     case Board2_IN_EnterDegraded_e:
+     case Board2_IN_EnterDegraded_i:
       break;
 
      case Board2_IN_R_ReceivingRTR:
@@ -228,7 +228,7 @@ static void Board2_ExchangeLocalState(void)
      case Board2_IN_R_WaitAck:
       if (hasReceived() == 1) {
         if (UART_CheckAck() == 0) {
-          Board2_DW.is_LS_Transmit = Board2_IN_EnterDegraded_e;
+          Board2_DW.is_LS_Transmit = Board2_IN_EnterDegraded_i;
           enterDegraded();
         } else if (UART_CheckAck() == 1) {
           Board2_DW.is_LS_Transmit = Board2_IN_NO_ACTIVE_CHILD;
@@ -464,7 +464,7 @@ static void Board2_ExchangeGlobalState(void)
    default:
     /* case IN_GL_Transmit: */
     switch (Board2_DW.is_GL_Transmit) {
-     case Board2_IN_EnterDegraded_e:
+     case Board2_IN_EnterDegraded_i:
       break;
 
      case Board2_IN_R_ReceivingRTR:
@@ -485,7 +485,7 @@ static void Board2_ExchangeGlobalState(void)
      case Board2_IN_R_WaitAck:
       if (hasReceived() == 1) {
         if (UART_CheckAck() == 0) {
-          Board2_DW.is_GL_Transmit = Board2_IN_EnterDegraded_e;
+          Board2_DW.is_GL_Transmit = Board2_IN_EnterDegraded_i;
           enterDegraded();
         } else if (UART_CheckAck() == 1) {
           Board2_DW.is_GL_Transmit = Board2_IN_NO_ACTIVE_CHILD;
@@ -770,7 +770,7 @@ void Board2_step(void)
 
        case Board2_IN_D_Transmit:
         switch (Board2_DW.is_D_Transmit) {
-         case Board2_IN_EnterDegraded_e:
+         case Board2_IN_EnterDegraded_i:
           break;
 
          case Board2_IN_R_ReceivingRTR:
@@ -789,7 +789,7 @@ void Board2_step(void)
          case Board2_IN_R_WaitAck:
           if (hasReceived() == 1) {
             if (UART_CheckAck() == 0) {
-              Board2_DW.is_D_Transmit = Board2_IN_EnterDegraded_e;
+              Board2_DW.is_D_Transmit = Board2_IN_EnterDegraded_i;
               enterDegraded();
             } else if (UART_CheckAck() == 1) {
               Board2_DW.is_D_Transmit = Board2_IN_NO_ACTIVE_CHILD;

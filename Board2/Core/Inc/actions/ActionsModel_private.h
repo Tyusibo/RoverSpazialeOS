@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 4.25
+ * Model version                  : 5.6
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Wed Jan 21 17:57:34 2026
+ * C/C++ source code generated on : Thu Jan 22 15:57:00 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -41,8 +41,7 @@ typedef struct {
 
 /* Block states (default storage) for model 'ActionsModel' */
 typedef struct {
-  real32_T previousGyroscope;          /* '<Root>/RoverAction' */
-  real32_T accumulated_change;         /* '<Root>/RoverAction' */
+  int32_T accumulated_change;          /* '<Root>/RoverAction' */
   uint32_T exit_port_index_Backward;   /* '<Root>/RoverAction' */
   uint32_T exit_port_index_BW_Forward; /* '<Root>/RoverAction' */
   uint32_T exit_port_index_BW_FW_SafeActio;/* '<Root>/RoverAction' */
@@ -56,6 +55,7 @@ typedef struct {
   uint32_T exit_port_index_RL_SafeAction;/* '<Root>/RoverAction' */
   uint32_T exit_port_index_RotateRight;/* '<Root>/RoverAction' */
   uint32_T exit_port_index_RR_SafeAction;/* '<Root>/RoverAction' */
+  uint16_T previousGyroscope;          /* '<Root>/RoverAction' */
   uint8_T is_CurrentRoverAction;       /* '<Root>/RoverAction' */
   uint8_T is_Backward;                 /* '<Root>/RoverAction' */
   uint8_T is_BW_Forward;               /* '<Root>/RoverAction' */

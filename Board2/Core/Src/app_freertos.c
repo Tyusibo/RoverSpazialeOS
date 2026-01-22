@@ -165,16 +165,16 @@ void MX_FREERTOS_Init(void) {
 
 	/* Create the thread(s) */
 	/* creation of ReadController */
-//	ReadControllerHandle = osThreadNew(StartReadController, NULL,
-//			&ReadController_attributes);
+	ReadControllerHandle = osThreadNew(StartReadController, NULL,
+			&ReadController_attributes);
 
 	/* creation of ReadGyroscope */
-//	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
-//			&ReadGyroscope_attributes);
+	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
+			&ReadGyroscope_attributes);
 
 	/* creation of Supervisor */
-//	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
-//			&Supervisor_attributes);
+	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
+			&Supervisor_attributes);
 
 	/* creation of ReadSonars */
 	ReadSonarsHandle = osThreadNew(StartReadSonars, NULL,

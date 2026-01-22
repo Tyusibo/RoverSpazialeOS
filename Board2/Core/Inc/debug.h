@@ -36,7 +36,7 @@
  * 1: Enables debug prints
  * 0: Disables debug prints
  */
-#define PRINT_TASK 1
+#define PRINT_TASK 0
 
 /** 
  * @brief Main Debug Verbosity
