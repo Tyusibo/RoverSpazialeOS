@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 5.12
+ * Model version                  : 6.6
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Wed Jan 21 17:59:54 2026
+ * C/C++ source code generated on : Thu Jan 22 15:45:15 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -110,7 +110,7 @@ typedef struct {
 typedef struct {
   BUS_Speed speed;                     /* '<Root>/speed' */
   real32_T temperature;                /* '<Root>/temperature' */
-  real32_T batteryLevel;               /* '<Root>/batteryLevel' */
+  uint8_T batteryLevel;                /* '<Root>/batteryLevel' */
   uint8_T rx_buffer[64];               /* '<Root>/rx_buffer' */
 } ExtU_Board1_T;
 
