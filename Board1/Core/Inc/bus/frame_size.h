@@ -17,12 +17,13 @@
 #define BUS_SPEED_FRAME_SIZE         (SPEED_FRAME_SIZE * 4)         // 16
 
 #define TEMPERATURE_FRAME_SIZE       (FLOAT_FRAME_SIZE)             // 4
-#define BATTERY_LEVEL_FRAME_SIZE     (FLOAT_FRAME_SIZE)             // 4
+
+#define BATTERY_LEVEL_FRAME_SIZE     (1)                            /* uint8 */
 
 #define SONAR_FRAME_SIZE             (2)                            /* uint16 */
 #define BUS_SONAR_FRAME_SIZE         (SONAR_FRAME_SIZE * 3)         // 6  
 
-#define GYROSCOPE_FRAME_SIZE         (FLOAT_FRAME_SIZE)             // 4
+#define GYROSCOPE_FRAME_SIZE         (2)                            /* uint16 */
 
 #define REMOTE_CONTROLLER_FRAME_SIZE (2 * 3)                        /* 2 int16 + uint16 */ // 6
 
@@ -30,14 +31,14 @@
 
 #define LOCAL_STATE_B1_FRAME_SIZE ( \
     BUS_SPEED_FRAME_SIZE + TEMPERATURE_FRAME_SIZE + \
-    BATTERY_LEVEL_FRAME_SIZE )                // 24
+    BATTERY_LEVEL_FRAME_SIZE )                // 21
 
 #define LOCAL_STATE_B2_FRAME_SIZE ( \
     BUS_SONAR_FRAME_SIZE + GYROSCOPE_FRAME_SIZE + \
-    REMOTE_CONTROLLER_FRAME_SIZE )            // 16
+    REMOTE_CONTROLLER_FRAME_SIZE )            // 14
 
 #define GLOBAL_STATE_FRAME_SIZE (LOCAL_STATE_B1_FRAME_SIZE + \
-    LOCAL_STATE_B2_FRAME_SIZE)                // 40
+    LOCAL_STATE_B2_FRAME_SIZE)                // 35
 
 /* --- Decisione / Controllo --- */
 

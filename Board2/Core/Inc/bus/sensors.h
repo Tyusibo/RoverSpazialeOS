@@ -15,7 +15,7 @@ typedef struct {
 typedef float Temperature;
 
 /* Battery Level */
-typedef float BatteryLevel;
+typedef uint8_t BatteryLevel;
 
 /* Sonar */
 typedef struct {
@@ -25,7 +25,7 @@ typedef struct {
 } BUS_Sonar;
 
 /* Gyroscope */
-typedef float Gyroscope;
+typedef uint16_t Gyroscope;
 
 /* RemoteController */
 typedef struct {
