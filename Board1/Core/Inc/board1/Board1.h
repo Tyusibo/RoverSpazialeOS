@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 6.6
+ * Model version                  : 6.10
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Thu Jan 22 15:45:15 2026
+ * C/C++ source code generated on : Thu Jan 22 22:18:35 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -28,7 +28,6 @@
 #include "Board1_types.h"
 #include "sensors.h"
 #include "decision.h"
-#include "enums.h"
 #include "states.h"
 
 /* Macros for accessing real-time model data structure */
@@ -46,6 +45,7 @@
 
 /* user code (top of header file) */
 #include "controller_masks.h"
+#include "enums.h"
 #include "serialize.h"
 #include "deserialize.h"
 #include "comparator.h"
@@ -109,8 +109,8 @@ typedef struct {
 /* External inputs (root inport signals with default storage) */
 typedef struct {
   BUS_Speed speed;                     /* '<Root>/speed' */
-  real32_T temperature;                /* '<Root>/temperature' */
-  uint8_T batteryLevel;                /* '<Root>/batteryLevel' */
+  Temperature temperature;             /* '<Root>/temperature' */
+  BatteryLevel batteryLevel;           /* '<Root>/batteryLevel' */
   uint8_T rx_buffer[64];               /* '<Root>/rx_buffer' */
 } ExtU_Board1_T;
 

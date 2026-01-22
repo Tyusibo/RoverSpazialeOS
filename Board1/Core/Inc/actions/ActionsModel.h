@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 5.6
+ * Model version                  : 5.9
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Thu Jan 22 15:57:00 2026
+ * C/C++ source code generated on : Thu Jan 22 22:17:52 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -26,7 +26,6 @@
 #endif                                 /* ActionsModel_COMMON_INCLUDES_ */
 
 #include "decision.h"
-#include "enums.h"
 #include "sensors.h"
 #include "ActionsModel_types.h"
 
@@ -38,7 +37,7 @@ extern void ActionsModel_Init(BUS_SetPoint *rty_setPoint, ENUM_RoverAction
   *rty_roverAction, BUS_RedLeds *rty_redLeds);
 extern void ActionsModel_ComputeRoverAction(const ENUM_UserAction
   *rtu_currentUserAction, const BUS_Speed *rtu_speed, const int16_T *rtu_x_lever,
-  const int16_T *rtu_y_lever, const uint16_T *rtu_gyroscope, const BUS_Sonar
+  const int16_T *rtu_y_lever, const Gyroscope *rtu_gyroscope, const BUS_Sonar
   *rtu_sonar, BUS_SetPoint *rty_setPoint, ENUM_RoverAction *rty_roverAction,
   ENUM_SafeAction *rty_safeAction, BUS_RedLeds *rty_redLeds);
 
