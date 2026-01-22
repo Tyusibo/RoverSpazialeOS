@@ -27,10 +27,17 @@
 /* USER CODE BEGIN Includes */
 #include "scheduling_constants.h"
 
-#include "Board2.h"
-#include "pad_receiver.h"
-#include "mpu6050.h"
-#include "sonar_init.h"
+#include "Board2.h" 	    // Simulink Model
+
+#include "pad_receiver.h"   // Remote Controller
+#include "gyroscope_init.h" // #include "mpu6050.h"
+#include "sonar_init.h"     // #include "HCSR04.h"
+#include "motors_init.h"
+/*
+#include "motors_control.h"
+#include "motor_constants.h"
+#include "regulator.h"
+*/
 
 /* Utility */
 #include "DWT.h"
@@ -238,7 +245,6 @@ void StartReadController(void *argument) {
 }
 
 /* USER CODE BEGIN Header_StartReadGyroscope */
-extern MPU6050_Yaw_t MPU6050_Yaw;
 /**
  * @brief Function implementing the ReadGyroscope thread.
  * @param argument: Not used

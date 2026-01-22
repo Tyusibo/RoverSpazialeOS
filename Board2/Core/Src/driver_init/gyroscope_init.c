@@ -1,3 +1,3 @@
 #include "gyroscope_init.h"
 
-MPU6050_t MPU6050;
+MPU6050_Yaw_t MPU6050_Yaw;

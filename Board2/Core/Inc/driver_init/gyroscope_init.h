@@ -26,7 +26,7 @@
 /**
  * @brief Global MPU6050 sensor instance.
  */
-extern MPU6050_t MPU6050;
+extern MPU6050_Yaw_t MPU6050_Yaw;
 
 
 #endif /* SRC_DRIVER_INIT_GYROSCOPE_INIT_H_ */

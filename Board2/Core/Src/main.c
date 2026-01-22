@@ -28,33 +28,28 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "Board2.h"
 
-// UART Handlers for communication inter board and debugging
-#include "uart_functions.h"
-#include "print.h"
+#include "Board2.h" 	    // Simulink Model
 
+#include "pad_receiver.h"   // Remote Controller
+#include "gyroscope_init.h" // #include "mpu6050.h"
+#include "sonar_init.h"     // #include "HCSR04.h"
+#include "motors_init.h"
+/*
+#include "motors_control.h"
+#include "motor_constants.h"
+#include "regulator.h"
+*/
 
-// Sonar
-#include "sonar_init.h"  // #include "HCSR04.h"
-#include "sonar_test.h"
-
-// Gyroscope
-#include "gyroscope_init.h"  // #include "mpu6050.h"
-#include "gyroscope_test.h"
-
-// RemoteController
-#include "joystick_test.h"
-#include "driver/pad_receiver.h"
-
-// Driver motors
-#include "motors_init.h"  // #include "motors_control.h" e #include "motor_constants.h"
-
-// DWT
+/* Utility */
 #include "DWT.h"
-
-/* debug configurations include */
+#include "print.h"
 #include "debug.h"
+
+
+#include "uart_functions.h"  // UART Handlers for communication inter board
+
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -97,12 +92,6 @@
 /* USER CODE BEGIN PV */
 volatile uint8_t rx_debug_byte;
 volatile uint8_t flow_control_flag = 0;
-
-// REMOTE CONTROLLER: Gestito ora da driver/pad_receiver
-
-// GYROSCOPE
-MPU6050_Yaw_t MPU6050_Yaw;
-volatile uint8_t gyro_done = 0; // Flag di completamento lettura
 
 /* USER CODE END PV */
 
