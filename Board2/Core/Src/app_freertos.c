@@ -444,9 +444,10 @@ void StartReadSonars(void *argument)
 		hcsr04_handle_reading(&sonarFront);
 		hcsr04_handle_reading(&sonarRight);
 
-		Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,
-						sonarRight.distance };
-
+//		Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,
+//						sonarRight.distance };
+		Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, (uint16_t)500,
+								sonarRight.distance };
 #if PRINT_TASK
         printSonar(&Board2_U.sonar);
 #endif

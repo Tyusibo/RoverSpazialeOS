@@ -6,7 +6,7 @@
 extern osTimerId_t toggleLeftRedLedHandle;
 extern osTimerId_t toggleRightRedLedHandle;
 
-#define TIMER_SW_PERIOD 500U  // in ms
+#define TIMER_SW_PERIOD 250U  // in ms
 
 /* LEFT RED LED */
 void leftRedLedOff(void) {
