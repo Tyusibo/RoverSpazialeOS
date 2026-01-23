@@ -70,11 +70,18 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-uint32_t cycles;
+
+/* MISS COUNTERS */
 volatile uint32_t MissReadController = 0;
 volatile uint32_t MissReadGyroscope = 0;
 volatile uint32_t MissSupervisor = 0;
 volatile uint32_t MissReadSonars = 0;
+
+/* STATUS FLAGS */
+uint8_t pad_receiver_read_failed = 0;
+uint8_t gyroscope_read_failed = 0;
+uint8_t sonar_read_failed = 0;
+
 /* USER CODE END Variables */
 /* Definitions for ReadController */
 osThreadId_t ReadControllerHandle;

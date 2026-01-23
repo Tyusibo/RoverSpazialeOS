@@ -385,12 +385,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		return;
 	}
 
-	extern volatile uint8_t rx_debug_byte;
-	extern volatile uint8_t flow_control_flag;
-	if (huart->Instance == huart2.Instance) {
-		HAL_UART_Receive_IT(&huart2, &rx_debug_byte, 1); // Abilita ricezione interrupt debug
-		flow_control_flag = 1;
-	}
+//	extern volatile uint8_t rx_debug_byte;
+//	extern volatile uint8_t flow_control_flag;
+//	if (huart->Instance == huart2.Instance) {
+//		HAL_UART_Receive_IT(&huart2, &rx_debug_byte, 1); // Abilita ricezione interrupt debug
+//		flow_control_flag = 1;
+//	}
 }
 
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {

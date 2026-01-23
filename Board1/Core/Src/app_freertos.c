@@ -79,11 +79,16 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
-volatile unsigned long ulHighFrequencyTimerTicks = 0;
+/* MISS COUNTERS */
 volatile uint32_t MissPID = 0;
 volatile uint32_t MissSupervisor = 0;
 volatile uint32_t MissReadTemperature = 0;
 volatile uint32_t MissReadBattery = 0;
+
+/* STATUS FLAGS */
+// Encoders read can't fail
+uint8_t temperature_read_failed = 0;
+uint8_t battery_read_failed = 0;
 
 /* USER CODE END Variables */
 /* Definitions for PID */
@@ -348,13 +353,11 @@ void StartSupervisor(void *argument)
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
-	uint32_t wait_start;
 
 	/* Infinite loop */
 	for (;;) {
 
 		//printMsg("Supervisor Cycle Start\r\n");
-		wait_start = osKernelGetTickCount();
 		do {
 //			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(40)) {
 //				printMsg("Supervisor timeout!\r\n");
