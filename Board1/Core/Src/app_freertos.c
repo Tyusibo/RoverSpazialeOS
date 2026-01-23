@@ -87,8 +87,6 @@ volatile uint32_t MissReadBattery = 0;
 
 /* STATUS FLAGS */
 // Encoders read can't fail
-uint8_t temperature_read_failed = 0;
-uint8_t battery_read_failed = 0;
 
 /* USER CODE END Variables */
 /* Definitions for PID */
@@ -397,8 +395,12 @@ void StartReadTemperature(void *argument) {
 
 #if REAL_TASK
 
-		Board1_U.temperature = (Temperature) temp_ky028_read_temperature(
-				&temp_sensor);
+		float temp_val = 0.0f;
+		if (temp_ky028_read_temperature(&temp_sensor, &temp_val) == 0) {
+			Board1_U.temperature = (Temperature) temp_val;
+		} else {
+			Board1_U.temperature = -255.0f;
+		}
 
 #if PRINT_TASK
         printTemperature((float)Board1_U.temperature);
