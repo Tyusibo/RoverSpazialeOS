@@ -170,10 +170,10 @@ void printTemperature(float t)
     uartPrint(msg);
 }
 
-void printBattery(float b)
+void printBattery(uint8_t b)
 {
     char msg[64];
-    snprintf(msg, sizeof(msg), "  Battery: %.2f %%\r\n", (double)b);
+    snprintf(msg, sizeof(msg), "  Battery: %u %%\r\n", (unsigned int)b);
     uartPrint(msg);
 }
 
@@ -196,10 +196,10 @@ void printSonar(const BUS_Sonar *sn)
     uartPrint(msg);
 }
 
-void printGyroscope(float g)
+void printGyroscope(uint16_t g)
 {
     char msg[64];
-    snprintf(msg, sizeof(msg), "  Gyroscope: %.2f\r\n", (double)g);
+    snprintf(msg, sizeof(msg), "  Gyroscope: %u\r\n", (unsigned int)g);
     uartPrint(msg);
 }
 

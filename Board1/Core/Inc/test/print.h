@@ -51,11 +51,11 @@ void printNewLine(void);
 /* Elementari LocalStateB1 */
 void printMotorSpeeds(const BUS_Speed *sp);
 void printTemperature(float t);
-void printBattery(float b);
+void printBattery(uint8_t b);
 
 /* Elementari LocalStateB2 */
 void printSonar(const BUS_Sonar *sn);
-void printGyroscope(float g);
+void printGyroscope(uint16_t g);
 void printRemoteController(const BUS_RemoteController *rc);
 
 /* Elementari Decision */
