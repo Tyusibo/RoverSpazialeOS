@@ -72,10 +72,10 @@ static const float DC_GAIN_MOT1 = 14.480f;
 static const float DC_GAIN_MOT2 = 14.200f;
 
 /** Guadagno statico (RPM/V) - Motore 3 (Rear Right) */
-static const float DC_GAIN_MOT3 = 14.510f;
+static const float DC_GAIN_MOT3 = 14.210f;
 
 /** Guadagno statico (RPM/V) - Motore 4 (Rear Left) */
-static const float DC_GAIN_MOT4 = 14.210f;
+static const float DC_GAIN_MOT4 = 14.510f;
 
 /* -------------------------------------------------------------------------- */
 /*                               CALIBRAZIONE PULSE                           */
@@ -102,58 +102,58 @@ static const float PULSE_REAL_MAX = 920.0f;
 /* --------------------------- FAST MODE GAINS ------------------------------ */
 
 /** Front Left (Motore 1) */
-#define FAST_MOT1_K_ERR        (0.1167f)
-#define FAST_MOT1_K_LAST_ERR  (-0.06302f)
+#define FAST_MOT1_K_ERR        (0.096956f)
+#define FAST_MOT1_K_LAST_ERR  (-0.035906f)
 
 /** Front Right (Motore 2) */
-#define FAST_MOT2_K_ERR        (0.1167f)
-#define FAST_MOT2_K_LAST_ERR  (-0.06302f)
+#define FAST_MOT2_K_ERR        (0.096956f)
+#define FAST_MOT2_K_LAST_ERR  (-0.049049f)
 
 /** Rear Right (Motore 3) */
-#define FAST_MOT3_K_ERR        (0.1167f)
+#define FAST_MOT3_K_ERR        (0.108317f)
 #define FAST_MOT3_K_LAST_ERR  (-0.06302f)
 
 /** Rear Left (Motore 4) */
-#define FAST_MOT4_K_ERR        (0.1167f)
+#define FAST_MOT4_K_ERR        (0.096956f)
 #define FAST_MOT4_K_LAST_ERR  (-0.06302f)
 
 
 /* --------------------------- MEDIUM MODE GAINS ------------------------------ */
 
 /** Front Left (Motore 1) */
-#define MEDIUM_MOT1_K_ERR        (0.002035f)
-#define MEDIUM_MOT1_K_LAST_ERR  (0.002035f)
+#define MEDIUM_MOT1_K_ERR        (0.00322340f)
+#define MEDIUM_MOT1_K_LAST_ERR  (0.00322340f)
 
 /** Front Right (Motore 2) */
-#define MEDIUM_MOT2_K_ERR        (0.002035f)
-#define MEDIUM_MOT2_K_LAST_ERR  (0.002035f)
+#define MEDIUM_MOT2_K_ERR        (0.0032856f)
+#define MEDIUM_MOT2_K_LAST_ERR  (0.0032856f)
 
 /** Rear Right (Motore 3) */
-#define MEDIUM_MOT3_K_ERR        (0.002035f)
-#define MEDIUM_MOT3_K_LAST_ERR  (0.002035f)
+#define MEDIUM_MOT3_K_ERR        (0.0032532f)
+#define MEDIUM_MOT3_K_LAST_ERR  (0.0032532f)
 
 /** Rear Left (Motore 4) */
-#define MEDIUM_MOT4_K_ERR        (0.002035f)
-#define MEDIUM_MOT4_K_LAST_ERR  (0.002035f)
+#define MEDIUM_MOT4_K_ERR        (0.0032173f)
+#define MEDIUM_MOT4_K_LAST_ERR  (0.0032173f)
 
 
 /* --------------------------- SLOW MODE GAINS ------------------------------ */
 
 /** Front Left (Motore 1) */
-#define SLOW_MOT1_K_ERR        (0.0008133f)
-#define SLOW_MOT1_K_LAST_ERR  (0.0008133f)
+#define SLOW_MOT1_K_ERR        (0.0008642f)
+#define SLOW_MOT1_K_LAST_ERR  (0.0008642f)
 
 /** Front Right (Motore 2) */
-#define SLOW_MOT2_K_ERR        (0.0008133f)
-#define SLOW_MOT2_K_LAST_ERR  (0.0008133f)
+#define SLOW_MOT2_K_ERR        (0.0008812f)
+#define SLOW_MOT2_K_LAST_ERR  (0.0008812f)
 
 /** Rear Right (Motore 3) */
-#define SLOW_MOT3_K_ERR        (0.0008133f)
-#define SLOW_MOT3_K_LAST_ERR  (0.0008133f)
+#define SLOW_MOT3_K_ERR        (0.0008812f)
+#define SLOW_MOT3_K_LAST_ERR  (0.0008812f)
 
 /** Rear Left (Motore 4) */
-#define SLOW_MOT4_K_ERR        (0.0008133f)
-#define SLOW_MOT4_K_LAST_ERR  (0.0008133f)
+#define SLOW_MOT4_K_ERR        (0.0008642f)
+#define SLOW_MOT4_K_LAST_ERR  (0.0008642f)
 
 
 #endif /* INC_CONSTANTS_MOTOR_CONSTANTS_H_ */
