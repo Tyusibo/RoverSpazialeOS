@@ -78,7 +78,7 @@ volatile uint32_t MissReadSonars = 0;
 /* USER CODE END Variables */
 /* Definitions for ReadController */
 osThreadId_t ReadControllerHandle;
-uint32_t ReadControllerBuffer[ 1024 ];
+uint32_t ReadControllerBuffer[ 2048 ];
 osStaticThreadDef_t ReadControllerControlBlock;
 const osThreadAttr_t ReadController_attributes = {
   .name = "ReadController",
@@ -90,7 +90,7 @@ const osThreadAttr_t ReadController_attributes = {
 };
 /* Definitions for ReadGyroscope */
 osThreadId_t ReadGyroscopeHandle;
-uint32_t ReadGyroscopeBuffer[ 1024 ];
+uint32_t ReadGyroscopeBuffer[ 2048 ];
 osStaticThreadDef_t ReadGyroscopeControlBlock;
 const osThreadAttr_t ReadGyroscope_attributes = {
   .name = "ReadGyroscope",
@@ -102,7 +102,7 @@ const osThreadAttr_t ReadGyroscope_attributes = {
 };
 /* Definitions for Supervisor */
 osThreadId_t SupervisorHandle;
-uint32_t SupervisorBuffer[ 1024 ];
+uint32_t SupervisorBuffer[ 2048 ];
 osStaticThreadDef_t SupervisorControlBlock;
 const osThreadAttr_t Supervisor_attributes = {
   .name = "Supervisor",
@@ -114,7 +114,7 @@ const osThreadAttr_t Supervisor_attributes = {
 };
 /* Definitions for ReadSonars */
 osThreadId_t ReadSonarsHandle;
-uint32_t ReadSonarsBuffer[ 1024 ];
+uint32_t ReadSonarsBuffer[ 2048 ];
 osStaticThreadDef_t ReadSonarsControlBlock;
 const osThreadAttr_t ReadSonars_attributes = {
   .name = "ReadSonars",
@@ -126,7 +126,7 @@ const osThreadAttr_t ReadSonars_attributes = {
 };
 /* Definitions for StartSegger */
 osThreadId_t StartSeggerHandle;
-uint32_t StartSeggerBuffer[ 128 ];
+uint32_t StartSeggerBuffer[ 2048 ];
 osStaticThreadDef_t StartSeggerControlBlock;
 const osThreadAttr_t StartSegger_attributes = {
   .name = "StartSegger",
