@@ -33,10 +33,10 @@
 #include "sonar_init.h"     // #include "HCSR04.h"
 #include "motors_init.h"
 /*
-#include "motors_control.h"
-#include "motor_constants.h"
-#include "regulator.h"
-*/
+ #include "motors_control.h"
+ #include "motor_constants.h"
+ #include "regulator.h"
+ */
 
 /* Utility */
 #include "DWT.h"
@@ -126,7 +126,7 @@ const osThreadAttr_t ReadSonars_attributes = {
 };
 /* Definitions for StartSegger */
 osThreadId_t StartSeggerHandle;
-uint32_t StartSeggerBuffer[ 2048 ];
+uint32_t StartSeggerBuffer[ 128 ];
 osStaticThreadDef_t StartSeggerControlBlock;
 const osThreadAttr_t StartSegger_attributes = {
   .name = "StartSegger",
@@ -135,6 +135,18 @@ const osThreadAttr_t StartSegger_attributes = {
   .cb_mem = &StartSeggerControlBlock,
   .cb_size = sizeof(StartSeggerControlBlock),
   .priority = (osPriority_t) osPriorityHigh1,
+};
+/* Definitions for Synchronization */
+osThreadId_t SynchronizationHandle;
+uint32_t SynchronizationBuffer[ 128 ];
+osStaticThreadDef_t SynchronizationControlBlock;
+const osThreadAttr_t Synchronization_attributes = {
+  .name = "Synchronization",
+  .stack_mem = &SynchronizationBuffer[0],
+  .stack_size = sizeof(SynchronizationBuffer),
+  .cb_mem = &SynchronizationControlBlock,
+  .cb_size = sizeof(SynchronizationControlBlock),
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for flagsOS */
 osEventFlagsId_t flagsOSHandle;
@@ -159,6 +171,7 @@ void StartReadGyroscope(void *argument);
 void StartSupervisor(void *argument);
 void StartReadSonars(void *argument);
 void StartSeggerTask(void *argument);
+void StartSynchronization(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -203,6 +216,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of StartSegger */
   StartSeggerHandle = osThreadNew(StartSeggerTask, NULL, &StartSegger_attributes);
+
+  /* creation of Synchronization */
+  SynchronizationHandle = osThreadNew(StartSynchronization, NULL, &Synchronization_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -405,7 +421,7 @@ void StartReadSonars(void *argument)
 		hcsr04_trigger(&sonarLeft);
 		hcsr04_trigger(&sonarFront);
 		hcsr04_trigger(&sonarRight);
-		
+
 		start_wait = osKernelGetTickCount();
 
 		while (1) {
@@ -428,13 +444,13 @@ void StartReadSonars(void *argument)
 		hcsr04_handle_reading(&sonarFront);
 		hcsr04_handle_reading(&sonarRight);
 
-		Board2_U.sonar = (BUS_Sonar){ sonarLeft.distance, sonarFront.distance, sonarRight.distance };
+		Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,
+						sonarRight.distance };
 
 #if PRINT_TASK
         printSonar(&Board2_U.sonar);
 #endif
-		
-		
+
 		periodic_wait(&next, T, &MissReadSonars);
 
 #else
@@ -466,10 +482,31 @@ void StartSeggerTask(void *argument)
 	for (;;) {
 		break;
 	}
-	osEventFlagsSet(flagsOSHandle, SYNCHRONIZATION_FLAG);
 	osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartSeggerTask */
+}
+
+/* USER CODE BEGIN Header_StartSynchronization */
+/**
+ * @brief Function implementing the Synchronization thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartSynchronization */
+void StartSynchronization(void *argument)
+{
+  /* USER CODE BEGIN StartSynchronization */
+
+	osEventFlagsSet(flagsOSHandle, SYNCHRONIZATION_FLAG);
+
+	/* Infinite loop */
+	for (;;) {
+		break;
+	}
+
+	osThreadTerminate(osThreadGetId());
+  /* USER CODE END StartSynchronization */
 }
 
 /* Private application code --------------------------------------------------*/
@@ -505,29 +542,26 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 	//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
 }
 
-static void waitForSynchonization(void)
-{
-    uint32_t flags = osEventFlagsWait(
-        flagsOSHandle,
-        SYNCHRONIZATION_FLAG,
-        osFlagsWaitAny | osFlagsNoClear,
-        osWaitForever
-    );
+static void waitForSynchonization(void) {
+	uint32_t flags = osEventFlagsWait(flagsOSHandle,
+	SYNCHRONIZATION_FLAG,
+	osFlagsWaitAny | osFlagsNoClear,
+	osWaitForever);
 
-    /* Se osEventFlagsWait fallisce ritorna un codice errore (valore negativo) */
-    if ((int32_t)flags < 0) {
-        osThreadTerminate(osThreadGetId());
-        return;
-    }
+	/* Se osEventFlagsWait fallisce ritorna un codice errore (valore negativo) */
+	if ((int32_t) flags < 0) {
+		osThreadTerminate(osThreadGetId());
+		return;
+	}
 
-    /* Se per qualche motivo il flag non è presente (non dovrebbe accadere) */
-    if ((flags & SYNCHRONIZATION_FLAG) == 0U) {
-        osThreadTerminate(osThreadGetId());
-        return;
-    }
+	/* Se per qualche motivo il flag non è presente (non dovrebbe accadere) */
+	if ((flags & SYNCHRONIZATION_FLAG) == 0U) {
+		osThreadTerminate(osThreadGetId());
+		return;
+	}
 
-    /* OK */
-    return;
+	/* OK */
+	return;
 }
 
 /* USER CODE END Application */

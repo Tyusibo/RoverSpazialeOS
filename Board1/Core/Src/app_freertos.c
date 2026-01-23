@@ -136,7 +136,7 @@ const osThreadAttr_t ReadBattery_attributes = {
 };
 /* Definitions for StartSegger */
 osThreadId_t StartSeggerHandle;
-uint32_t StartSeggerBuffer[ 2048 ];
+uint32_t StartSeggerBuffer[ 128 ];
 osStaticThreadDef_t StartSeggerControlBlock;
 const osThreadAttr_t StartSegger_attributes = {
   .name = "StartSegger",
@@ -145,6 +145,18 @@ const osThreadAttr_t StartSegger_attributes = {
   .cb_mem = &StartSeggerControlBlock,
   .cb_size = sizeof(StartSeggerControlBlock),
   .priority = (osPriority_t) osPriorityHigh1,
+};
+/* Definitions for Synchronization */
+osThreadId_t SynchronizationHandle;
+uint32_t SynchronizationBuffer[ 128 ];
+osStaticThreadDef_t SynchronizationControlBlock;
+const osThreadAttr_t Synchronization_attributes = {
+  .name = "Synchronization",
+  .stack_mem = &SynchronizationBuffer[0],
+  .stack_size = sizeof(SynchronizationBuffer),
+  .cb_mem = &SynchronizationControlBlock,
+  .cb_size = sizeof(SynchronizationControlBlock),
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for toggleLeftRedLed */
 osTimerId_t toggleLeftRedLedHandle;
@@ -176,7 +188,8 @@ const osEventFlagsAttr_t flagsOS_attributes = {
 
 /* SCHEDULING FUNCTIONS */
 static uint32_t ms_to_ticks(uint32_t ms);
-static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatile uint32_t *miss_counter);
+static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
+		volatile uint32_t *miss_counter);
 static void waitForSynchonization(void);
 
 /* DECISION FUNCTIONS */
@@ -191,6 +204,7 @@ void StartSupervisor(void *argument);
 void StartReadTemperature(void *argument);
 void StartReadBattery(void *argument);
 void StartSeggerTask(void *argument);
+void StartSynchronization(void *argument);
 void callbackToggleLeftRedLed(void *argument);
 void callbackToggleRightRedLed(void *argument);
 
@@ -245,6 +259,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of StartSegger */
   StartSeggerHandle = osThreadNew(StartSeggerTask, NULL, &StartSegger_attributes);
 
+  /* creation of Synchronization */
+  SynchronizationHandle = osThreadNew(StartSynchronization, NULL, &Synchronization_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -273,31 +290,30 @@ void StartPID(void *argument)
 
 	waitForSynchonization();
 
-    const uint32_t T = ms_to_ticks(T_PID);
-    uint32_t next = osKernelGetTickCount();
+	const uint32_t T = ms_to_ticks(T_PID);
+	uint32_t next = osKernelGetTickCount();
 
-    float current_speed[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+	float current_speed[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-    /* Infinite loop */
-    for (;;) {
+	/* Infinite loop */
+	for (;;) {
 
 #if REAL_TASK
 
-    	/* READ ENCODERS AND UPDATE SPEEDS */
-        for (int i = 0; i < 4; i++) {
-            Encoder_Update(&encoders[i]);
-            current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
-        }
+		/* READ ENCODERS AND UPDATE SPEEDS */
+		for (int i = 0; i < 4; i++) {
+			Encoder_Update(&encoders[i]);
+			current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+		}
 
-        /* UPDATE SIMULINK MODEL */
-        Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
-                        current_speed[2], current_speed[3] };
+		/* UPDATE SIMULINK MODEL */
+		Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
+						current_speed[2], current_speed[3] };
 
-        /* EXECUTE MOTOR CONTROL */
-        for (int i = 0; i < 4; i++) {
-            MotorControl_Update(&motors[i], current_speed[i]);
-        }
-
+		/* EXECUTE MOTOR CONTROL */
+		for (int i = 0; i < 4; i++) {
+			MotorControl_Update(&motors[i], current_speed[i]);
+		}
 
 #if TASK_PRINT
         printMotorSpeeds(&Board1_U.speed);
@@ -308,10 +324,10 @@ void StartPID(void *argument)
         HAL_Delay(C_PID);
 #endif
 
-        periodic_wait(&next, T, &MissPID);
-    }
+		periodic_wait(&next, T, &MissPID);
+	}
 
-    osThreadTerminate(osThreadGetId());
+	osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartPID */
 }
@@ -399,13 +415,14 @@ void StartReadTemperature(void *argument)
 
 	waitForSynchonization();
 
-    const uint32_t T = ms_to_ticks(T_TEMPERATURE);
-    uint32_t next = osKernelGetTickCount();
+	const uint32_t T = ms_to_ticks(T_TEMPERATURE);
+	uint32_t next = osKernelGetTickCount();
 
-    /* Infinite loop */
-    for (;;) {
+	/* Infinite loop */
+	for (;;) {
 #if REAL_TASK
-        Board1_U.temperature = (Temperature) temp_ky028_read_temperature(&temp_sensor);
+		Board1_U.temperature = (Temperature) temp_ky028_read_temperature(
+				&temp_sensor);
 
 #if TASK_PRINT
         printTemperature((float)Board1_U.temperature);
@@ -416,10 +433,10 @@ void StartReadTemperature(void *argument)
         HAL_Delay(C_TEMPERATURE);
 #endif
 
-        periodic_wait(&next, T, &MissReadTemperature);
-    }
+		periodic_wait(&next, T, &MissReadTemperature);
+	}
 
-    osThreadTerminate(osThreadGetId());
+	osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartReadTemperature */
 }
@@ -437,16 +454,16 @@ void StartReadBattery(void *argument)
 
 	waitForSynchonization();
 
-    const uint32_t T = ms_to_ticks(T_BATTERY);
-    uint32_t next = osKernelGetTickCount();
+	const uint32_t T = ms_to_ticks(T_BATTERY);
+	uint32_t next = osKernelGetTickCount();
 
-    /* Infinite loop */
-    for (;;) {
+	/* Infinite loop */
+	for (;;) {
 
 #if REAL_TASK
 
-        Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
-                battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
+		Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
+				battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
 
 #if TASK_PRINT
         printBattery((float)Board1_U.batteryLevel);
@@ -457,44 +474,64 @@ void StartReadBattery(void *argument)
         HAL_Delay(C_BATTERY);
 #endif
 
-        periodic_wait(&next, T, &MissReadBattery);
-    }
+		periodic_wait(&next, T, &MissReadBattery);
+	}
 
-    osThreadTerminate(osThreadGetId());
+	osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartReadBattery */
 }
 
 /* USER CODE BEGIN Header_StartSeggerTask */
 /**
-* @brief Function implementing the StartSegger thread.
-* @param argument: Not used
-* @retval None
-*/
+ * @brief Function implementing the StartSegger thread.
+ * @param argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartSeggerTask */
 void StartSeggerTask(void *argument)
 {
   /* USER CODE BEGIN StartSeggerTask */
-  #if SEGGER_BUILD
+#if SEGGER_BUILD
 	  SEGGER_SYSVIEW_Conf();
 	  SEGGER_SYSVIEW_Start();
   #endif
-  /* Infinite loop */
-  for(;;)
-  {
-    break;
-  }
-  osEventFlagsSet(flagsOSHandle, SYNCHRONIZATION_FLAG);
-  osThreadTerminate(osThreadGetId());
+	/* Infinite loop */
+	for (;;) {
+		break;
+	}
+	osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartSeggerTask */
+}
+
+/* USER CODE BEGIN Header_StartSynchronization */
+/**
+ * @brief Function implementing the Synchronization thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartSynchronization */
+void StartSynchronization(void *argument)
+{
+  /* USER CODE BEGIN StartSynchronization */
+	osEventFlagsSet(flagsOSHandle, SYNCHRONIZATION_FLAG);
+
+	/* Infinite loop */
+	for (;;) {
+		break;
+	}
+
+	osThreadTerminate(osThreadGetId());
+
+  /* USER CODE END StartSynchronization */
 }
 
 /* callbackToggleLeftRedLed function */
 void callbackToggleLeftRedLed(void *argument)
 {
   /* USER CODE BEGIN callbackToggleLeftRedLed */
-	  A4WD3_Red_Toggle(&led_left);
+	A4WD3_Red_Toggle(&led_left);
   /* USER CODE END callbackToggleLeftRedLed */
 }
 
@@ -502,7 +539,7 @@ void callbackToggleLeftRedLed(void *argument)
 void callbackToggleRightRedLed(void *argument)
 {
   /* USER CODE BEGIN callbackToggleRightRedLed */
- 	  A4WD3_Red_Toggle(&led_right);
+	A4WD3_Red_Toggle(&led_right);
   /* USER CODE END callbackToggleRightRedLed */
 }
 
@@ -516,7 +553,8 @@ static uint32_t ms_to_ticks(uint32_t ms) {
 	return (ms * hz + 999u) / 1000u;
 }
 
-static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatile uint32_t *miss_counter) {
+static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
+		volatile uint32_t *miss_counter) {
 	uint32_t now = osKernelGetTickCount();
 
 	/* Calcola il prossimo rilascio */
@@ -528,12 +566,12 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatil
 //		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
 //		return 1;
 //	}
-	if ((int32_t)(now - *next_release) > 0) {
-	    *next_release = now + period_ticks;
-        if(miss_counter != NULL) {
-            (*miss_counter)++;
-        }
-	    return;
+	if ((int32_t) (now - *next_release) > 0) {
+		*next_release = now + period_ticks;
+		if (miss_counter != NULL) {
+			(*miss_counter)++;
+		}
+		return;
 	}
 
 	/* Sleep assoluta fino al prossimo periodo */
@@ -541,29 +579,26 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks, volatil
 	//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
 }
 
-static void waitForSynchonization(void)
-{
-    uint32_t flags = osEventFlagsWait(
-        flagsOSHandle,
-        SYNCHRONIZATION_FLAG,
-        osFlagsWaitAny | osFlagsNoClear,
-        osWaitForever
-    );
+static void waitForSynchonization(void) {
+	uint32_t flags = osEventFlagsWait(flagsOSHandle,
+	SYNCHRONIZATION_FLAG,
+	osFlagsWaitAny | osFlagsNoClear,
+	osWaitForever);
 
-    /* Se osEventFlagsWait fallisce ritorna un codice errore (valore negativo) */
-    if ((int32_t)flags < 0) {
-        osThreadTerminate(osThreadGetId());
-        return;
-    }
+	/* Se osEventFlagsWait fallisce ritorna un codice errore (valore negativo) */
+	if ((int32_t) flags < 0) {
+		osThreadTerminate(osThreadGetId());
+		return;
+	}
 
-    /* Se per qualche motivo il flag non è presente (non dovrebbe accadere) */
-    if ((flags & SYNCHRONIZATION_FLAG) == 0U) {
-        osThreadTerminate(osThreadGetId());
-        return;
-    }
+	/* Se per qualche motivo il flag non è presente (non dovrebbe accadere) */
+	if ((flags & SYNCHRONIZATION_FLAG) == 0U) {
+		osThreadTerminate(osThreadGetId());
+		return;
+	}
 
-    /* OK */
-    return;
+	/* OK */
+	return;
 }
 
 /* DECISION FUNCTIONS */
@@ -573,42 +608,39 @@ static inline void actuate_white_leds(void) {
 	A4WD3_White_Set(&led_right, Board1_B.board1Decision.leds.white.right);
 }
 
+static inline void change_set_point(void) {
+	const float left = Board1_B.board1Decision.setPoint.leftAxis;
+	const float right = Board1_B.board1Decision.setPoint.rightAxis;
 
-static inline void change_set_point(void)
-{
-    const float left  = Board1_B.board1Decision.setPoint.leftAxis;
-    const float right = Board1_B.board1Decision.setPoint.rightAxis;
+	MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_LEFT], left);
+	MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_LEFT], left);
 
-    MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_LEFT],  left);
-    MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_LEFT],   left);
-
-    MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_RIGHT], right);
-    MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_RIGHT],  right);
+	MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_RIGHT], right);
+	MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_RIGHT], right);
 }
 
-static inline void change_regulator(void)
-{
-    const uint8_t action = Board1_B.board1Decision.roverAction;
+static inline void change_regulator(void) {
+	const uint8_t action = Board1_B.board1Decision.roverAction;
 
-    switch (action) {
-        case RA_BRAKING_SMOOTH:
-            for (int i = 0; i < N_MOTORS; i++) {
-                MotorControl_SetRegulator(&motors[i], &pid_slow[i]);
-            }
-            break;
+	switch (action) {
+	case RA_BRAKING_SMOOTH:
+		for (int i = 0; i < N_MOTORS; i++) {
+			MotorControl_SetRegulator(&motors[i], &pid_slow[i]);
+		}
+		break;
 
-        case RA_BRAKING_MODERATE:
-            for (int i = 0; i < N_MOTORS; i++) {
-                MotorControl_SetRegulator(&motors[i], &pid_medium[i]);
-            }
-            break;
+	case RA_BRAKING_MODERATE:
+		for (int i = 0; i < N_MOTORS; i++) {
+			MotorControl_SetRegulator(&motors[i], &pid_medium[i]);
+		}
+		break;
 
-        default:
-            for (int i = 0; i < N_MOTORS; i++) {
-                MotorControl_SetRegulator(&motors[i], &pid_fast[i]);
-            }
-            break;
-    }
+	default:
+		for (int i = 0; i < N_MOTORS; i++) {
+			MotorControl_SetRegulator(&motors[i], &pid_fast[i]);
+		}
+		break;
+	}
 }
 /* USER CODE END Application */
 
