@@ -69,8 +69,6 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define TIMER_SW_PERIOD 500U  // in ms
-
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -90,7 +88,7 @@ volatile uint32_t MissReadBattery = 0;
 /* USER CODE END Variables */
 /* Definitions for PID */
 osThreadId_t PIDHandle;
-uint32_t PIDBuffer[ 1024 ];
+uint32_t PIDBuffer[ 2048 ];
 osStaticThreadDef_t PIDControlBlock;
 const osThreadAttr_t PID_attributes = {
   .name = "PID",
@@ -102,7 +100,7 @@ const osThreadAttr_t PID_attributes = {
 };
 /* Definitions for Supervisor */
 osThreadId_t SupervisorHandle;
-uint32_t SupervisorBuffer[ 1024 ];
+uint32_t SupervisorBuffer[ 2048 ];
 osStaticThreadDef_t SupervisorControlBlock;
 const osThreadAttr_t Supervisor_attributes = {
   .name = "Supervisor",
@@ -114,7 +112,7 @@ const osThreadAttr_t Supervisor_attributes = {
 };
 /* Definitions for ReadTemperature */
 osThreadId_t ReadTemperatureHandle;
-uint32_t ReadTemperatureBuffer[ 1024 ];
+uint32_t ReadTemperatureBuffer[ 2048 ];
 osStaticThreadDef_t ReadTemperatureControlBlock;
 const osThreadAttr_t ReadTemperature_attributes = {
   .name = "ReadTemperature",
@@ -126,7 +124,7 @@ const osThreadAttr_t ReadTemperature_attributes = {
 };
 /* Definitions for ReadBattery */
 osThreadId_t ReadBatteryHandle;
-uint32_t ReadBatteryBuffer[ 1024 ];
+uint32_t ReadBatteryBuffer[ 2048 ];
 osStaticThreadDef_t ReadBatteryControlBlock;
 const osThreadAttr_t ReadBattery_attributes = {
   .name = "ReadBattery",
@@ -138,7 +136,7 @@ const osThreadAttr_t ReadBattery_attributes = {
 };
 /* Definitions for StartSegger */
 osThreadId_t StartSeggerHandle;
-uint32_t StartSeggerBuffer[ 128 ];
+uint32_t StartSeggerBuffer[ 2048 ];
 osStaticThreadDef_t StartSeggerControlBlock;
 const osThreadAttr_t StartSegger_attributes = {
   .name = "StartSegger",
@@ -183,7 +181,6 @@ static void waitForSynchonization(void);
 
 /* DECISION FUNCTIONS */
 static inline void actuate_white_leds(void);
-static inline void actuate_red_leds(void);
 static inline void change_set_point(void);
 static inline void change_regulator(void);
 
@@ -332,7 +329,6 @@ void StartSupervisor(void *argument)
 	uint32_t next = osKernelGetTickCount();
 	uint32_t wait_start;
 
-
 	Board1_U.speed = (BUS_Speed ) { 0.0f, 0.0f, 0.0f, 0.0f };
 	/* Infinite loop */
 	for (;;) {
@@ -363,7 +359,7 @@ void StartSupervisor(void *argument)
 			cycle_count = 0;
 			//printMsg("Supervisor Cycle End\r\n");ù
 			printGlobalState(&Board1_B.board1GlobalState);
-			printDecision(&Board1_DW.board1Decision);
+			printDecision(&Board1_B.board1Decision);
 //			printMsg("---- Supervisor Stats ----\r\n");
 //            printLabel("Miss PID");
 //            printInt(MissPID);
@@ -568,46 +564,15 @@ static void waitForSynchonization(void)
 /* DECISION FUNCTIONS */
 
 static inline void actuate_white_leds(void) {
-	A4WD3_White_Set(&led_left, Board1_DW.board1Decision.leds.white.left);
-	A4WD3_White_Set(&led_right, Board1_DW.board1Decision.leds.white.right);
-}
-
-// includo i bool
-#include <stdbool.h>
-
-static inline void actuate_red_leds(void)
-{
-    const bool leftBlink  = (Board1_DW.board1Decision.leds.red.left  == RED_BLINKING);
-    const bool rightBlink = (Board1_DW.board1Decision.leds.red.right == RED_BLINKING);
-
-    // LEFT
-    if (leftBlink) {
-        if (!osTimerIsRunning(toggleLeftRedLedHandle)) {
-            A4WD3_Red_On(&led_left); // opzionale: fase iniziale
-            osTimerStart(toggleLeftRedLedHandle, TIMER_SW_PERIOD);
-        }
-    } else {
-        osTimerStop(toggleLeftRedLedHandle);
-        A4WD3_Red_Set(&led_left, Board1_DW.board1Decision.leds.red.left);
-    }
-
-    // RIGHT
-    if (rightBlink) {
-        if (!osTimerIsRunning(toggleRightRedLedHandle)) {
-            A4WD3_Red_On(&led_right); // opzionale
-            osTimerStart(toggleRightRedLedHandle, TIMER_SW_PERIOD);
-        }
-    } else {
-        osTimerStop(toggleRightRedLedHandle);
-        A4WD3_Red_Set(&led_right, Board1_DW.board1Decision.leds.red.right);
-    }
+	A4WD3_White_Set(&led_left, Board1_B.board1Decision.leds.white.left);
+	A4WD3_White_Set(&led_right, Board1_B.board1Decision.leds.white.right);
 }
 
 
 static inline void change_set_point(void)
 {
-    const float left  = Board1_DW.board1Decision.setPoint.leftAxis;
-    const float right = Board1_DW.board1Decision.setPoint.rightAxis;
+    const float left  = Board1_B.board1Decision.setPoint.leftAxis;
+    const float right = Board1_B.board1Decision.setPoint.rightAxis;
 
     MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_LEFT],  left);
     MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_LEFT],   left);
@@ -618,7 +583,7 @@ static inline void change_set_point(void)
 
 static inline void change_regulator(void)
 {
-    const uint8_t action = Board1_DW.board1Decision.roverAction;
+    const uint8_t action = Board1_B.board1Decision.roverAction;
 
     switch (action) {
         case RA_BRAKING_SMOOTH:
