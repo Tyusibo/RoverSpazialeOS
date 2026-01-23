@@ -1,62 +1,79 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file DWT.c
+ * @brief Data Watchpoint and Trace (DWT) cycle counter implementation.
+ */
+
 #include "DWT.h"
 #include "print.h"
 
-/*
- * ---------------------------------------------------------------------------
- * DWT_Init
- * ---------------------------------------------------------------------------
- * Abilita il contatore di cicli del core Cortex-M.
+/**
+ * @brief Enables the Cortex-M core cycle counter.
  *
- * Passi:
- * 1. Abilita il tracing (TRCENA) nel CoreDebug
- * 2. Azzera il contatore di cicli
- * 3. Abilita il cycle counter nel DWT
+ * Steps:
+ * 1. Enable tracing (TRCENA) in CoreDebug
+ * 2. Reset the cycle counter
+ * 3. Enable the cycle counter in DWT
  *
- * Questa funzione va chiamata una sola volta all'avvio del sistema.
+ * This function must be called once at system startup.
  */
 void DWT_Init(void)
 {
-    /* Abilita accesso a DWT e ITM */
+    /* Enable access to DWT and ITM */
     CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
 
-    /* Reset del contatore di cicli */
+    /* Reset cycle counter */
     DWT->CYCCNT = 0;
 
-    /* Abilita il contatore di cicli */
+    /* Enable cycle counter */
     DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
-/*
- * ---------------------------------------------------------------------------
- * DWT_CyclesToUs_u32
- * ---------------------------------------------------------------------------
- * Converte un numero di cicli CPU in microsecondi.
+/**
+ * @brief Converts CPU cycles to microseconds.
  *
  * Formula:
  *   us = cycles * 1e6 / f_cpu
  *
- * - f_cpu è la frequenza HCLK in Hz
- * - usa uint64_t per evitare overflow
- * - aggiunge f_cpu/2 per arrotondamento corretto
+ * - f_cpu is the HCLK frequency in Hz
+ * - Uses uint64_t to avoid overflow
+ * - Adds f_cpu/2 for correct rounding
+ *
+ * @param cycles Number of CPU cycles.
+ * @return Time in microseconds.
  */
 uint32_t DWT_CyclesToUs_u32(uint32_t cycles)
 {
-    uint32_t f_cpu = HAL_RCC_GetHCLKFreq(); // Frequenza CPU (Hz)
+    uint32_t f_cpu = HAL_RCC_GetHCLKFreq(); // CPU Frequency (Hz)
 
     uint64_t num = (uint64_t)cycles * 1000000ULL + (f_cpu / 2U);
     return (uint32_t)(num / (uint64_t)f_cpu);
 }
 
-/*
- * ---------------------------------------------------------------------------
- * DWT_PrintCyclesAndUs
- * ---------------------------------------------------------------------------
- * Stampa il numero di cicli misurati e il tempo equivalente in microsecondi.
+/**
+ * @brief Prints the measured cycle count and equivalent time in microseconds.
  *
- * Formato di output:
- *   <tag> Cy=<cicli> (<microsecondi> us)
+ * Output format:
+ *   <tag> Cy=<cycles> (<microseconds> us)
  *
- * Se tag è NULL o stringa vuota, viene omesso.
+ * If tag is NULL or empty string, it is omitted.
+ *
+ * @param tag String tag to identify the measurement.
+ * @param cycles Number of cycles measured.
  */
 void DWT_PrintCyclesAndUs(const char *tag, uint32_t cycles)
 {
