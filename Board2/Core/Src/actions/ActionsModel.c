@@ -37,7 +37,7 @@
 #define ActionsModel_IN_NotTracking    ((uint8_T)1U)
 #define ActionsModel_IN_RightSideClear ((uint8_T)3U)
 #define ActionsModel_IN_Tracking       ((uint8_T)2U)
-#define ActionsModel_OBSTACLE_DETECTED ((uint16_T)300U)
+#define ActionsModel_OBSTACLE_DETECTED ((uint16_T)200U)
 #define ActionsModel_OFF               ((uint8_T)0U)
 #define ActionsModel_ON                ((uint8_T)1U)
 
@@ -259,7 +259,7 @@ void ActionsModel_MovingObstacles(uint8_T rtu_set, const BUS_Sonar *rtu_sonar,
           *rty_statusLeftObstacle = OBSTACLE_MOVING;
           *rty_leftLed = RED_OFF;
 
-          /*  Lo stato è bloccante in quanto Model Action provvederà a resettarlo */
+          /*  Lo stato ï¿½ bloccante in quanto Model Action provvederï¿½ a resettarlo */
         } else {
           /*  [sonar.left <= OBSTACLE_DETECTED] */
           localDW->is_LeftSide = Act_IN_PossibleStartingFromLeft;
@@ -288,7 +288,7 @@ void ActionsModel_MovingObstacles(uint8_T rtu_set, const BUS_Sonar *rtu_sonar,
         *rty_statusLeftObstacle = OBSTACLE_MOVING;
         *rty_leftLed = RED_OFF;
 
-        /*  Lo stato è bloccante in quanto Model Action provvederà a resettarlo */
+        /*  Lo stato ï¿½ bloccante in quanto Model Action provvederï¿½ a resettarlo */
       } else if (rtu_sonar->front > ActionsModel_OBSTACLE_DETECTED) {
         if (rtu_sonar->left <= ActionsModel_OBSTACLE_DETECTED) {
           localDW->is_LeftSide = ActionsMode_IN_LeftSideDetected;
@@ -318,7 +318,7 @@ void ActionsModel_MovingObstacles(uint8_T rtu_set, const BUS_Sonar *rtu_sonar,
         *rty_statusRightObstacle = OBSTACLE_MOVING;
         *rty_rightLed = RED_OFF;
 
-        /*  Lo stato è bloccante in quanto Model Action provvederà a resettarlo */
+        /*  Lo stato ï¿½ bloccante in quanto Model Action provvederï¿½ a resettarlo */
       } else if (rtu_sonar->front > ActionsModel_OBSTACLE_DETECTED) {
         if (rtu_sonar->right <= ActionsModel_OBSTACLE_DETECTED) {
           localDW->is_RightSide = ActionsMod_IN_RightSideDetected;
@@ -359,7 +359,7 @@ void ActionsModel_MovingObstacles(uint8_T rtu_set, const BUS_Sonar *rtu_sonar,
           *rty_statusRightObstacle = OBSTACLE_MOVING;
           *rty_rightLed = RED_OFF;
 
-          /*  Lo stato è bloccante in quanto Model Action provvederà a resettarlo */
+          /*  Lo stato ï¿½ bloccante in quanto Model Action provvederï¿½ a resettarlo */
         } else {
           /*  [sonar.right <= OBSTACLE_DETECTED] */
           localDW->is_RightSide = Ac_IN_PossibleStartingFromRight;
@@ -509,7 +509,7 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
       ActionsModel_DW.is_BW_Forward = ActionsMod_IN_NO_ACTIVE_CHILD_j;
       ActionsModel_DW.exit_port_index_BW_Forward = 2U;
     } else if (*rty_safeAction == SA_NONE) {
-      /* l'utente vorrebbe continuare ad andare avanti e non c'è più l'ostacolo */
+      /* l'utente vorrebbe continuare ad andare avanti e non c'ï¿½ piï¿½ l'ostacolo */
       ActionsModel_DW.is_BW_Forward = ActionsMode_IN_BW_FW_UserAction;
 
       /*  Start tracking */
@@ -629,7 +629,7 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
         ActionsModel_DW.is_BW_Forward = ActionsMod_IN_NO_ACTIVE_CHILD_j;
         ActionsModel_DW.exit_port_index_BW_Forward = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe continuare ad andare avanti e non c'è più l'ostacolo */
+        /* l'utente vorrebbe continuare ad andare avanti e non c'ï¿½ piï¿½ l'ostacolo */
         ActionsModel_DW.is_BW_Forward = ActionsMode_IN_BW_FW_UserAction;
 
         /*  Start tracking */
@@ -753,7 +753,7 @@ static void ActionsModel_BW_RR_RotateRight(const ENUM_UserAction
       ActionsModel_DW.is_BW_RR_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_j;
       ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 2U;
     } else if (*rty_safeAction == SA_NONE) {
-      /* l'utente vorrebbe continuare a ruotare a DX e non c'è più l'ostacolo */
+      /* l'utente vorrebbe continuare a ruotare a DX e non c'ï¿½ piï¿½ l'ostacolo */
       ActionsModel_DW.is_BW_RR_RotateRight = ActionsMode_IN_BW_RR_UserAction;
 
       /*  Degrees */
@@ -786,7 +786,7 @@ static void ActionsModel_BW_RR_RotateRight(const ENUM_UserAction
         ActionsModel_DW.is_BW_RR_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_j;
         ActionsModel_DW.exit_port_index_BW_RR_RotateRig = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe continuare a ruotare a DX e non c'è più l'ostacolo */
+        /* l'utente vorrebbe continuare a ruotare a DX e non c'ï¿½ piï¿½ l'ostacolo */
         ActionsModel_DW.is_BW_RR_RotateRight = ActionsMode_IN_BW_RR_UserAction;
 
         /*  Degrees */
@@ -894,7 +894,7 @@ static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
       ActionsModel_DW.is_BW_RotateLeft = ActionsMod_IN_NO_ACTIVE_CHILD_j;
       ActionsModel_DW.exit_port_index_BW_RotateLeft = 2U;
     } else if (*rty_safeAction == SA_NONE) {
-      /* l'utente vorrebbe ruotare a SX e non c'è più l'ostacolo */
+      /* l'utente vorrebbe ruotare a SX e non c'ï¿½ piï¿½ l'ostacolo */
       ActionsModel_DW.is_BW_RotateLeft = ActionsMode_IN_BW_RL_UserAction;
 
       /*  Degrees */
@@ -927,7 +927,7 @@ static void ActionsModel_BW_RotateLeft(const ENUM_UserAction
         ActionsModel_DW.is_BW_RotateLeft = ActionsMod_IN_NO_ACTIVE_CHILD_j;
         ActionsModel_DW.exit_port_index_BW_RotateLeft = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe ruotare a SX e non c'è più l'ostacolo */
+        /* l'utente vorrebbe ruotare a SX e non c'ï¿½ piï¿½ l'ostacolo */
         ActionsModel_DW.is_BW_RotateLeft = ActionsMode_IN_BW_RL_UserAction;
 
         /*  Degrees */
@@ -1457,7 +1457,7 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
       ActionsModel_DW.is_Forward = ActionsMod_IN_NO_ACTIVE_CHILD_j;
       ActionsModel_DW.exit_port_index_Forward = 2U;
     } else if (*rty_safeAction == SA_NONE) {
-      /* l'utente vorrebbe continuare ad andare avanti e non c'è più l'ostacolo */
+      /* l'utente vorrebbe continuare ad andare avanti e non c'ï¿½ piï¿½ l'ostacolo */
       ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
 
       /*  Start tracking */
@@ -1628,7 +1628,7 @@ static void ActionsModel_Forward(const ENUM_UserAction *rtu_currentUserAction,
         ActionsModel_DW.is_Forward = ActionsMod_IN_NO_ACTIVE_CHILD_j;
         ActionsModel_DW.exit_port_index_Forward = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe continuare ad andare avanti e non c'è più l'ostacolo */
+        /* l'utente vorrebbe continuare ad andare avanti e non c'ï¿½ piï¿½ l'ostacolo */
         ActionsModel_DW.is_Forward = ActionsModel_IN_FW_UserAction;
 
         /*  Start tracking */
@@ -1875,7 +1875,7 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
         ActionsModel_DW.is_RotateLeft = ActionsMod_IN_NO_ACTIVE_CHILD_j;
         ActionsModel_DW.exit_port_index_RotateLeft = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe continuare a ruotare a SX e non c'è più l'ostacolo */
+        /* l'utente vorrebbe continuare a ruotare a SX e non c'ï¿½ piï¿½ l'ostacolo */
         ActionsModel_DW.is_RL_RotateLeft = ActionsModel_IN_RL_UserAction;
         *rty_roverAction = RA_ROTATE_LEFT;
 
@@ -1916,7 +1916,7 @@ static void ActionsModel_RotateLeft(const ENUM_UserAction *rtu_currentUserAction
           ActionsModel_DW.is_RotateLeft = ActionsMod_IN_NO_ACTIVE_CHILD_j;
           ActionsModel_DW.exit_port_index_RotateLeft = 2U;
         } else if (*rty_safeAction == SA_NONE) {
-          /* l'utente vorrebbe continuare a ruotare a SX e non c'è più l'ostacolo */
+          /* l'utente vorrebbe continuare a ruotare a SX e non c'ï¿½ piï¿½ l'ostacolo */
           ActionsModel_DW.is_RL_RotateLeft = ActionsModel_IN_RL_UserAction;
           *rty_roverAction = RA_ROTATE_LEFT;
 
@@ -2168,7 +2168,7 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
         ActionsModel_DW.is_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_j;
         ActionsModel_DW.exit_port_index_RotateRight = 2U;
       } else if (*rty_safeAction == SA_NONE) {
-        /* l'utente vorrebbe continuare a ruotare a DX e non c'è più l'ostacolo */
+        /* l'utente vorrebbe continuare a ruotare a DX e non c'ï¿½ piï¿½ l'ostacolo */
         ActionsModel_DW.is_RR_RotateRight = ActionsModel_IN_RR_UserAction;
         *rty_roverAction = RA_ROTATE_RIGHT;
 
@@ -2209,7 +2209,7 @@ static void ActionsModel_RotateRight(const ENUM_UserAction
           ActionsModel_DW.is_RotateRight = ActionsMod_IN_NO_ACTIVE_CHILD_j;
           ActionsModel_DW.exit_port_index_RotateRight = 2U;
         } else if (*rty_safeAction == SA_NONE) {
-          /* l'utente vorrebbe continuare a ruotare a DX e non c'è più l'ostacolo */
+          /* l'utente vorrebbe continuare a ruotare a DX e non c'ï¿½ piï¿½ l'ostacolo */
           ActionsModel_DW.is_RR_RotateRight = ActionsModel_IN_RR_UserAction;
           *rty_roverAction = RA_ROTATE_RIGHT;
 
