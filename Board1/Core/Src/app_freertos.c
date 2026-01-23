@@ -285,14 +285,22 @@ void StartPID(void *argument)
     /* Infinite loop */
     for (;;) {
 #if REAL_TASK
+
+    	/* READ ENCODERS AND UPDATE SPEEDS */
         for (int i = 0; i < 4; i++) {
             Encoder_Update(&encoders[i]);
             current_speed[i] = Encoder_GetSpeedRPM(&encoders[i]);
+        }
+
+        /* UPDATE SIMULINK MODEL */
+        Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
+                        current_speed[2], current_speed[3] };
+
+        /* EXECUTE MOTOR CONTROL */
+        for (int i = 0; i < 4; i++) {
             MotorControl_Update(&motors[i], current_speed[i]);
         }
 
-        Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
-                        current_speed[2], current_speed[3] };
 
 #if TASK_PRINT
         printMotorSpeeds(&Board1_U.speed);
@@ -345,7 +353,6 @@ void StartSupervisor(void *argument)
 
 		/* FINALIZZAZIONE DECISIONE */
 		actuate_white_leds();
-		//actuate_red_leds();
 		change_set_point();
 		change_regulator();
 

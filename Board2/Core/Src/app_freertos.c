@@ -307,7 +307,7 @@ void StartReadGyroscope(void *argument)
 		MPU6050_Process_Yaw_IT_Data();
 
 		// rivedere la struttua, magari fare una get come per il padreceiver
-		Board2_U.gyroscope = (double) MPU6050_Yaw.KalmanAngleZ;
+		Board2_U.gyroscope = MPU6050_Yaw.KalmanAngleZ;
 
 #if PRINT_TASK
 		printGyroscope((float)Board2_U.gyroscope);
