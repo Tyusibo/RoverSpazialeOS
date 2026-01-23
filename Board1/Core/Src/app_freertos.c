@@ -350,13 +350,13 @@ void StartSupervisor(void *argument) {
 #if PRINT_TASK
 
 #endif
-		// Stampa ogni 50 cicli
-//		static uint32_t cycle_count = 0;
-//		cycle_count++;
-//		if (cycle_count >= 100) {
-//			cycle_count = 0;
-			//printGlobalState(&Board1_B.board1GlobalState);
-			//printDecision(&Board1_B.board1Decision);
+		// Stampa ogni TOT cicli
+		static uint32_t cycle_count = 0;
+		cycle_count++;
+		if (cycle_count >= 100) {
+			cycle_count = 0;
+			printGlobalState(&Board1_B.board1GlobalState);
+			printDecision(&Board1_B.board1Decision);
 //			printMsg("Miss P:");
 //			printInt(MissPID);
 //			printMsg(" S:");
@@ -366,7 +366,7 @@ void StartSupervisor(void *argument) {
 //			printMsg(" B:");
 //			printInt(MissReadBattery);
 //			printNewLine();
-//		}
+		}
 
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 		periodic_wait(&next, T, &MissSupervisor);
