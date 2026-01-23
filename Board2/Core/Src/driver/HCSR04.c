@@ -1,3 +1,28 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file HCSR04.c
+ * @brief HC-SR04 Ultrasonic Sensor Driver Implementation.
+ *
+ * This file contains the implementation of the driver for the HC-SR04
+ * ultrasonic distance sensor. It handles initialization, triggering,
+ * and echo capture using STM32 HAL Timer peripherals and GPIOs.
+ * The distance is calculated based on the flight time of the sound wave.
+ */
+
 #include "HCSR04.h"
 #include "cmsis_os.h"  // osKernelLock, osKernelRestoreLock
 
@@ -7,8 +32,14 @@
 #define DISTANCE_LIMIT 		  400  // 400 cm = 4 m
 #define DEFAULT_TIMEOUT_VALUE 500  // 500 cm = 5 m
 #define MAX_SECONDS 240000  // 24,000 us = 24 ms = 0.024 s
-// Equivale al tempo per percorrere 8 metri andata e ritorno (4m max range sonar standard)
+// Equivalent to time to travel 8 meters round trip (4m max range standard sonar)
 
+/**
+ * @brief Converts a TIM channel to its corresponding interrupt flag.
+ *
+ * @param ch The timer channel (e.g., TIM_CHANNEL_1).
+ * @return uint32_t The corresponding interrupt flag (e.g., TIM_IT_CC1), or 0 if invalid.
+ */
 static inline uint32_t channel_to_it(uint32_t ch)
 {
     switch (ch) {
@@ -21,14 +52,29 @@ static inline uint32_t channel_to_it(uint32_t ch)
 }
 
 
-// Compute elapsed ticks between start and end for a timer that wraps with Period (ARR + 1).
+/**
+ * @brief Computes elapsed ticks between start and end for a timer that wraps.
+ *
+ * @param start The starting counter value.
+ * @param end The ending counter value.
+ * @param period The period of the timer (ARR + 1).
+ * @return uint64_t The number of elapsed ticks.
+ */
 static inline uint64_t elapsed_ticks_period(uint32_t start, uint32_t end, uint64_t period)
 {
     if (end >= start) return (uint64_t)(end - start);
     return (period - (uint64_t)start) + (uint64_t)end;
 }
 
-// Busy-wait in ticks using the timer counter itself (works with wrap because unsigned subtraction).
+/**
+ * @brief Performs a busy-wait delay in ticks using the timer counter.
+ *
+ * This function accounts for timer wrapping.
+ *
+ * @param htim Pointer to the TIM handle.
+ * @param ticks Number of ticks to delay.
+ * @param period The period of the timer (ARR + 1).
+ */
 static inline void delay_ticks(TIM_HandleTypeDef *htim, uint32_t ticks, uint64_t period)
 {
     uint32_t start = __HAL_TIM_GET_COUNTER(htim);
@@ -36,6 +82,20 @@ static inline void delay_ticks(TIM_HandleTypeDef *htim, uint32_t ticks, uint64_t
 }
 
 
+/**
+ * @brief Initializes the HC-SR04 sensor structure.
+ *
+ * Configures the sensor handle with the provided GPIO and Timer settings,
+ * initializes internal state, prepares the trigger pin, and sets up the
+ * echo timer for rising edge capture.
+ *
+ * @param sensor Pointer to the HC-SR04 sensor handle.
+ * @param trigger GPIO Port for the Trigger pin.
+ * @param pin_trigger GPIO Pin number for the Trigger pin.
+ * @param echo_tim Timer handle used for Echo capture.
+ * @param echo_channel Timer channel used for Echo capture.
+ * @return int8_t HCSR04_OK on success, HCSR04_ERR on invalid parameters.
+ */
 int8_t hcsr04_init(hcsr04_t *sensor,
                    GPIO_TypeDef *trigger, uint16_t pin_trigger,
                    TIM_HandleTypeDef *echo_tim, uint16_t echo_channel)
@@ -70,23 +130,33 @@ int8_t hcsr04_init(hcsr04_t *sensor,
     return HCSR04_OK;
 }
 
+/**
+ * @brief Sends a trigger pulse to the sensor to start a measurement.
+ *
+ * This function generates a 10us high pulse on the trigger pin. It locks
+ * the scheduler to ensure precise timing. It also resets the capture state
+ * and enables the interrupt for the echo pin.
+ *
+ * @param sensor Pointer to the HC-SR04 sensor handle.
+ * @return int8_t HCSR04_OK on success, HCSR04_ERR on error.
+ */
 int8_t hcsr04_trigger(hcsr04_t *sensor)
 {
     if (!sensor) return HCSR04_ERR;
 
-    sensor->rx_done = 0; // Reset flag prima di ogni misura
+    sensor->rx_done = 0; // Reset flag before each measurement
 
     sensor->current_polarity = TIM_INPUTCHANNELPOLARITY_RISING;
     __HAL_TIM_SET_CAPTUREPOLARITY(sensor->echo_tim, sensor->echo_channel, sensor->current_polarity);
 
     // 10us pulse on TRIG (TIM2 @ 16MHz => 160 ticks)
-    int32_t lock = osKernelLock();   // blocca lo scheduler (no context switch)
+    int32_t lock = osKernelLock();   // Lock the scheduler (no context switch)
 
     HAL_GPIO_WritePin(sensor->trigger_port, sensor->trigger_pin, GPIO_PIN_SET);
     delay_ticks(sensor->echo_tim, TRIG_PULSE_US * (uint32_t)TIM2_TICKS_PER_US, sensor->arr_timer_plus_one);
     HAL_GPIO_WritePin(sensor->trigger_port, sensor->trigger_pin, GPIO_PIN_RESET);
 
-    osKernelRestoreLock(lock);       // ripristina lo stato precedente
+    osKernelRestoreLock(lock);       // Restore previous state
 
     // Enable the correct capture interrupt for this channel
     uint32_t it = channel_to_it(sensor->echo_channel);
@@ -98,6 +168,15 @@ int8_t hcsr04_trigger(hcsr04_t *sensor)
     return HCSR04_OK;
 }
 
+/**
+ * @brief Callback to handle the rising edge capture event.
+ *
+ * Stores the start timer value and reconfigures the timer to capture
+ * the falling edge.
+ *
+ * @param sensor Pointer to the HC-SR04 sensor handle.
+ * @return int8_t HCSR04_OK on success, HCSR04_ERR on error.
+ */
 int8_t hcsr04_capture_rising_edge(hcsr04_t *sensor)
 {
     if (!sensor) return HCSR04_ERR;
@@ -114,6 +193,15 @@ int8_t hcsr04_capture_rising_edge(hcsr04_t *sensor)
     return HCSR04_OK;
 }
 
+/**
+ * @brief Callback to handle the falling edge capture event.
+ *
+ * Stores the end timer value, resets polarity to rising for the next cycle,
+ * disables the interrupt, and marks the reception as done.
+ *
+ * @param sensor Pointer to the HC-SR04 sensor handle.
+ * @return int8_t HCSR04_OK on success, HCSR04_ERR on error.
+ */
 int8_t hcsr04_capture_falling_edge(hcsr04_t *sensor)
 {
     if (!sensor) return HCSR04_ERR;
@@ -136,6 +224,16 @@ int8_t hcsr04_capture_falling_edge(hcsr04_t *sensor)
     return HCSR04_OK;
 }
 
+/**
+ * @brief Processes the captured timer values to calculate distance.
+ *
+ * Computes the time difference between rising and falling edges, converts it
+ * to microseconds, and then to centimeters. Limits the result to the
+ * logical range.
+ *
+ * @param sensor Pointer to the HC-SR04 sensor handle.
+ * @return int8_t HCSR04_OK on success, HCSR04_ERR on error.
+ */
 int8_t hcsr04_process_distance(hcsr04_t *sensor)
 {
     if (!sensor) return HCSR04_ERR;
@@ -164,6 +262,12 @@ int8_t hcsr04_process_distance(hcsr04_t *sensor)
     return HCSR04_OK;
 }
 
+/**
+ * @brief Sets the sensor distance to a default timeout value.
+ *
+ * @param sensor Pointer to the HC-SR04 sensor handle.
+ * @return int8_t HCSR04_OK on success, HCSR04_ERR on error.
+ */
 int8_t hcsr04_set_default_distance(hcsr04_t *sensor)
 {
     if (!sensor) return HCSR04_ERR;
@@ -171,6 +275,15 @@ int8_t hcsr04_set_default_distance(hcsr04_t *sensor)
     return HCSR04_OK;
 }
 
+/**
+ * @brief Resets the sonar internal state and interrupts.
+ *
+ * Disables interrupts, clears pending flags, resets counters, and sets the
+ * capture polarity back to rising edge.
+ *
+ * @param sensor Pointer to the HC-SR04 sensor handle.
+ * @return int8_t HCSR04_OK on success, HCSR04_ERR on error.
+ */
 int8_t hcsr04_reset_sonar(hcsr04_t *sensor)
 {
     if (!sensor) return HCSR04_ERR;
@@ -194,6 +307,12 @@ int8_t hcsr04_reset_sonar(hcsr04_t *sensor)
     return HCSR04_OK;
 }
 
+/**
+ * @brief Checks if the measurement reception is complete.
+ *
+ * @param sensor Pointer to the HC-SR04 sensor handle.
+ * @return uint8_t 1 if reception is done, 0 otherwise.
+ */
 uint8_t hcsr04_is_done(hcsr04_t *sensor) {
     if (!sensor) return 0;
     return sensor->rx_done;
