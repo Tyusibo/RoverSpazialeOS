@@ -278,12 +278,9 @@ void StartPID(void *argument)
 
     float current_speed[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-    Board1_Y.setPoint.leftAxis = 0;
-    Board1_Y.setPoint.rightAxis = 0;
-    change_set_point();
-
     /* Infinite loop */
     for (;;) {
+
 #if REAL_TASK
 
     	/* READ ENCODERS AND UPDATE SPEEDS */
@@ -337,7 +334,6 @@ void StartSupervisor(void *argument)
 	uint32_t next = osKernelGetTickCount();
 	uint32_t wait_start;
 
-	Board1_U.speed = (BUS_Speed ) { 0.0f, 0.0f, 0.0f, 0.0f };
 	/* Infinite loop */
 	for (;;) {
 
@@ -446,7 +442,9 @@ void StartReadBattery(void *argument)
 
     /* Infinite loop */
     for (;;) {
+
 #if REAL_TASK
+
         Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
                 battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
 
