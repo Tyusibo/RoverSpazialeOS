@@ -437,8 +437,10 @@ void StartReadBattery(void *argument) {
 
 #if REAL_TASK
 
-		Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
-				battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
+		if (battery_get_percentage_linear(
+				battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE, (uint8_t*)&Board1_U.batteryLevel) != 0) {
+			Board1_U.batteryLevel = 255;
+		}
 
 #if PRINT_TASK
         printBattery((float)Board1_U.batteryLevel);

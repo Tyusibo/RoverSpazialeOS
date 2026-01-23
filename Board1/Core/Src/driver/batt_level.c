@@ -134,23 +134,31 @@ float battery_read_voltage_avg(batt_level_t* bat, uint8_t samples){
  * @param voltage Measured battery voltage.
  * @param min_v Minimum battery voltage corresponding to 0%.
  * @param max_v Maximum battery voltage corresponding to 100%.
- * @return int8_t Battery percentage from 0 to 100, or -1 if voltage is invalid.
+ * @param percentage Pointer to store the calculated percentage (0-100).
+ * @return int8_t 0 if successful, -1 if voltage is invalid or pointer is NULL.
  */
-int8_t battery_get_percentage_linear(float voltage, float min_v, float max_v){
-    float percentage = 0;
+int8_t battery_get_percentage_linear(float voltage, float min_v, float max_v, uint8_t* percentage){
+    float perc = 0;
+
+    if(percentage == NULL){
+        return -1;
+    }
 
     if(voltage < 0){
         return -1;
     }
 
     if(voltage <= min_v){
-        return MIN_BATT_PERC;
+        *percentage = MIN_BATT_PERC;
+        return 0;
     }
     if(voltage >= max_v){
-        return MAX_BATT_PERC;
+        *percentage = MAX_BATT_PERC;
+        return 0;
     }
 
-    percentage = ((voltage - min_v)/(max_v-min_v))*100.0f;
+    perc = ((voltage - min_v)/(max_v-min_v))*100.0f;
+    *percentage = (uint8_t)(perc + 0.5f);
 
-    return (int8_t)(percentage + 0.5f);
+    return 0;
 }
