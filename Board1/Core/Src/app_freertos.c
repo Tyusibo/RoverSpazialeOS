@@ -93,100 +93,76 @@ uint8_t battery_read_failed = 0;
 /* USER CODE END Variables */
 /* Definitions for PID */
 osThreadId_t PIDHandle;
-uint32_t PIDBuffer[ 2048 ];
+uint32_t PIDBuffer[2048];
 osStaticThreadDef_t PIDControlBlock;
-const osThreadAttr_t PID_attributes = {
-  .name = "PID",
-  .stack_mem = &PIDBuffer[0],
-  .stack_size = sizeof(PIDBuffer),
-  .cb_mem = &PIDControlBlock,
-  .cb_size = sizeof(PIDControlBlock),
-  .priority = (osPriority_t) osPriorityHigh,
-};
+const osThreadAttr_t PID_attributes = { .name = "PID", .stack_mem =
+		&PIDBuffer[0], .stack_size = sizeof(PIDBuffer), .cb_mem =
+		&PIDControlBlock, .cb_size = sizeof(PIDControlBlock), .priority =
+		(osPriority_t) osPriorityHigh, };
 /* Definitions for Supervisor */
 osThreadId_t SupervisorHandle;
-uint32_t SupervisorBuffer[ 2048 ];
+uint32_t SupervisorBuffer[2048];
 osStaticThreadDef_t SupervisorControlBlock;
-const osThreadAttr_t Supervisor_attributes = {
-  .name = "Supervisor",
-  .stack_mem = &SupervisorBuffer[0],
-  .stack_size = sizeof(SupervisorBuffer),
-  .cb_mem = &SupervisorControlBlock,
-  .cb_size = sizeof(SupervisorControlBlock),
-  .priority = (osPriority_t) osPriorityAboveNormal,
-};
+const osThreadAttr_t Supervisor_attributes = { .name = "Supervisor",
+		.stack_mem = &SupervisorBuffer[0], .stack_size =
+				sizeof(SupervisorBuffer), .cb_mem = &SupervisorControlBlock,
+		.cb_size = sizeof(SupervisorControlBlock), .priority =
+				(osPriority_t) osPriorityAboveNormal, };
 /* Definitions for ReadTemperature */
 osThreadId_t ReadTemperatureHandle;
-uint32_t ReadTemperatureBuffer[ 2048 ];
+uint32_t ReadTemperatureBuffer[2048];
 osStaticThreadDef_t ReadTemperatureControlBlock;
-const osThreadAttr_t ReadTemperature_attributes = {
-  .name = "ReadTemperature",
-  .stack_mem = &ReadTemperatureBuffer[0],
-  .stack_size = sizeof(ReadTemperatureBuffer),
-  .cb_mem = &ReadTemperatureControlBlock,
-  .cb_size = sizeof(ReadTemperatureControlBlock),
-  .priority = (osPriority_t) osPriorityAboveNormal1,
-};
+const osThreadAttr_t ReadTemperature_attributes = { .name = "ReadTemperature",
+		.stack_mem = &ReadTemperatureBuffer[0], .stack_size =
+				sizeof(ReadTemperatureBuffer), .cb_mem =
+				&ReadTemperatureControlBlock, .cb_size =
+				sizeof(ReadTemperatureControlBlock), .priority =
+				(osPriority_t) osPriorityAboveNormal1, };
 /* Definitions for ReadBattery */
 osThreadId_t ReadBatteryHandle;
-uint32_t ReadBatteryBuffer[ 2048 ];
+uint32_t ReadBatteryBuffer[2048];
 osStaticThreadDef_t ReadBatteryControlBlock;
-const osThreadAttr_t ReadBattery_attributes = {
-  .name = "ReadBattery",
-  .stack_mem = &ReadBatteryBuffer[0],
-  .stack_size = sizeof(ReadBatteryBuffer),
-  .cb_mem = &ReadBatteryControlBlock,
-  .cb_size = sizeof(ReadBatteryControlBlock),
-  .priority = (osPriority_t) osPriorityAboveNormal2,
-};
+const osThreadAttr_t ReadBattery_attributes = { .name = "ReadBattery",
+		.stack_mem = &ReadBatteryBuffer[0], .stack_size =
+				sizeof(ReadBatteryBuffer), .cb_mem = &ReadBatteryControlBlock,
+		.cb_size = sizeof(ReadBatteryControlBlock), .priority =
+				(osPriority_t) osPriorityAboveNormal2, };
 /* Definitions for StartSegger */
 osThreadId_t StartSeggerHandle;
-uint32_t StartSeggerBuffer[ 128 ];
+uint32_t StartSeggerBuffer[128];
 osStaticThreadDef_t StartSeggerControlBlock;
-const osThreadAttr_t StartSegger_attributes = {
-  .name = "StartSegger",
-  .stack_mem = &StartSeggerBuffer[0],
-  .stack_size = sizeof(StartSeggerBuffer),
-  .cb_mem = &StartSeggerControlBlock,
-  .cb_size = sizeof(StartSeggerControlBlock),
-  .priority = (osPriority_t) osPriorityHigh1,
-};
+const osThreadAttr_t StartSegger_attributes = { .name = "StartSegger",
+		.stack_mem = &StartSeggerBuffer[0], .stack_size =
+				sizeof(StartSeggerBuffer), .cb_mem = &StartSeggerControlBlock,
+		.cb_size = sizeof(StartSeggerControlBlock), .priority =
+				(osPriority_t) osPriorityHigh1, };
 /* Definitions for Synchronization */
 osThreadId_t SynchronizationHandle;
-uint32_t SynchronizationBuffer[ 128 ];
+uint32_t SynchronizationBuffer[128];
 osStaticThreadDef_t SynchronizationControlBlock;
-const osThreadAttr_t Synchronization_attributes = {
-  .name = "Synchronization",
-  .stack_mem = &SynchronizationBuffer[0],
-  .stack_size = sizeof(SynchronizationBuffer),
-  .cb_mem = &SynchronizationControlBlock,
-  .cb_size = sizeof(SynchronizationControlBlock),
-  .priority = (osPriority_t) osPriorityLow,
-};
+const osThreadAttr_t Synchronization_attributes = { .name = "Synchronization",
+		.stack_mem = &SynchronizationBuffer[0], .stack_size =
+				sizeof(SynchronizationBuffer), .cb_mem =
+				&SynchronizationControlBlock, .cb_size =
+				sizeof(SynchronizationControlBlock), .priority =
+				(osPriority_t) osPriorityLow, };
 /* Definitions for toggleLeftRedLed */
 osTimerId_t toggleLeftRedLedHandle;
 osStaticTimerDef_t toggleLeftRedLedControlBlock;
-const osTimerAttr_t toggleLeftRedLed_attributes = {
-  .name = "toggleLeftRedLed",
-  .cb_mem = &toggleLeftRedLedControlBlock,
-  .cb_size = sizeof(toggleLeftRedLedControlBlock),
-};
+const osTimerAttr_t toggleLeftRedLed_attributes = { .name = "toggleLeftRedLed",
+		.cb_mem = &toggleLeftRedLedControlBlock, .cb_size =
+				sizeof(toggleLeftRedLedControlBlock), };
 /* Definitions for toggleRightRedLed */
 osTimerId_t toggleRightRedLedHandle;
 osStaticTimerDef_t toggleRightRedLedControlBlock;
 const osTimerAttr_t toggleRightRedLed_attributes = {
-  .name = "toggleRightRedLed",
-  .cb_mem = &toggleRightRedLedControlBlock,
-  .cb_size = sizeof(toggleRightRedLedControlBlock),
-};
+		.name = "toggleRightRedLed", .cb_mem = &toggleRightRedLedControlBlock,
+		.cb_size = sizeof(toggleRightRedLedControlBlock), };
 /* Definitions for flagsOS */
 osEventFlagsId_t flagsOSHandle;
 osStaticEventGroupDef_t flagsOSControlBlock;
-const osEventFlagsAttr_t flagsOS_attributes = {
-  .name = "flagsOS",
-  .cb_mem = &flagsOSControlBlock,
-  .cb_size = sizeof(flagsOSControlBlock),
-};
+const osEventFlagsAttr_t flagsOS_attributes = { .name = "flagsOS", .cb_mem =
+		&flagsOSControlBlock, .cb_size = sizeof(flagsOSControlBlock), };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -216,69 +192,76 @@ void callbackToggleRightRedLed(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
 void MX_FREERTOS_Init(void) {
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* USER CODE BEGIN RTOS_MUTEX */
+	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
+	/* USER CODE END RTOS_MUTEX */
 
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
+	/* USER CODE END RTOS_SEMAPHORES */
 
-  /* Create the timer(s) */
-  /* creation of toggleLeftRedLed */
-  toggleLeftRedLedHandle = osTimerNew(callbackToggleLeftRedLed, osTimerPeriodic, NULL, &toggleLeftRedLed_attributes);
+	/* Create the timer(s) */
+	/* creation of toggleLeftRedLed */
+	toggleLeftRedLedHandle = osTimerNew(callbackToggleLeftRedLed,
+			osTimerPeriodic, NULL, &toggleLeftRedLed_attributes);
 
-  /* creation of toggleRightRedLed */
-  toggleRightRedLedHandle = osTimerNew(callbackToggleRightRedLed, osTimerPeriodic, NULL, &toggleRightRedLed_attributes);
+	/* creation of toggleRightRedLed */
+	toggleRightRedLedHandle = osTimerNew(callbackToggleRightRedLed,
+			osTimerPeriodic, NULL, &toggleRightRedLed_attributes);
 
-  /* USER CODE BEGIN RTOS_TIMERS */
+	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
+	/* USER CODE END RTOS_TIMERS */
 
-  /* USER CODE BEGIN RTOS_QUEUES */
+	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
+	/* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* creation of PID */
-  PIDHandle = osThreadNew(StartPID, NULL, &PID_attributes);
+	/* Create the thread(s) */
+	/* creation of PID */
+	PIDHandle = osThreadNew(StartPID, NULL, &PID_attributes);
 
-  /* creation of Supervisor */
-  SupervisorHandle = osThreadNew(StartSupervisor, NULL, &Supervisor_attributes);
+	/* creation of Supervisor */
+	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
+			&Supervisor_attributes);
 
-  /* creation of ReadTemperature */
-  ReadTemperatureHandle = osThreadNew(StartReadTemperature, NULL, &ReadTemperature_attributes);
+	/* creation of ReadTemperature */
+	ReadTemperatureHandle = osThreadNew(StartReadTemperature, NULL,
+			&ReadTemperature_attributes);
 
-  /* creation of ReadBattery */
-  ReadBatteryHandle = osThreadNew(StartReadBattery, NULL, &ReadBattery_attributes);
+	/* creation of ReadBattery */
+	ReadBatteryHandle = osThreadNew(StartReadBattery, NULL,
+			&ReadBattery_attributes);
 
-  /* creation of StartSegger */
-  StartSeggerHandle = osThreadNew(StartSeggerTask, NULL, &StartSegger_attributes);
+	/* creation of StartSegger */
+	StartSeggerHandle = osThreadNew(StartSeggerTask, NULL,
+			&StartSegger_attributes);
 
-  /* creation of Synchronization */
-  SynchronizationHandle = osThreadNew(StartSynchronization, NULL, &Synchronization_attributes);
+	/* creation of Synchronization */
+	SynchronizationHandle = osThreadNew(StartSynchronization, NULL,
+			&Synchronization_attributes);
 
-  /* USER CODE BEGIN RTOS_THREADS */
+	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
+	/* USER CODE END RTOS_THREADS */
 
-  /* Create the event(s) */
-  /* creation of flagsOS */
-  flagsOSHandle = osEventFlagsNew(&flagsOS_attributes);
+	/* Create the event(s) */
+	/* creation of flagsOS */
+	flagsOSHandle = osEventFlagsNew(&flagsOS_attributes);
 
-  /* USER CODE BEGIN RTOS_EVENTS */
+	/* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
 
-  /* USER CODE END RTOS_EVENTS */
+	/* USER CODE END RTOS_EVENTS */
 
 }
 
@@ -289,9 +272,8 @@ void MX_FREERTOS_Init(void) {
  * @retval None
  */
 /* USER CODE END Header_StartPID */
-void StartPID(void *argument)
-{
-  /* USER CODE BEGIN StartPID */
+void StartPID(void *argument) {
+	/* USER CODE BEGIN StartPID */
 
 	waitForSynchonization();
 
@@ -320,7 +302,7 @@ void StartPID(void *argument)
 			MotorControl_Update(&motors[i], current_speed[i]);
 		}
 
-#if TASK_PRINT
+#if PRINT_TASK
         printMotorSpeeds(&Board1_U.speed);
         //HAL_Delay(2000); // Per non intasare la seriale
 #endif
@@ -334,7 +316,7 @@ void StartPID(void *argument)
 
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartPID */
+	/* USER CODE END StartPID */
 }
 
 /* USER CODE BEGIN Header_StartSupervisor */
@@ -345,9 +327,8 @@ void StartPID(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSupervisor */
-void StartSupervisor(void *argument)
-{
-  /* USER CODE BEGIN StartSupervisor */
+void StartSupervisor(void *argument) {
+	/* USER CODE BEGIN StartSupervisor */
 
 	waitForSynchonization();
 
@@ -357,52 +338,43 @@ void StartSupervisor(void *argument)
 	/* Infinite loop */
 	for (;;) {
 
-		//printMsg("Supervisor Cycle Start\r\n");
 		do {
-//			if ((osKernelGetTickCount() - wait_start) > ms_to_ticks(40)) {
-//				printMsg("Supervisor timeout!\r\n");
-//				break;
-//			}
 			Board1_step();
 		} while (Board1_Y.supervision_ended != 1);
 
-		/* FINALIZZAZIONE DECISIONE */
+		/* FINALIZING DECISION */
 		actuate_white_leds();
 		change_set_point();
 		change_regulator();
 
-#if TASK_PRINT
+#if PRINT_TASK
 
 #endif
 		// Stampa ogni 50 cicli
-		static uint32_t cycle_count = 0;
-		cycle_count++;
-		if (cycle_count >= 50) {
-			cycle_count = 0;
-			//printMsg("Supervisor Cycle End\r\n");ù
-			printGlobalState(&Board1_B.board1GlobalState);
-			printDecision(&Board1_B.board1Decision);
-//			printMsg("---- Supervisor Stats ----\r\n");
-//            printLabel("Miss PID");
-//            printInt(MissPID);
-//            printNewLine();
-//            printLabel("Miss Sup");
-//            printInt(MissSupervisor);
-//            printNewLine();
-//            printLabel("Miss Temp");
-//            printInt(MissReadTemperature);
-//            printNewLine();
-//            printLabel("Miss Batt");
-//            printInt(MissReadBattery);
-//            printNewLine();
-		}
+//		static uint32_t cycle_count = 0;
+//		cycle_count++;
+//		if (cycle_count >= 100) {
+//			cycle_count = 0;
+			//printGlobalState(&Board1_B.board1GlobalState);
+			//printDecision(&Board1_B.board1Decision);
+//			printMsg("Miss P:");
+//			printInt(MissPID);
+//			printMsg(" S:");
+//			printInt(MissSupervisor);
+//			printMsg(" T:");
+//			printInt(MissReadTemperature);
+//			printMsg(" B:");
+//			printInt(MissReadBattery);
+//			printNewLine();
+//		}
+
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 		periodic_wait(&next, T, &MissSupervisor);
 	}
 
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartSupervisor */
+	/* USER CODE END StartSupervisor */
 }
 
 /* USER CODE BEGIN Header_StartReadTemperature */
@@ -412,9 +384,8 @@ void StartSupervisor(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReadTemperature */
-void StartReadTemperature(void *argument)
-{
-  /* USER CODE BEGIN StartReadTemperature */
+void StartReadTemperature(void *argument) {
+	/* USER CODE BEGIN StartReadTemperature */
 
 	waitForSynchonization();
 
@@ -423,11 +394,13 @@ void StartReadTemperature(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
+
 #if REAL_TASK
+
 		Board1_U.temperature = (Temperature) temp_ky028_read_temperature(
 				&temp_sensor);
 
-#if TASK_PRINT
+#if PRINT_TASK
         printTemperature((float)Board1_U.temperature);
         //HAL_Delay(2000);
 #endif
@@ -441,7 +414,7 @@ void StartReadTemperature(void *argument)
 
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartReadTemperature */
+	/* USER CODE END StartReadTemperature */
 }
 
 /* USER CODE BEGIN Header_StartReadBattery */
@@ -451,9 +424,8 @@ void StartReadTemperature(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReadBattery */
-void StartReadBattery(void *argument)
-{
-  /* USER CODE BEGIN StartReadBattery */
+void StartReadBattery(void *argument) {
+	/* USER CODE BEGIN StartReadBattery */
 
 	waitForSynchonization();
 
@@ -468,7 +440,7 @@ void StartReadBattery(void *argument)
 		Board1_U.batteryLevel = (BatteryLevel) battery_get_percentage_linear(
 				battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE);
 
-#if TASK_PRINT
+#if PRINT_TASK
         printBattery((float)Board1_U.batteryLevel);
         //HAL_Delay(2000);
 #endif
@@ -482,7 +454,7 @@ void StartReadBattery(void *argument)
 
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartReadBattery */
+	/* USER CODE END StartReadBattery */
 }
 
 /* USER CODE BEGIN Header_StartSeggerTask */
@@ -492,9 +464,8 @@ void StartReadBattery(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSeggerTask */
-void StartSeggerTask(void *argument)
-{
-  /* USER CODE BEGIN StartSeggerTask */
+void StartSeggerTask(void *argument) {
+	/* USER CODE BEGIN StartSeggerTask */
 #if SEGGER_BUILD
 	  SEGGER_SYSVIEW_Conf();
 	  SEGGER_SYSVIEW_Start();
@@ -505,7 +476,7 @@ void StartSeggerTask(void *argument)
 	}
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartSeggerTask */
+	/* USER CODE END StartSeggerTask */
 }
 
 /* USER CODE BEGIN Header_StartSynchronization */
@@ -515,9 +486,8 @@ void StartSeggerTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSynchronization */
-void StartSynchronization(void *argument)
-{
-  /* USER CODE BEGIN StartSynchronization */
+void StartSynchronization(void *argument) {
+	/* USER CODE BEGIN StartSynchronization */
 	osEventFlagsSet(flagsOSHandle, SYNCHRONIZATION_FLAG);
 
 	/* Infinite loop */
@@ -527,23 +497,21 @@ void StartSynchronization(void *argument)
 
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartSynchronization */
+	/* USER CODE END StartSynchronization */
 }
 
 /* callbackToggleLeftRedLed function */
-void callbackToggleLeftRedLed(void *argument)
-{
-  /* USER CODE BEGIN callbackToggleLeftRedLed */
+void callbackToggleLeftRedLed(void *argument) {
+	/* USER CODE BEGIN callbackToggleLeftRedLed */
 	A4WD3_Red_Toggle(&led_left);
-  /* USER CODE END callbackToggleLeftRedLed */
+	/* USER CODE END callbackToggleLeftRedLed */
 }
 
 /* callbackToggleRightRedLed function */
-void callbackToggleRightRedLed(void *argument)
-{
-  /* USER CODE BEGIN callbackToggleRightRedLed */
+void callbackToggleRightRedLed(void *argument) {
+	/* USER CODE BEGIN callbackToggleRightRedLed */
 	A4WD3_Red_Toggle(&led_right);
-  /* USER CODE END callbackToggleRightRedLed */
+	/* USER CODE END callbackToggleRightRedLed */
 }
 
 /* Private application code --------------------------------------------------*/
@@ -563,12 +531,7 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 	/* Calcola il prossimo rilascio */
 	*next_release += period_ticks;
 
-	/* Controllo deadline miss (safe con wrap-around) */
-//	if ((int32_t) (now - *next_release) > 0) {
-//		/* Deadline miss: siamo già oltre il rilascio */
-//		//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
-//		return 1;
-//	}
+	/* Controlla se il task ha sforato */
 	if ((int32_t) (now - *next_release) > 0) {
 		*next_release = now + period_ticks;
 		if (miss_counter != NULL) {
@@ -579,7 +542,6 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 
 	/* Sleep assoluta fino al prossimo periodo */
 	osDelayUntil(*next_release);
-	//HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET); // Accendo LED di errore
 }
 
 static void waitForSynchonization(void) {

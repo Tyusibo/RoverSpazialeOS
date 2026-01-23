@@ -160,11 +160,8 @@ int main(void)
 	setPrinterHandler(&huart2); // Imposta UART per debug
 	clearScreen();
 
-#if VERBOSE_DEBUG_MAIN
+	printMsg("BEGIN B2 INIT...\r\n");
 
-	PRINT_DBG("BEGIN B2 INIT...\r\n");
-
-#endif
 	// Init Modello Simulink
 	Board2_initialize();
 	Board2_U.remoteController = (BUS_RemoteController ) { 0, 0, 0 };

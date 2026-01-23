@@ -58,7 +58,7 @@ void clearScreen(void)
 void printInt(int32_t v)
 {
     char msg[24];
-    snprintf(msg, sizeof(msg), "%ld \r\n", (long)v);
+    snprintf(msg, sizeof(msg), "%ld", (long)v);
     prv_tx_str(msg);
 }
 
