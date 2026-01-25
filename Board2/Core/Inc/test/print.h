@@ -53,6 +53,8 @@ void printMotorSpeeds(const BUS_Speed *sp);
 void printTemperature(float t);
 void printBattery(uint8_t b);
 
+void printSensorReadings(uint8_t readings);
+
 /* Elementari LocalStateB2 */
 void printSonar(const BUS_Sonar *sn);
 void printGyroscope(uint16_t g);

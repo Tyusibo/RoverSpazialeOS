@@ -177,6 +177,13 @@ void printBattery(uint8_t b)
     uartPrint(msg);
 }
 
+void printSensorReadings(uint8_t readings)
+{
+    char msg[64];
+    snprintf(msg, sizeof(msg), "  SensorReadings: 0x%02X\r\n", readings);
+    uartPrint(msg);
+}
+
 void printLocalStateB1(const BUS_LocalStateB1 *s)
 {
     if (s == NULL) return;
@@ -185,6 +192,7 @@ void printLocalStateB1(const BUS_LocalStateB1 *s)
     printMotorSpeeds(&s->speed);
     printTemperature(s->temperature);
     printBattery(s->batteryLevel);
+    printSensorReadings(s->sensorReadings);
 }
 
 /* ---- LocalStateB2 ---- */
@@ -220,6 +228,7 @@ void printLocalStateB2(const BUS_LocalStateB2 *s)
     printSonar(&s->sonar);
     printGyroscope(s->gyroscope);
     printRemoteController(&s->remoteController);
+    printSensorReadings(s->sensorReadings);
 }
 
 /* ---- GlobalState ---- */
@@ -322,6 +331,19 @@ static const char* getSafeActionName(ENUM_SafeAction v) {
     }
 }
 
+static const char* getRoverStatusName(ENUM_StatusRover v) {
+    switch (v) {
+        case NORMAL: return "NORMAL";
+        case ERROR_B1: return "ERROR_B1";
+        case ERROR_B2: return "ERROR_B2";
+        case ERROR_BOTH: return "ERROR_BOTH";
+        case FAULTY_B1_DEGRADED_B2: return "FAULTY_B1_DEGRADED_B2";
+        case FAULTY_B2_DEGRADED_B1: return "FAULTY_B2_DEGRADED_B1";
+        case EMERGENCY: return "EMERGENCY";
+        default: return "UNKNOWN";
+    }
+}
+
 static void printEnumLineStr(const char *label, const char *v)
 {
     printLabel(label);
@@ -336,6 +358,7 @@ void printDecision(const BUS_Decision *d)
     printHeader("Decision");
 
     printEnumLineStr("actuator",    getActuatorName(d->actuator));
+    printEnumLineStr("roverState",  getRoverStatusName(d->roverState));
     printEnumLineStr("userAction",  getUserActionName(d->userAction));
     printEnumLineStr("roverAction", getRoverActionName(d->roverAction));
     printEnumLineStr("safeAction",  getSafeActionName(d->safeAction));
