@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 5.5
+ * Model version                  : 6.29
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Fri Jan 23 13:37:44 2026
+ * C/C++ source code generated on : Sun Jan 25 18:57:00 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -29,6 +29,7 @@
 #include "sensors.h"
 #include "decision.h"
 #include "states.h"
+#include "enums.h"
 
 /* Macros for accessing real-time model data structure */
 #ifndef rtmGetErrorStatus
@@ -56,18 +57,23 @@
 /* Block signals (default storage) */
 typedef struct {
   BUS_GlobalState board2GlobalState;   /* '<Root>/SupervisorB2' */
+  BUS_Decision board2Decision;         /* '<Root>/SupervisorB2' */
   BUS_RedLeds redLeds;                 /* '<Root>/ActionsModel' */
+  ENUM_Error errorB1;                  /* '<Root>/SupervisorB2' */
+  ENUM_Error errorB2;                  /* '<Root>/SupervisorB2' */
+  ENUM_BoardStatus Status_Board1;      /* '<Root>/Boards_Health' */
+  ENUM_BoardStatus Status_Board2;      /* '<Root>/Boards_Health' */
 } B_Board2_T;
 
 /* Block states (default storage) for system '<Root>' */
 typedef struct {
   BUS_GlobalState board1GlobalState;   /* '<Root>/SupervisorB2' */
   BUS_Decision board1Decision;         /* '<Root>/SupervisorB2' */
-  BUS_Decision board2Decision;         /* '<Root>/SupervisorB2' */
-  BUS_LocalStateB1 board1LocalState;   /* '<Root>/SupervisorB2' */
   BUS_LocalStateB2 board2LocalState;   /* '<Root>/SupervisorB2' */
+  BUS_LocalStateB1 board1LocalState;   /* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_CommunicationPh;/* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_ComputeDecision;/* '<Root>/SupervisorB2' */
+  uint32_T exit_port_index_ErrorStateDecis;/* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_ExchangeDecisio;/* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_D_Receive;  /* '<Root>/SupervisorB2' */
   uint32_T exit_port_index_D_Transmit; /* '<Root>/SupervisorB2' */
@@ -95,6 +101,7 @@ typedef struct {
   uint8_T is_RoverState;               /* '<Root>/SupervisorB2' */
   uint8_T is_CommunicationPhase;       /* '<Root>/SupervisorB2' */
   uint8_T is_ComputeDecision;          /* '<Root>/SupervisorB2' */
+  uint8_T is_ErrorStateDecision;       /* '<Root>/SupervisorB2' */
   uint8_T is_ExchangeDecision;         /* '<Root>/SupervisorB2' */
   uint8_T is_D_Receive;                /* '<Root>/SupervisorB2' */
   uint8_T is_D_Transmit;               /* '<Root>/SupervisorB2' */
@@ -112,6 +119,7 @@ typedef struct {
   Gyroscope gyroscope;                 /* '<Root>/gyroscope' */
   BUS_RemoteController remoteController;/* '<Root>/remoteController' */
   uint8_T rx_buffer[64];               /* '<Root>/rx_buffer' */
+  uint8_T areSensorsValid;             /* '<Root>/areSensorsValid' */
 } ExtU_Board2_T;
 
 /* External outputs (root outports fed by signals with default storage) */
@@ -122,6 +130,7 @@ typedef struct {
   ENUM_SafeAction safeAction;          /* '<Root>/safeAction' */
   ENUM_UserAction currentUserAction;   /* '<Root>/currentUserAction' */
   uint8_T supervision_ended;           /* '<Root>/supervision_ended' */
+  ENUM_StatusRover roverState;         /* '<Root>/roverState' */
 } ExtY_Board2_T;
 
 /* Real-time Model Data Structure */
