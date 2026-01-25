@@ -22,6 +22,10 @@ int deserializeLocalStateB1(const uint8_t *buf, size_t len, BUS_LocalStateB1 *st
     memcpy(&state->batteryLevel, &buf[i], BATTERY_LEVEL_FRAME_SIZE);
     i += BATTERY_LEVEL_FRAME_SIZE;
 
+    /*sensorReadings*/
+    memcpy(&state->sensorReadings, &buf[i], SENSOR_READINGS_FRAME_SIZE);
+    i += SENSOR_READINGS_FRAME_SIZE;
+
     return 0;
 }
 
@@ -43,6 +47,10 @@ int deserializeLocalStateB2(const uint8_t *buf, size_t len, BUS_LocalStateB2 *st
     /* remoteController */
     memcpy(&state->remoteController, &buf[i], REMOTE_CONTROLLER_FRAME_SIZE);
     i += REMOTE_CONTROLLER_FRAME_SIZE;
+
+    /*sensorReadings*/
+    memcpy(&state->sensorReadings, &buf[i], SENSOR_READINGS_FRAME_SIZE);
+    i += SENSOR_READINGS_FRAME_SIZE;
 
     return 0;
 }
@@ -89,6 +97,9 @@ int deserializeDecision(const uint8_t *buf, size_t len, BUS_Decision *decision)
 
     tmp = buf[i]; i += ENUM_FRAME_SIZE;
     decision->actuator = (ENUM_Actuator)tmp;
+
+    tmp = buf[i]; i += SENSOR_READINGS_FRAME_SIZE;
+    decision->roverState = (ENUM_StatusRover)tmp;
 
     tmp = buf[i]; i += ENUM_FRAME_SIZE;
     decision->userAction = (ENUM_UserAction)tmp;

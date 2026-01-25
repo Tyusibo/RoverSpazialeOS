@@ -20,6 +20,10 @@ size_t serializeLocalStateB1(uint8_t *buf, const BUS_LocalStateB1 *state)
     memcpy(&buf[i], &state->batteryLevel, BATTERY_LEVEL_FRAME_SIZE);
     i += BATTERY_LEVEL_FRAME_SIZE;
 
+    /*sensorReadings*/
+    memcpy(&buf[i], &state->sensorReadings, SENSOR_READINGS_FRAME_SIZE);
+    i += SENSOR_READINGS_FRAME_SIZE;
+
     return i; /* = LOCAL_STATE_B1_FRAME_SIZE */
 }
 
@@ -40,6 +44,10 @@ size_t serializeLocalStateB2(uint8_t *buf, const BUS_LocalStateB2 *state)
     /* remoteController */
     memcpy(&buf[i], &state->remoteController, REMOTE_CONTROLLER_FRAME_SIZE);
     i += REMOTE_CONTROLLER_FRAME_SIZE;
+
+    /*sensorReadings*/
+    memcpy(&buf[i], &state->sensorReadings, SENSOR_READINGS_FRAME_SIZE);
+    i += SENSOR_READINGS_FRAME_SIZE;
 
     return i; /* = LOCAL_STATE_B2_FRAME_SIZE */
 }
@@ -80,6 +88,7 @@ size_t serializeDecision(uint8_t *buf, const BUS_Decision *decision)
 
     /* Enum: 1 byte ciascuno (ENUM_FRAME_SIZE) */
     buf[i] = (uint8_t)decision->actuator;    i += ENUM_FRAME_SIZE;
+    buf[i] = (uint8_t)decision->roverState;  i += ENUM_FRAME_SIZE;
     buf[i] = (uint8_t)decision->userAction;  i += ENUM_FRAME_SIZE;
     buf[i] = (uint8_t)decision->roverAction; i += ENUM_FRAME_SIZE;
     buf[i] = (uint8_t)decision->safeAction;  i += ENUM_FRAME_SIZE;
