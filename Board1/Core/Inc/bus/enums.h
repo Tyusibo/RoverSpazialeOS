@@ -4,17 +4,17 @@
 #include <stdint.h>
 
 /* =========================
- * ENUM_CoherenceErrors
- * ========================= */
+* ENUM_CoherenceErrors
+* ========================= */
 typedef enum {
-    NO_ERROR = 0,
+    NO_INCOHERENCE = 0,
 
     /* The board received a global state where the previously received local state
-       is not correctly represented */
+    is not correctly represented */
     PARTNER_STATE_INCOHERENCE = 1,
 
     /* The board received a global state where its reported local state
-       is not correctly represented */
+    is not correctly represented */
     OWN_STATE_INCOHERENCE = 2,
 
     /* Both issues present */
@@ -23,8 +23,8 @@ typedef enum {
 
 
 /* =========================
- * ENUM_StatusBattery
- * ========================= */
+* ENUM_StatusBattery
+* ========================= */
 typedef enum {
     BATT_STATUS_OK = 0,
     BATT_STATUS_LOW_WARN = 1,
@@ -32,8 +32,8 @@ typedef enum {
 } ENUM_StatusBattery;
 
 /* =========================
- * ENUM_StatusEncoder (bitmask)
- * ========================= */
+* ENUM_StatusEncoder (bitmask)
+* ========================= */
 typedef enum {
     STATUS_ALL_OK = 0,
 
@@ -63,36 +63,45 @@ typedef enum {
 
 
 /* =========================
- * ENUM_StatusRemoteController
- * ========================= */
+* ENUM_StatusRemoteController
+* ========================= */
 typedef enum {
     RC_STATUS_OK = 0,
     RC_STATUS_NOT_OK = 1
 } ENUM_StatusRemoteController;
 
 /* =========================
- * ENUM_StatusRover
- * ========================= */
-typedef enum {
-    NORMAL = 0,
-    DEGRADED = 1
-} ENUM_StatusRover;
-
-/* =========================
- * ENUM_StatusTemperature
- * ========================= */
+* ENUM_StatusTemperature
+* ========================= */
 typedef enum {
     TEMP_DATA_OK = 0,
     TEMP_DATA_ANOMALOUS = 1
 } ENUM_StatusTemperature;
 
 /* =========================
- * ENUM_TrackingObstacles
- * ========================= */
+* ENUM_TrackingObstacles
+* ========================= */
 typedef enum {
     NOT_TRACKING = 0,
     NO_OBSTACLE_MOVING = 1,
     OBSTACLE_MOVING = 2
 } ENUM_TrackingObstacles;
+
+/* =========================
+* ENUM_Error
+* ========================= */
+typedef enum {
+    NO_ERROR = 0,   // Nessun errore rilevato
+    ERROR_PRESENT  // Almeno un errore rilevato
+} ENUM_Error;
+
+/* =========================
+* ENUM_BoardStatus
+* ========================= */
+typedef enum {
+    BOARD_OK = 0,     // Board operativa, nessun problema
+    BOARD_ERROR,     // Errore non critico
+    BOARD_FAULT      // Guasto critico (board non affidabile / non operativa)
+} ENUM_BoardStatus;
 
 #endif /* INC_BUS_ENUMS_H_ */
