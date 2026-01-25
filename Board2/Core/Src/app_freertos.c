@@ -76,6 +76,7 @@ volatile uint32_t MissReadController = 0;
 volatile uint32_t MissReadGyroscope = 0;
 volatile uint32_t MissSupervisor = 0;
 volatile uint32_t MissReadSonars = 0;
+volatile uint32_t MissPollingServer = 0;
 
 /* STATUS FLAGS */
 uint8_t pad_receiver_read_failed = 0;
@@ -85,96 +86,76 @@ uint8_t sonar_read_failed = 0;
 /* USER CODE END Variables */
 /* Definitions for ReadController */
 osThreadId_t ReadControllerHandle;
-uint32_t ReadControllerBuffer[ 2048 ];
+uint32_t ReadControllerBuffer[2048];
 osStaticThreadDef_t ReadControllerControlBlock;
-const osThreadAttr_t ReadController_attributes = {
-  .name = "ReadController",
-  .stack_mem = &ReadControllerBuffer[0],
-  .stack_size = sizeof(ReadControllerBuffer),
-  .cb_mem = &ReadControllerControlBlock,
-  .cb_size = sizeof(ReadControllerControlBlock),
-  .priority = (osPriority_t) osPriorityHigh,
-};
+const osThreadAttr_t ReadController_attributes = { .name = "ReadController",
+		.stack_mem = &ReadControllerBuffer[0], .stack_size =
+				sizeof(ReadControllerBuffer), .cb_mem =
+				&ReadControllerControlBlock, .cb_size =
+				sizeof(ReadControllerControlBlock), .priority =
+				(osPriority_t) osPriorityHigh, };
 /* Definitions for ReadGyroscope */
 osThreadId_t ReadGyroscopeHandle;
-uint32_t ReadGyroscopeBuffer[ 2048 ];
+uint32_t ReadGyroscopeBuffer[2048];
 osStaticThreadDef_t ReadGyroscopeControlBlock;
-const osThreadAttr_t ReadGyroscope_attributes = {
-  .name = "ReadGyroscope",
-  .stack_mem = &ReadGyroscopeBuffer[0],
-  .stack_size = sizeof(ReadGyroscopeBuffer),
-  .cb_mem = &ReadGyroscopeControlBlock,
-  .cb_size = sizeof(ReadGyroscopeControlBlock),
-  .priority = (osPriority_t) osPriorityAboveNormal,
-};
+const osThreadAttr_t ReadGyroscope_attributes = { .name = "ReadGyroscope",
+		.stack_mem = &ReadGyroscopeBuffer[0], .stack_size =
+				sizeof(ReadGyroscopeBuffer), .cb_mem =
+				&ReadGyroscopeControlBlock, .cb_size =
+				sizeof(ReadGyroscopeControlBlock), .priority =
+				(osPriority_t) osPriorityAboveNormal, };
 /* Definitions for Supervisor */
 osThreadId_t SupervisorHandle;
-uint32_t SupervisorBuffer[ 2048 ];
+uint32_t SupervisorBuffer[2048];
 osStaticThreadDef_t SupervisorControlBlock;
-const osThreadAttr_t Supervisor_attributes = {
-  .name = "Supervisor",
-  .stack_mem = &SupervisorBuffer[0],
-  .stack_size = sizeof(SupervisorBuffer),
-  .cb_mem = &SupervisorControlBlock,
-  .cb_size = sizeof(SupervisorControlBlock),
-  .priority = (osPriority_t) osPriorityNormal,
-};
+const osThreadAttr_t Supervisor_attributes = { .name = "Supervisor",
+		.stack_mem = &SupervisorBuffer[0], .stack_size =
+				sizeof(SupervisorBuffer), .cb_mem = &SupervisorControlBlock,
+		.cb_size = sizeof(SupervisorControlBlock), .priority =
+				(osPriority_t) osPriorityNormal, };
 /* Definitions for ReadSonars */
 osThreadId_t ReadSonarsHandle;
-uint32_t ReadSonarsBuffer[ 2048 ];
+uint32_t ReadSonarsBuffer[2048];
 osStaticThreadDef_t ReadSonarsControlBlock;
-const osThreadAttr_t ReadSonars_attributes = {
-  .name = "ReadSonars",
-  .stack_mem = &ReadSonarsBuffer[0],
-  .stack_size = sizeof(ReadSonarsBuffer),
-  .cb_mem = &ReadSonarsControlBlock,
-  .cb_size = sizeof(ReadSonarsControlBlock),
-  .priority = (osPriority_t) osPriorityLow,
-};
+const osThreadAttr_t ReadSonars_attributes = { .name = "ReadSonars",
+		.stack_mem = &ReadSonarsBuffer[0], .stack_size =
+				sizeof(ReadSonarsBuffer), .cb_mem = &ReadSonarsControlBlock,
+		.cb_size = sizeof(ReadSonarsControlBlock), .priority =
+				(osPriority_t) osPriorityLow, };
 /* Definitions for StartSegger */
 osThreadId_t StartSeggerHandle;
-uint32_t StartSeggerBuffer[ 128 ];
+uint32_t StartSeggerBuffer[128];
 osStaticThreadDef_t StartSeggerControlBlock;
-const osThreadAttr_t StartSegger_attributes = {
-  .name = "StartSegger",
-  .stack_mem = &StartSeggerBuffer[0],
-  .stack_size = sizeof(StartSeggerBuffer),
-  .cb_mem = &StartSeggerControlBlock,
-  .cb_size = sizeof(StartSeggerControlBlock),
-  .priority = (osPriority_t) osPriorityHigh1,
-};
+const osThreadAttr_t StartSegger_attributes = { .name = "StartSegger",
+		.stack_mem = &StartSeggerBuffer[0], .stack_size =
+				sizeof(StartSeggerBuffer), .cb_mem = &StartSeggerControlBlock,
+		.cb_size = sizeof(StartSeggerControlBlock), .priority =
+				(osPriority_t) osPriorityHigh1, };
 /* Definitions for Synchronization */
 osThreadId_t SynchronizationHandle;
-uint32_t SynchronizationBuffer[ 128 ];
+uint32_t SynchronizationBuffer[128];
 osStaticThreadDef_t SynchronizationControlBlock;
-const osThreadAttr_t Synchronization_attributes = {
-  .name = "Synchronization",
-  .stack_mem = &SynchronizationBuffer[0],
-  .stack_size = sizeof(SynchronizationBuffer),
-  .cb_mem = &SynchronizationControlBlock,
-  .cb_size = sizeof(SynchronizationControlBlock),
-  .priority = (osPriority_t) osPriorityLow,
-};
+const osThreadAttr_t Synchronization_attributes = { .name = "Synchronization",
+		.stack_mem = &SynchronizationBuffer[0], .stack_size =
+				sizeof(SynchronizationBuffer), .cb_mem =
+				&SynchronizationControlBlock, .cb_size =
+				sizeof(SynchronizationControlBlock), .priority =
+				(osPriority_t) osPriorityLow, };
 /* Definitions for PollingServer */
 osThreadId_t PollingServerHandle;
-uint32_t PollingServerBuffer[ 2048 ];
+uint32_t PollingServerBuffer[2048];
 osStaticThreadDef_t PollingServerControlBlock;
-const osThreadAttr_t PollingServer_attributes = {
-  .name = "PollingServer",
-  .stack_mem = &PollingServerBuffer[0],
-  .stack_size = sizeof(PollingServerBuffer),
-  .cb_mem = &PollingServerControlBlock,
-  .cb_size = sizeof(PollingServerControlBlock),
-  .priority = (osPriority_t) osPriorityHigh,
-};
+const osThreadAttr_t PollingServer_attributes = { .name = "PollingServer",
+		.stack_mem = &PollingServerBuffer[0], .stack_size =
+				sizeof(PollingServerBuffer), .cb_mem =
+				&PollingServerControlBlock, .cb_size =
+				sizeof(PollingServerControlBlock), .priority =
+				(osPriority_t) osPriorityHigh, };
 /* Definitions for flagsOS */
 osEventFlagsId_t flagsOSHandle;
 osStaticEventGroupDef_t flagsOSControlBlock;
-const osEventFlagsAttr_t flagsOS_attributes = {
-  .name = "flagsOS",
-  .cb_mem = &flagsOSControlBlock,
-  .cb_size = sizeof(flagsOSControlBlock),
-};
+const osEventFlagsAttr_t flagsOS_attributes = { .name = "flagsOS", .cb_mem =
+		&flagsOSControlBlock, .cb_size = sizeof(flagsOSControlBlock), };
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -196,64 +177,71 @@ void StartPollingServer(void *argument);
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
 /**
-  * @brief  FreeRTOS initialization
-  * @param  None
-  * @retval None
-  */
+ * @brief  FreeRTOS initialization
+ * @param  None
+ * @retval None
+ */
 void MX_FREERTOS_Init(void) {
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* USER CODE BEGIN RTOS_MUTEX */
+	/* USER CODE BEGIN RTOS_MUTEX */
 	/* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
+	/* USER CODE END RTOS_MUTEX */
 
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
+	/* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
+	/* USER CODE END RTOS_SEMAPHORES */
 
-  /* USER CODE BEGIN RTOS_TIMERS */
+	/* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
+	/* USER CODE END RTOS_TIMERS */
 
-  /* USER CODE BEGIN RTOS_QUEUES */
+	/* USER CODE BEGIN RTOS_QUEUES */
 	/* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
+	/* USER CODE END RTOS_QUEUES */
 
-  /* Create the thread(s) */
-  /* creation of ReadController */
-  ReadControllerHandle = osThreadNew(StartReadController, NULL, &ReadController_attributes);
+	/* Create the thread(s) */
+	/* creation of ReadController */
+	ReadControllerHandle = osThreadNew(StartReadController, NULL,
+			&ReadController_attributes);
 
-  /* creation of ReadGyroscope */
-  ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL, &ReadGyroscope_attributes);
+	/* creation of ReadGyroscope */
+	ReadGyroscopeHandle = osThreadNew(StartReadGyroscope, NULL,
+			&ReadGyroscope_attributes);
 
-  /* creation of Supervisor */
-  SupervisorHandle = osThreadNew(StartSupervisor, NULL, &Supervisor_attributes);
+	/* creation of Supervisor */
+	SupervisorHandle = osThreadNew(StartSupervisor, NULL,
+			&Supervisor_attributes);
 
-  /* creation of ReadSonars */
-  ReadSonarsHandle = osThreadNew(StartReadSonars, NULL, &ReadSonars_attributes);
+	/* creation of ReadSonars */
+	ReadSonarsHandle = osThreadNew(StartReadSonars, NULL,
+			&ReadSonars_attributes);
 
-  /* creation of StartSegger */
-  StartSeggerHandle = osThreadNew(StartSeggerTask, NULL, &StartSegger_attributes);
+	/* creation of StartSegger */
+	StartSeggerHandle = osThreadNew(StartSeggerTask, NULL,
+			&StartSegger_attributes);
 
-  /* creation of Synchronization */
-  SynchronizationHandle = osThreadNew(StartSynchronization, NULL, &Synchronization_attributes);
+	/* creation of Synchronization */
+	SynchronizationHandle = osThreadNew(StartSynchronization, NULL,
+			&Synchronization_attributes);
 
-  /* creation of PollingServer */
-  PollingServerHandle = osThreadNew(StartPollingServer, NULL, &PollingServer_attributes);
+	/* creation of PollingServer */
+	PollingServerHandle = osThreadNew(StartPollingServer, NULL,
+			&PollingServer_attributes);
 
-  /* USER CODE BEGIN RTOS_THREADS */
+	/* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
+	/* USER CODE END RTOS_THREADS */
 
-  /* Create the event(s) */
-  /* creation of flagsOS */
-  flagsOSHandle = osEventFlagsNew(&flagsOS_attributes);
+	/* Create the event(s) */
+	/* creation of flagsOS */
+	flagsOSHandle = osEventFlagsNew(&flagsOS_attributes);
 
-  /* USER CODE BEGIN RTOS_EVENTS */
+	/* USER CODE BEGIN RTOS_EVENTS */
 	/* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
+	/* USER CODE END RTOS_EVENTS */
 
 }
 
@@ -264,9 +252,8 @@ void MX_FREERTOS_Init(void) {
  * @retval None
  */
 /* USER CODE END Header_StartReadController */
-void StartReadController(void *argument)
-{
-  /* USER CODE BEGIN StartReadController */
+void StartReadController(void *argument) {
+	/* USER CODE BEGIN StartReadController */
 
 	waitForSynchonization();
 
@@ -308,7 +295,7 @@ void StartReadController(void *argument)
 	}
 
 	osThreadTerminate(osThreadGetId());
-  /* USER CODE END StartReadController */
+	/* USER CODE END StartReadController */
 }
 
 /* USER CODE BEGIN Header_StartReadGyroscope */
@@ -318,9 +305,8 @@ void StartReadController(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReadGyroscope */
-void StartReadGyroscope(void *argument)
-{
-  /* USER CODE BEGIN StartReadGyroscope */
+void StartReadGyroscope(void *argument) {
+	/* USER CODE BEGIN StartReadGyroscope */
 
 	waitForSynchonization();
 
@@ -363,7 +349,7 @@ void StartReadGyroscope(void *argument)
 
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartReadGyroscope */
+	/* USER CODE END StartReadGyroscope */
 }
 
 /* USER CODE BEGIN Header_StartSupervisor */
@@ -373,9 +359,8 @@ void StartReadGyroscope(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSupervisor */
-void StartSupervisor(void *argument)
-{
-  /* USER CODE BEGIN StartSupervisor */
+void StartSupervisor(void *argument) {
+	/* USER CODE BEGIN StartSupervisor */
 
 	waitForSynchonization();
 
@@ -386,7 +371,7 @@ void StartSupervisor(void *argument)
 	for (;;) {
 
 		/* FAKE SONAR */
-		#include "controller_masks.h"
+#include "controller_masks.h"
 
 		// 0 = enabled, 1 = disabled
 		static uint8_t disable_left = 0;
@@ -448,7 +433,7 @@ void StartSupervisor(void *argument)
 
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartSupervisor */
+	/* USER CODE END StartSupervisor */
 }
 
 /* USER CODE BEGIN Header_StartReadSonars */
@@ -458,9 +443,8 @@ void StartSupervisor(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReadSonars */
-void StartReadSonars(void *argument)
-{
-  /* USER CODE BEGIN StartReadSonars */
+void StartReadSonars(void *argument) {
+	/* USER CODE BEGIN StartReadSonars */
 
 	waitForSynchonization();
 
@@ -518,7 +502,7 @@ void StartReadSonars(void *argument)
 	}
 
 	osThreadTerminate(osThreadGetId());
-  /* USER CODE END StartReadSonars */
+	/* USER CODE END StartReadSonars */
 }
 
 /* USER CODE BEGIN Header_StartSeggerTask */
@@ -528,9 +512,8 @@ void StartReadSonars(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSeggerTask */
-void StartSeggerTask(void *argument)
-{
-  /* USER CODE BEGIN StartSeggerTask */
+void StartSeggerTask(void *argument) {
+	/* USER CODE BEGIN StartSeggerTask */
 
 #if SEGGER_BUILD
 	SEGGER_SYSVIEW_Conf();
@@ -543,7 +526,7 @@ void StartSeggerTask(void *argument)
 	}
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartSeggerTask */
+	/* USER CODE END StartSeggerTask */
 }
 
 /* USER CODE BEGIN Header_StartSynchronization */
@@ -553,9 +536,8 @@ void StartSeggerTask(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartSynchronization */
-void StartSynchronization(void *argument)
-{
-  /* USER CODE BEGIN StartSynchronization */
+void StartSynchronization(void *argument) {
+	/* USER CODE BEGIN StartSynchronization */
 
 	osEventFlagsSet(flagsOSHandle, SYNCHRONIZATION_FLAG);
 
@@ -565,25 +547,36 @@ void StartSynchronization(void *argument)
 	}
 
 	osThreadTerminate(osThreadGetId());
-  /* USER CODE END StartSynchronization */
+	/* USER CODE END StartSynchronization */
 }
 
 /* USER CODE BEGIN Header_StartPollingServer */
 /**
-* @brief Function implementing the PollingServer thread.
-* @param argument: Not used
-* @retval None
-*/
+ * @brief Function implementing the PollingServer thread.
+ * @param argument: Not used
+ * @retval None
+ */
 /* USER CODE END Header_StartPollingServer */
-void StartPollingServer(void *argument)
-{
-  /* USER CODE BEGIN StartPollingServer */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartPollingServer */
+void StartPollingServer(void *argument) {
+	/* USER CODE BEGIN StartPollingServer */
+
+	waitForSynchonization();
+
+	const uint32_t T = ms_to_ticks(T_POLLING_SERVER);
+	uint32_t next = osKernelGetTickCount();
+
+	/* Infinite loop */
+	for (;;) {
+
+
+
+		periodic_wait(&next, T, &MissPollingServer);
+
+	}
+
+	osThreadTerminate(osThreadGetId());
+
+	/* USER CODE END StartPollingServer */
 }
 
 /* Private application code --------------------------------------------------*/
