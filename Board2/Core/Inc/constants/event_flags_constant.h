@@ -27,5 +27,11 @@
 #define FLAG_SONAR_RIGHT_OK         (1U << 9)
 #define FLAG_SONAR_RIGHT_TIMEOUT    (1U << 10)
 
+/* Mask for all events the Polling Server waits for (everything except SYNCHRONIZATION) */
+#define FLAGS_POLLING_SERVER_WAIT   (FLAG_PAD_OK | FLAG_PAD_ERROR | \
+                                     FLAG_GYRO_OK | FLAG_GYRO_ERROR | \
+                                     FLAG_SONAR_LEFT_OK | FLAG_SONAR_LEFT_TIMEOUT | \
+                                     FLAG_SONAR_FRONT_OK | FLAG_SONAR_FRONT_TIMEOUT | \
+                                     FLAG_SONAR_RIGHT_OK | FLAG_SONAR_RIGHT_TIMEOUT)
 
 #endif /* INC_CONSTANTS_EVENT_FLAGS_CONSTANT_H_ */

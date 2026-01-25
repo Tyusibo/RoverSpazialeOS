@@ -22,12 +22,19 @@
 #include "stm32g4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "hcsr04.h"
+
 #include "pad_receiver.h"
 #include "mpu6050.h"
-#include "print.h"
+#include "hcsr04.h"
+
 #include "uart_functions.h"
+
+#include "print.h"
 #include "debug.h"
+
+#include "cmsis_os2.h"
+#include "event_flags_constant.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,10 +62,14 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 
+extern osEventFlagsId_t flagsOSHandle;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
+
+static inline void Sonar_SetEventFlag(const hcsr04_t *sensor);
 
 /* USER CODE END PFP */
 
@@ -321,6 +332,8 @@ void I2C3_ER_IRQHandler(void)
 
 extern volatile uint8_t flagRTR;
 
+/* EXTI */
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == RTR_IN_Pin)
@@ -342,14 +355,23 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
 }
 
+/* SONAR */
 
 extern hcsr04_t sonarLeft;
 extern hcsr04_t sonarFront;
 extern hcsr04_t sonarRight;
 
-/* Variabili definite in main.c */
+/* Set the appropriate OS flag based on the sonar instance */
+static inline void Sonar_SetEventFlag(const hcsr04_t *sensor) {
+	if (sensor == &sonarLeft) {
+		osEventFlagsSet(flagsOSHandle, FLAG_SONAR_LEFT_OK);
+	} else if (sensor == &sonarFront) {
+		osEventFlagsSet(flagsOSHandle, FLAG_SONAR_FRONT_OK);
+	} else if (sensor == &sonarRight) {
+		osEventFlagsSet(flagsOSHandle, FLAG_SONAR_RIGHT_OK);
+	}
+}
 
-/* INTERRUPT CALLBACK FROM SONAR */
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
 	if (htim->Instance != TIM2)
 		return;
@@ -368,13 +390,18 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
 
 	if (sensor != NULL) {
 		if (sensor->current_polarity == TIM_INPUTCHANNELPOLARITY_RISING) {
+			// First edge: rising
 			hcsr04_capture_rising_edge(sensor);
 		} else {
+			// Second edge: falling
 			hcsr04_capture_falling_edge(sensor);
+			// this one sets rx_done = 1, optional since PollingServer uses OS flags
+			Sonar_SetEventFlag(sensor);
 		}
 	}
 }
 
+/* UART */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	UART_HandleTypeDef *h = getComunicationHandler();
 	if (h != NULL && huart->Instance == h->Instance) {
@@ -433,20 +460,23 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 	}
 }
 
+/* I2C */
+
 /* MASTER RX COMPLETE CALLBACK I2C, PadReceiver */
 
 void HAL_I2C_MasterRxCpltCallback(I2C_HandleTypeDef *hi2c) {
 	if (hi2c->Instance == I2C1) {
-		PadReceiver_RxCpltCallback();
+		PadReceiver_RxCpltCallback();  // Optional, PollingServer uses OS flags
+		osEventFlagsSet(flagsOSHandle, FLAG_PAD_OK);
 	}
 }
 
 /* RX MEMORY COMPLETE CALLBACK I2C, Gyroscope */
 
 void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c) {
-
 	if (hi2c->Instance == I2C3) {
-		MPU6050_RxCpltCallback();
+		MPU6050_RxCpltCallback();  // Optional, PollingServer uses OS flags
+		osEventFlagsSet(flagsOSHandle, FLAG_GYRO_OK);
 	}
 }
 
@@ -458,12 +488,14 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c) {
 
 	case (uint32_t) I2C1:
 		PRINT_DBG("PadReceiver I2C ERROR: ");
-		PadReceiver_ErrorCallback();
+		PadReceiver_ErrorCallback(); // Optional, PollingServer uses OS flags
+		osEventFlagsSet(flagsOSHandle, FLAG_PAD_ERROR);
 		break;
 
 	case (uint32_t) I2C3:
 		PRINT_DBG("MPU6050 I2C ERROR: ");
-		MPU6050_Error_Callback();
+		MPU6050_Error_Callback();  // Optional, PollingServer uses OS flags
+		osEventFlagsSet(flagsOSHandle, FLAG_GYRO_ERROR);
 		break;
 
 	default:
