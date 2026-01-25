@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 6.14
+ * Model version                  : 6.70
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Fri Jan 23 13:35:43 2026
+ * C/C++ source code generated on : Sun Jan 25 18:52:03 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -21,8 +21,8 @@
 #define Board1_types_h_
 #include "sensors.h"
 #include "decision.h"
-#include "states.h"
 #include "enums.h"
+#include "states.h"
 
 /* Forward declaration for rtModel */
 typedef struct tag_RTM_Board1_T RT_MODEL_Board1_T;

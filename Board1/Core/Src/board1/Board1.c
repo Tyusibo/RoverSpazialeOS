@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 6.14
+ * Model version                  : 6.70
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Fri Jan 23 13:35:43 2026
+ * C/C++ source code generated on : Sun Jan 25 18:52:03 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -19,11 +19,16 @@
 
 #include "Board1.h"
 #include "rtwtypes.h"
+#include "sensors.h"
+#include "states.h"
+#include "enums.h"
 #include "decision.h"
+#include <math.h>
 #include "controller_masks.h"
-#include "crc_functions.h"
 #include "frame_size.h"
+#include "crc_functions.h"
 #include "ActionsModel.h"
+#include "Boards_Health.h"
 #include "RedLedsActuation.h"
 
 /* Named constants for Chart: '<Root>/SupervisorB1' */
@@ -36,18 +41,24 @@
 #define Board1_IN_ComputeDecision      ((uint8_T)1U)
 #define Board1_IN_D_Receive            ((uint8_T)2U)
 #define Board1_IN_D_Transmit           ((uint8_T)3U)
+#define Board1_IN_Degraded             ((uint8_T)2U)
+#define Board1_IN_DegradedCase         ((uint8_T)1U)
+#define Board1_IN_Emergency            ((uint8_T)3U)
+#define Board1_IN_EmergencyCase        ((uint8_T)2U)
 #define Board1_IN_EnterDegraded        ((uint8_T)3U)
 #define Board1_IN_EnterDegraded_k      ((uint8_T)1U)
-#define Board1_IN_ExchangeDecision     ((uint8_T)2U)
-#define Board1_IN_ExchangeGlobalState  ((uint8_T)3U)
-#define Board1_IN_ExchangeLocalState   ((uint8_T)4U)
+#define Board1_IN_ErrorStateDecision   ((uint8_T)2U)
+#define Board1_IN_ExchangeDecision     ((uint8_T)3U)
+#define Board1_IN_ExchangeGlobalState  ((uint8_T)4U)
+#define Board1_IN_ExchangeLocalState   ((uint8_T)5U)
+#define Board1_IN_Faulty               ((uint8_T)4U)
 #define Board1_IN_GL_Receive           ((uint8_T)2U)
 #define Board1_IN_GL_Transmit          ((uint8_T)3U)
 #define Board1_IN_LS_Receive           ((uint8_T)1U)
 #define Board1_IN_LS_Transmit          ((uint8_T)2U)
 #define Board1_IN_LightEvaluation      ((uint8_T)2U)
 #define Board1_IN_NO_ACTIVE_CHILD      ((uint8_T)0U)
-#define Board1_IN_NotCommunicating     ((uint8_T)2U)
+#define Board1_IN_NotCommunicating     ((uint8_T)5U)
 #define Board1_IN_R_ArmingReceive      ((uint8_T)4U)
 #define Board1_IN_R_CheckCRC           ((uint8_T)5U)
 #define Board1_IN_R_ReadyToReceive     ((uint8_T)6U)
@@ -62,10 +73,14 @@
 #define Board1_IN_SendNack             ((uint8_T)10U)
 #define Board1_IN_SupervisionEnded     ((uint8_T)5U)
 #define Board1_IN_Trasmit              ((uint8_T)6U)
-#define Board1_IN_UserActionComputation ((uint8_T)5U)
+#define Board1_IN_UpdateDecision       ((uint8_T)3U)
+#define Board1_IN_UpdateRoverState     ((uint8_T)5U)
+#define Board1_IN_UpdateRoverState_h   ((uint8_T)4U)
+#define Board1_IN_UserActionComputation ((uint8_T)6U)
 #define Board1_IN_WaitAck              ((uint8_T)7U)
 #define Board_IN_EmergencyStateAnalysis ((uint8_T)1U)
 #define Board_IN_RoverActionComputation ((uint8_T)3U)
+#define IN_ValidateReceivedSensorReadin ((uint8_T)3U)
 
 /* Block signals (default storage) */
 B_Board1_T Board1_B;
@@ -84,34 +99,277 @@ static RT_MODEL_Board1_T Board1_M_;
 RT_MODEL_Board1_T *const Board1_M = &Board1_M_;
 
 /* Forward declaration for local functions */
-static ENUM_UserAction Board1_computeUserAction(int16_T x_lever, int16_T y_lever,
-  uint16_T buttons, uint16_T braking_hard_mask, uint16_T braking_smooth_mask);
+static ENUM_Error Board1_validateSensorReadings(uint8_T sensorReadings, real_T
+  errorMask);
+static void Board1_ExchangeLocalState(void);
 static ENUM_StatusWhiteLed Board1_evaluateLed(uint16_T buttons, uint16_T
   lastButtons, ENUM_StatusWhiteLed previousLedStatus, uint16_T button_mask);
+static void Board1_emergencyCheck(real32_T globalStateRover_localStateB1_s,
+  real32_T globalStateRover_localStateB1_0, real32_T
+  globalStateRover_localStateB1_1, real32_T globalStateRover_localStateB1_2,
+  Temperature globalStateRover_localStateB1_t, BatteryLevel
+  globalStateRover_localStateB1_b, uint16_T globalStateRover_localStateB2_s,
+  uint16_T globalStateRover_localStateB2_0, uint16_T
+  globalStateRover_localStateB2_1, Gyroscope globalStateRover_localStateB2_g,
+  int16_T globalStateRover_localStateB2_r, int16_T
+  globalStateRover_localStateB2_2, ENUM_Error *errB1, ENUM_Error *errB2);
+static ENUM_StatusRover Board1_convertInENUMRoverStatus(ENUM_BoardStatus
+  B1_status, ENUM_BoardStatus B2_status);
+static ENUM_UserAction Board1_computeUserAction(int16_T x_lever, int16_T y_lever,
+  uint16_T buttons, uint16_T braking_hard_mask, uint16_T braking_smooth_mask);
 static void Board1_ExchangeDecision(void);
+static void Board1_coherenceVerification(real32_T localStateSent_speed_motor1,
+  real32_T localStateSent_speed_motor2, real32_T localStateSent_speed_motor3,
+  real32_T localStateSent_speed_motor4, Temperature localStateSent_temperature,
+  BatteryLevel localStateSent_batteryLevel, uint8_T
+  localStateSent_sensorReadings, uint16_T localStateReceived_sonar_left,
+  uint16_T localStateReceived_sonar_front, uint16_T
+  localStateReceived_sonar_right, Gyroscope localStateReceived_gyroscope,
+  int16_T localStateReceived_remoteContro, int16_T
+  localStateReceived_remoteCont_0, uint16_T localStateReceived_remoteCont_1,
+  uint8_T localStateReceived_sensorReadin, const BUS_LocalStateB1
+  globalStateReceived_localStateB, const BUS_LocalStateB2
+  globalStateReceived_localStat_0, ENUM_Error *errB1, ENUM_Error *errB2);
 static void Board1_ExchangeGlobalState(void);
 
 /* Function for Chart: '<Root>/SupervisorB1' */
-static ENUM_UserAction Board1_computeUserAction(int16_T x_lever, int16_T y_lever,
-  uint16_T buttons, uint16_T braking_hard_mask, uint16_T braking_smooth_mask)
+static ENUM_Error Board1_validateSensorReadings(uint8_T sensorReadings, real_T
+  errorMask)
 {
-  ENUM_UserAction userAction;
-  userAction = UA_NONE;
-  if ((buttons & braking_hard_mask) == braking_hard_mask) {
-    userAction = UA_BRAKING_HARD;
-  } else if ((buttons & braking_smooth_mask) == braking_smooth_mask) {
-    userAction = UA_BRAKING_SMOOTH;
-  } else if (x_lever < 0) {
-    userAction = UA_ROTATE_LEFT;
-  } else if (x_lever > 0) {
-    userAction = UA_ROTATE_RIGHT;
-  } else if (y_lever > 0) {
-    userAction = UA_FORWARD;
-  } else if (y_lever < 0) {
-    userAction = UA_BACKWARD;
+  ENUM_Error resultSensorReadings;
+  if ((sensorReadings & (uint8_T)errorMask) != 0) {
+    resultSensorReadings = ERROR_PRESENT;
+  } else {
+    resultSensorReadings = NO_ERROR;
   }
 
-  return userAction;
+  return resultSensorReadings;
+}
+
+/* Function for Chart: '<Root>/SupervisorB1' */
+static void Board1_ExchangeLocalState(void)
+{
+  switch (Board1_DW.is_ExchangeLocalState) {
+   case Board1_IN_LS_Receive:
+    switch (Board1_DW.is_LS_Receive) {
+     case Board1_IN_ArmingReceive:
+      if (Board1_DW.receiveArmed == 1) {
+        Board1_DW.is_LS_Receive = Board1_IN_ReadyToReceive;
+        setRTR();
+      }
+      break;
+
+     case Board1_IN_CheckCRC:
+      switch (Board1_DW.flagCRC) {
+       case 1:
+        Board1_DW.is_LS_Receive = Board1_IN_SendAck;
+        UART_SendAckIT();
+        break;
+
+       case 0:
+        Board1_DW.is_LS_Receive = Board1_IN_SendNack;
+        UART_SendNackIT();
+        break;
+      }
+      break;
+
+     case Board1_IN_EnterDegraded:
+      break;
+
+     case Board1_IN_R_ArmingReceive:
+      if (Board1_DW.receiveArmed == 1) {
+        Board1_DW.is_LS_Receive = Board1_IN_R_ReadyToReceive;
+        setRTR();
+      }
+      break;
+
+     case Board1_IN_R_CheckCRC:
+      switch (Board1_DW.flagCRC) {
+       case 1:
+        Board1_DW.is_LS_Receive = Board1_IN_SendAck;
+        UART_SendAckIT();
+        break;
+
+       case 0:
+        Board1_DW.is_LS_Receive = Board1_IN_R_SendNack;
+        UART_SendNackIT();
+        break;
+      }
+      break;
+
+     case Board1_IN_R_ReadyToReceive:
+      if (errorReceived() == 1) {
+        resetRTR();
+        Board1_DW.is_LS_Receive = Board1_IN_R_SendNack;
+        UART_SendNackIT();
+      } else if (hasReceived() == 1) {
+        Board1_DW.flagCRC = 0U;
+        resetRTR();
+        Board1_DW.is_LS_Receive = Board1_IN_R_CheckCRC;
+
+        /* Inport: '<Root>/rx_buffer' */
+        Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
+          Board1_DW.rxPayload);
+      }
+      break;
+
+     case Board1_IN_R_SendNack:
+      Board1_DW.is_LS_Receive = Board1_IN_EnterDegraded;
+      enterDegraded();
+      break;
+
+     case Board1_IN_ReadyToReceive:
+      if (errorReceived() == 1) {
+        /* RxErrorCallBack */
+        resetRTR();
+        Board1_DW.is_LS_Receive = Board1_IN_SendNack;
+        UART_SendNackIT();
+      } else if (hasReceived() == 1) {
+        Board1_DW.flagCRC = 0U;
+        resetRTR();
+        Board1_DW.is_LS_Receive = Board1_IN_CheckCRC;
+
+        /* Inport: '<Root>/rx_buffer' */
+        Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
+          Board1_DW.rxPayload);
+      }
+      break;
+
+     case Board1_IN_SendAck:
+      Board1_DW.is_LS_Receive = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.exit_port_index_LS_Receive = 2U;
+      break;
+
+     default:
+      /* case IN_SendNack: */
+      Board1_DW.is_LS_Receive = Board1_IN_R_ArmingReceive;
+
+      /* Inport: '<Root>/rx_buffer' */
+      Board1_DW.receiveArmed = UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)
+        (Board1_DW.rxPayload + ((uint8_T)CRC_SIZE)));
+      break;
+    }
+
+    if (Board1_DW.exit_port_index_LS_Receive == 2U) {
+      Board1_DW.exit_port_index_LS_Receive = 0U;
+
+      /* Inport: '<Root>/rx_buffer' */
+      deserializeLocalStateB2(&Board1_U.rx_buffer[0], Board1_DW.rxPayload,
+        &Board1_DW.board2LocalState);
+      Board1_DW.is_ExchangeLocalState = IN_ValidateReceivedSensorReadin;
+      Board1_B.errorB1 = Board1_validateSensorReadings
+        (Board1_DW.board1LocalState.sensorReadings, 7.0);
+      Board1_B.errorB2 = Board1_validateSensorReadings
+        (Board1_DW.board2LocalState.sensorReadings, 7.0);
+    }
+    break;
+
+   case Board1_IN_LS_Transmit:
+    switch (Board1_DW.is_LS_Transmit) {
+     case Board1_IN_EnterDegraded_k:
+      break;
+
+     case Board1_IN_R_ReceivingRTR:
+      if (checkRTR() != 0) {
+        Board1_DW.is_LS_Transmit = Board1_IN_R_Trasmit;
+        UART_ReceiveAckIT();
+
+        /* Outport: '<Root>/tx_buffer' */
+        UART_TransmitIT(&Board1_Y.tx_buffer[0], (uint64_T)(Board1_DW.txPayload +
+          ((uint8_T)CRC_SIZE)));
+      }
+      break;
+
+     case Board1_IN_R_Trasmit:
+      Board1_DW.is_LS_Transmit = Board1_IN_R_WaitAck;
+      break;
+
+     case Board1_IN_R_WaitAck:
+      if (hasReceived() == 1) {
+        if (UART_CheckAck() == 0) {
+          Board1_DW.is_LS_Transmit = Board1_IN_EnterDegraded_k;
+          enterDegraded();
+        } else if (UART_CheckAck() == 1) {
+          Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_LS_Transmit = 2U;
+        }
+      }
+      break;
+
+     case Board1_IN_ReceivingRTR:
+      if (checkRTR() != 0) {
+        Board1_DW.is_LS_Transmit = Board1_IN_Trasmit;
+        UART_ReceiveAckIT();
+
+        /* Outport: '<Root>/tx_buffer' */
+        UART_TransmitIT(&Board1_Y.tx_buffer[0], (uint64_T)(Board1_DW.txPayload +
+          ((uint8_T)CRC_SIZE)));
+      }
+      break;
+
+     case Board1_IN_Trasmit:
+      Board1_DW.is_LS_Transmit = Board1_IN_WaitAck;
+      break;
+
+     default:
+      /* case IN_WaitAck: */
+      if (hasReceived() == 1) {
+        if (UART_CheckAck() == 1) {
+          Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_LS_Transmit = 2U;
+        } else if (UART_CheckAck() == 0) {
+          Board1_DW.is_LS_Transmit = Board1_IN_R_ReceivingRTR;
+        }
+      }
+      break;
+    }
+
+    if (Board1_DW.exit_port_index_LS_Transmit == 2U) {
+      Board1_DW.exit_port_index_LS_Transmit = 0U;
+      Board1_DW.is_ExchangeLocalState = Board1_IN_LS_Receive;
+      Board1_DW.is_LS_Receive = Board1_IN_ArmingReceive;
+
+      /* Inport: '<Root>/rx_buffer' */
+      Board1_DW.receiveArmed = UART_ReceiveIT(&Board1_U.rx_buffer[0], (uint64_T)
+        (Board1_DW.rxPayload + ((uint8_T)CRC_SIZE)));
+    }
+    break;
+
+   default:
+    /* case IN_ValidateReceivedSensorReadings: */
+    if ((Board1_B.errorB1 == NO_ERROR) && (Board1_B.errorB2 == NO_ERROR)) {
+      Board1_DW.is_ExchangeLocalState = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.exit_port_index_ExchangeLocalSt = 3U;
+    } else {
+      Board1_DW.is_ExchangeLocalState = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.exit_port_index_ExchangeLocalSt = 2U;
+    }
+    break;
+  }
+
+  switch (Board1_DW.exit_port_index_ExchangeLocalSt) {
+   case 2:
+    Board1_DW.exit_port_index_ExchangeLocalSt = 0U;
+    Board1_DW.is_CommunicationPhase = Board1_IN_ErrorStateDecision;
+    Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateRoverState_h;
+
+    /* ModelReference: '<Root>/Boards_Health' */
+    Boards_Hea_Update_boards_status(&Board1_B.errorB1, &Board1_B.errorB2,
+      &Board1_B.Status_Board1, &Board1_B.Status_Board2);
+    break;
+
+   case 3:
+    Board1_DW.exit_port_index_ExchangeLocalSt = 0U;
+    Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeGlobalState;
+
+    /*  Entry exchange global state */
+    Board1_DW.txPayload = ((uint8_T)GLOBAL_STATE_FRAME_SIZE);
+    Board1_DW.rxPayload = ((uint8_T)GLOBAL_STATE_FRAME_SIZE);
+    Board1_DW.is_ExchangeGlobalState = Boar_IN_ComputingOwnGlobalState;
+    Board1_B.board1GlobalState.localStateB1 = Board1_DW.board1LocalState;
+    Board1_B.board1GlobalState.localStateB2 = Board1_DW.board2LocalState;
+    break;
+  }
 }
 
 /* Function for Chart: '<Root>/SupervisorB1' */
@@ -138,11 +396,110 @@ static ENUM_StatusWhiteLed Board1_evaluateLed(uint16_T buttons, uint16_T
 }
 
 /* Function for Chart: '<Root>/SupervisorB1' */
+static void Board1_emergencyCheck(real32_T globalStateRover_localStateB1_s,
+  real32_T globalStateRover_localStateB1_0, real32_T
+  globalStateRover_localStateB1_1, real32_T globalStateRover_localStateB1_2,
+  Temperature globalStateRover_localStateB1_t, BatteryLevel
+  globalStateRover_localStateB1_b, uint16_T globalStateRover_localStateB2_s,
+  uint16_T globalStateRover_localStateB2_0, uint16_T
+  globalStateRover_localStateB2_1, Gyroscope globalStateRover_localStateB2_g,
+  int16_T globalStateRover_localStateB2_r, int16_T
+  globalStateRover_localStateB2_2, ENUM_Error *errB1, ENUM_Error *errB2)
+{
+  *errB1 = NO_ERROR;
+  *errB2 = NO_ERROR;
+  if (fabsf(globalStateRover_localStateB1_s) > 200.0F) {
+    *errB1 = ERROR_PRESENT;
+  } else if (fabsf(globalStateRover_localStateB1_0) > 200.0F) {
+    *errB1 = ERROR_PRESENT;
+  } else if (fabsf(globalStateRover_localStateB1_1) > 200.0F) {
+    *errB1 = ERROR_PRESENT;
+  } else if (fabsf(globalStateRover_localStateB1_2) > 200.0F) {
+    *errB1 = ERROR_PRESENT;
+  }
+
+  if ((globalStateRover_localStateB1_t < 0.0F) ||
+      (globalStateRover_localStateB1_t > 60.0F)) {
+    *errB1 = ERROR_PRESENT;
+  }
+
+  if ((globalStateRover_localStateB1_b < 23) || (globalStateRover_localStateB1_b
+       > 100)) {
+    *errB1 = ERROR_PRESENT;
+  }
+
+  if ((globalStateRover_localStateB2_s > 400) ||
+      (globalStateRover_localStateB2_0 > 400) ||
+      (globalStateRover_localStateB2_1 > 400)) {
+    *errB2 = ERROR_PRESENT;
+  }
+
+  if (globalStateRover_localStateB2_g > 360) {
+    *errB2 = ERROR_PRESENT;
+  }
+
+  if ((globalStateRover_localStateB2_2 < -512) ||
+      (globalStateRover_localStateB2_2 > 512) ||
+      (globalStateRover_localStateB2_r < -512) ||
+      (globalStateRover_localStateB2_r > 512)) {
+    *errB2 = ERROR_PRESENT;
+  }
+}
+
+/* Function for Chart: '<Root>/SupervisorB1' */
+static ENUM_StatusRover Board1_convertInENUMRoverStatus(ENUM_BoardStatus
+  B1_status, ENUM_BoardStatus B2_status)
+{
+  ENUM_StatusRover res;
+  if ((B1_status == BOARD_FAULT) && (B2_status == BOARD_FAULT)) {
+    res = EMERGENCY;
+  } else if (B1_status == BOARD_FAULT) {
+    res = FAULTY_B1_DEGRADED_B2;
+  } else if (B2_status == BOARD_FAULT) {
+    res = FAULTY_B2_DEGRADED_B1;
+  } else if ((B1_status == BOARD_ERROR) && (B2_status == BOARD_ERROR)) {
+    res = ERROR_BOTH;
+  } else if (B1_status == BOARD_ERROR) {
+    res = ERROR_B1;
+  } else if (B2_status == BOARD_ERROR) {
+    res = ERROR_B2;
+  } else {
+    res = NORMAL;
+  }
+
+  return res;
+}
+
+/* Function for Chart: '<Root>/SupervisorB1' */
+static ENUM_UserAction Board1_computeUserAction(int16_T x_lever, int16_T y_lever,
+  uint16_T buttons, uint16_T braking_hard_mask, uint16_T braking_smooth_mask)
+{
+  ENUM_UserAction userAction;
+  userAction = UA_NONE;
+  if ((buttons & braking_hard_mask) == braking_hard_mask) {
+    userAction = UA_BRAKING_HARD;
+  } else if ((buttons & braking_smooth_mask) == braking_smooth_mask) {
+    userAction = UA_BRAKING_SMOOTH;
+  } else if (x_lever < 0) {
+    userAction = UA_ROTATE_LEFT;
+  } else if (x_lever > 0) {
+    userAction = UA_ROTATE_RIGHT;
+  } else if (y_lever > 0) {
+    userAction = UA_FORWARD;
+  } else if (y_lever < 0) {
+    userAction = UA_BACKWARD;
+  }
+
+  return userAction;
+}
+
+/* Function for Chart: '<Root>/SupervisorB1' */
 static void Board1_ExchangeDecision(void)
 {
   switch (Board1_DW.is_ExchangeDecision) {
    case Board1_IN_CompareDecision:
-    if ((Board1_DW.result == 1) || (Board1_DW.result == 0)) {
+    /* [result == 1 || result == 0] */
+    if (Board1_DW.result == 1) {
       Board1_DW.is_ExchangeDecision = Board1_IN_RedLedsActuation;
 
       /* ModelReference: '<Root>/RedLedsActuation' */
@@ -347,15 +704,155 @@ static void Board1_ExchangeDecision(void)
     /* Outport: '<Root>/supervision_ended' */
     /* case IN_SupervisionEnded: */
     Board1_Y.supervision_ended = 1U;
-    Board1_DW.is_ExchangeDecision = Board1_IN_NO_ACTIVE_CHILD;
-    Board1_DW.exit_port_index_ExchangeDecisio = 2U;
+    switch (Board1_B.board1Decision.roverState) {
+     case EMERGENCY:
+      Board1_DW.is_ExchangeDecision = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.exit_port_index_ExchangeDecisio = 3U;
+      break;
+
+     case FAULTY_B1_DEGRADED_B2:
+      Board1_DW.is_ExchangeDecision = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.exit_port_index_ExchangeDecisio = 4U;
+      break;
+
+     case FAULTY_B2_DEGRADED_B1:
+      Board1_DW.is_ExchangeDecision = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.exit_port_index_ExchangeDecisio = 2U;
+      break;
+
+     default:
+      Board1_DW.is_ExchangeDecision = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.exit_port_index_ExchangeDecisio = 5U;
+      break;
+    }
     break;
   }
 
-  if (Board1_DW.exit_port_index_ExchangeDecisio == 2U) {
+  switch (Board1_DW.exit_port_index_ExchangeDecisio) {
+   case 2:
     Board1_DW.exit_port_index_ExchangeDecisio = 0U;
     Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
     Board1_DW.exit_port_index_CommunicationPh = 2U;
+    break;
+
+   case 3:
+    Board1_DW.exit_port_index_ExchangeDecisio = 0U;
+    Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
+    Board1_DW.exit_port_index_CommunicationPh = 3U;
+    break;
+
+   case 4:
+    Board1_DW.exit_port_index_ExchangeDecisio = 0U;
+    Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
+    Board1_DW.exit_port_index_CommunicationPh = 4U;
+    break;
+
+   case 5:
+    Board1_DW.exit_port_index_ExchangeDecisio = 0U;
+    Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
+    Board1_DW.exit_port_index_CommunicationPh = 5U;
+    break;
+  }
+}
+
+/* Function for Chart: '<Root>/SupervisorB1' */
+static void Board1_coherenceVerification(real32_T localStateSent_speed_motor1,
+  real32_T localStateSent_speed_motor2, real32_T localStateSent_speed_motor3,
+  real32_T localStateSent_speed_motor4, Temperature localStateSent_temperature,
+  BatteryLevel localStateSent_batteryLevel, uint8_T
+  localStateSent_sensorReadings, uint16_T localStateReceived_sonar_left,
+  uint16_T localStateReceived_sonar_front, uint16_T
+  localStateReceived_sonar_right, Gyroscope localStateReceived_gyroscope,
+  int16_T localStateReceived_remoteContro, int16_T
+  localStateReceived_remoteCont_0, uint16_T localStateReceived_remoteCont_1,
+  uint8_T localStateReceived_sensorReadin, const BUS_LocalStateB1
+  globalStateReceived_localStateB, const BUS_LocalStateB2
+  globalStateReceived_localStat_0, ENUM_Error *errB1, ENUM_Error *errB2)
+{
+  boolean_T p;
+  boolean_T s_p;
+  *errB1 = NO_ERROR;
+  *errB2 = NO_ERROR;
+  p = false;
+  if (localStateSent_sensorReadings ==
+      globalStateReceived_localStateB.sensorReadings) {
+    if (localStateSent_batteryLevel ==
+        globalStateReceived_localStateB.batteryLevel) {
+      if (localStateSent_temperature ==
+          globalStateReceived_localStateB.temperature) {
+        if (localStateSent_speed_motor4 ==
+            globalStateReceived_localStateB.speed.motor4) {
+          if (localStateSent_speed_motor3 ==
+              globalStateReceived_localStateB.speed.motor3) {
+            s_p = ((localStateSent_speed_motor2 ==
+                    globalStateReceived_localStateB.speed.motor2) &&
+                   (localStateSent_speed_motor1 ==
+                    globalStateReceived_localStateB.speed.motor1));
+          } else {
+            s_p = false;
+          }
+        } else {
+          s_p = false;
+        }
+      } else {
+        s_p = false;
+      }
+    } else {
+      s_p = false;
+    }
+  } else {
+    s_p = false;
+  }
+
+  if (s_p) {
+    p = true;
+  }
+
+  if (!p) {
+    *errB1 = ERROR_PRESENT;
+  }
+
+  p = false;
+  if (localStateReceived_sensorReadin ==
+      globalStateReceived_localStat_0.sensorReadings) {
+    if (localStateReceived_remoteCont_1 ==
+        globalStateReceived_localStat_0.remoteController.buttons) {
+      s_p = ((localStateReceived_remoteCont_0 ==
+              globalStateReceived_localStat_0.remoteController.x_lever) &&
+             (localStateReceived_remoteContro ==
+              globalStateReceived_localStat_0.remoteController.y_lever));
+    } else {
+      s_p = false;
+    }
+
+    if (s_p) {
+      if (localStateReceived_gyroscope ==
+          globalStateReceived_localStat_0.gyroscope) {
+        if (localStateReceived_sonar_right ==
+            globalStateReceived_localStat_0.sonar.right) {
+          s_p = ((localStateReceived_sonar_front ==
+                  globalStateReceived_localStat_0.sonar.front) &&
+                 (localStateReceived_sonar_left ==
+                  globalStateReceived_localStat_0.sonar.left));
+        } else {
+          s_p = false;
+        }
+      } else {
+        s_p = false;
+      }
+    } else {
+      s_p = false;
+    }
+  } else {
+    s_p = false;
+  }
+
+  if (s_p) {
+    p = true;
+  }
+
+  if (!p) {
+    *errB2 = ERROR_PRESENT;
   }
 }
 
@@ -560,6 +1057,24 @@ static void Board1_ExchangeGlobalState(void)
 
     /*  Entry compute decision */
     Board1_DW.is_ComputeDecision = B_IN_StateCoherenceVerification;
+    Board1_coherenceVerification(Board1_DW.board1LocalState.speed.motor1,
+      Board1_DW.board1LocalState.speed.motor2,
+      Board1_DW.board1LocalState.speed.motor3,
+      Board1_DW.board1LocalState.speed.motor4,
+      Board1_DW.board1LocalState.temperature,
+      Board1_DW.board1LocalState.batteryLevel,
+      Board1_DW.board1LocalState.sensorReadings,
+      Board1_DW.board2LocalState.sonar.left,
+      Board1_DW.board2LocalState.sonar.front,
+      Board1_DW.board2LocalState.sonar.right,
+      Board1_DW.board2LocalState.gyroscope,
+      Board1_DW.board2LocalState.remoteController.y_lever,
+      Board1_DW.board2LocalState.remoteController.x_lever,
+      Board1_DW.board2LocalState.remoteController.buttons,
+      Board1_DW.board2LocalState.sensorReadings,
+      Board1_B.board1GlobalState.localStateB1,
+      Board1_B.board1GlobalState.localStateB2, &Board1_B.errorB1,
+      &Board1_B.errorB2);
   }
 }
 
@@ -567,8 +1082,8 @@ static void Board1_ExchangeGlobalState(void)
 void Board1_step(void)
 {
   /* Chart: '<Root>/SupervisorB1' incorporates:
+   *  Inport: '<Root>/areSensorsValid'
    *  Inport: '<Root>/batteryLevel'
-   *  Inport: '<Root>/rx_buffer'
    *  Inport: '<Root>/speed'
    *  Inport: '<Root>/temperature'
    *  Outport: '<Root>/roverAction'
@@ -589,308 +1104,281 @@ void Board1_step(void)
 
     /* Outport: '<Root>/supervision_ended' */
     Board1_Y.supervision_ended = 0U;
-  } else if (Board1_DW.is_RoverState == Board1_IN_CommunicationPhase) {
-    switch (Board1_DW.is_CommunicationPhase) {
-     case Board1_IN_ComputeDecision:
-      switch (Board1_DW.is_ComputeDecision) {
-       case Board_IN_EmergencyStateAnalysis:
-        Board1_DW.is_ComputeDecision = Board1_IN_UserActionComputation;
-        Board1_B.board1Decision.userAction = Board1_computeUserAction
-          (Board1_B.board1GlobalState.localStateB2.remoteController.x_lever,
-           Board1_B.board1GlobalState.localStateB2.remoteController.y_lever,
-           Board1_B.board1GlobalState.localStateB2.remoteController.buttons,
-           ((uint16_T)BRAKING_HARD_MASK), ((uint16_T)BRAKING_SMOOTH_MASK));
+  } else {
+    switch (Board1_DW.is_RoverState) {
+     case Board1_IN_CommunicationPhase:
+      switch (Board1_DW.is_CommunicationPhase) {
+       case Board1_IN_ComputeDecision:
+        switch (Board1_DW.is_ComputeDecision) {
+         case Board_IN_EmergencyStateAnalysis:
+          if ((Board1_B.errorB1 == NO_ERROR) && (Board1_B.errorB2 == NO_ERROR))
+          {
+            Board1_DW.is_ComputeDecision = Board1_IN_UpdateRoverState;
 
-        /* Outport: '<Root>/currentUserAction' */
-        Board1_Y.currentUserAction = Board1_B.board1Decision.userAction;
+            /* ModelReference: '<Root>/Boards_Health' */
+            Boards_Hea_Update_boards_status(&Board1_B.errorB1, &Board1_B.errorB2,
+              &Board1_B.Status_Board1, &Board1_B.Status_Board2);
+          } else {
+            Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
+            Board1_DW.exit_port_index_ComputeDecision = 2U;
+          }
+          break;
+
+         case Board1_IN_LightEvaluation:
+          Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_ComputeDecision = 3U;
+          break;
+
+         case Board_IN_RoverActionComputation:
+          Board1_DW.is_ComputeDecision = Board1_IN_LightEvaluation;
+          Board1_B.board1Decision.leds.white.left = Board1_evaluateLed
+            (Board1_B.board1GlobalState.localStateB2.remoteController.buttons,
+             Board1_DW.previousButtons, Board1_DW.previousWhiteLeftLed,
+             ((uint16_T)WHITE_LEFT_LED_MASK));
+          Board1_B.board1Decision.leds.white.right = Board1_evaluateLed
+            (Board1_B.board1GlobalState.localStateB2.remoteController.buttons,
+             Board1_DW.previousButtons, Board1_DW.previousWhiteRightLed,
+             ((uint16_T)WHITE_RIGHT_LED_MASK));
+
+          /*  Aggiornamento variabili di stato */
+          Board1_DW.previousButtons =
+            Board1_B.board1GlobalState.localStateB2.remoteController.buttons;
+          Board1_DW.previousWhiteLeftLed =
+            Board1_B.board1Decision.leds.white.left;
+          Board1_DW.previousWhiteRightLed =
+            Board1_B.board1Decision.leds.white.right;
+          break;
+
+         case B_IN_StateCoherenceVerification:
+          if ((Board1_B.errorB1 == NO_ERROR) && (Board1_B.errorB2 == NO_ERROR))
+          {
+            Board1_DW.is_ComputeDecision = Board_IN_EmergencyStateAnalysis;
+            Board1_emergencyCheck
+              (Board1_B.board1GlobalState.localStateB1.speed.motor1,
+               Board1_B.board1GlobalState.localStateB1.speed.motor2,
+               Board1_B.board1GlobalState.localStateB1.speed.motor3,
+               Board1_B.board1GlobalState.localStateB1.speed.motor4,
+               Board1_B.board1GlobalState.localStateB1.temperature,
+               Board1_B.board1GlobalState.localStateB1.batteryLevel,
+               Board1_B.board1GlobalState.localStateB2.sonar.left,
+               Board1_B.board1GlobalState.localStateB2.sonar.front,
+               Board1_B.board1GlobalState.localStateB2.sonar.right,
+               Board1_B.board1GlobalState.localStateB2.gyroscope,
+               Board1_B.board1GlobalState.localStateB2.remoteController.y_lever,
+               Board1_B.board1GlobalState.localStateB2.remoteController.x_lever,
+               &Board1_B.errorB1, &Board1_B.errorB2);
+          } else {
+            Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
+            Board1_DW.exit_port_index_ComputeDecision = 2U;
+          }
+          break;
+
+         case Board1_IN_UpdateRoverState:
+          Board1_B.board1Decision.roverState = Board1_convertInENUMRoverStatus
+            (Board1_B.Status_Board1, Board1_B.Status_Board2);
+          Board1_DW.is_ComputeDecision = Board1_IN_UserActionComputation;
+          Board1_B.board1Decision.userAction = Board1_computeUserAction
+            (Board1_B.board1GlobalState.localStateB2.remoteController.x_lever,
+             Board1_B.board1GlobalState.localStateB2.remoteController.y_lever,
+             Board1_B.board1GlobalState.localStateB2.remoteController.buttons,
+             ((uint16_T)BRAKING_HARD_MASK), ((uint16_T)BRAKING_SMOOTH_MASK));
+
+          /* Outport: '<Root>/currentUserAction' */
+          Board1_Y.currentUserAction = Board1_B.board1Decision.userAction;
+          break;
+
+         default:
+          /* case IN_UserActionComputation: */
+          Board1_DW.is_ComputeDecision = Board_IN_RoverActionComputation;
+
+          /* ModelReference: '<Root>/ActionsModel' incorporates:
+           *  Outport: '<Root>/currentUserAction'
+           *  Outport: '<Root>/roverAction'
+           *  Outport: '<Root>/safeAction'
+           *  Outport: '<Root>/setPoint'
+           */
+          ActionsModel_ComputeRoverAction(&Board1_Y.currentUserAction,
+            &Board1_B.board1GlobalState.localStateB1.speed,
+            &Board1_B.board1GlobalState.localStateB2.remoteController.x_lever,
+            &Board1_B.board1GlobalState.localStateB2.remoteController.y_lever,
+            &Board1_B.board1GlobalState.localStateB2.gyroscope,
+            &Board1_B.board1GlobalState.localStateB2.sonar, &Board1_Y.setPoint,
+            &Board1_Y.roverAction, &Board1_Y.safeAction, &Board1_B.redLeds);
+          Board1_B.board1Decision.roverAction = Board1_Y.roverAction;
+          Board1_B.board1Decision.safeAction = Board1_Y.safeAction;
+          Board1_B.board1Decision.setPoint = Board1_Y.setPoint;
+
+          /*  Light update */
+          Board1_B.board1Decision.leds.red = Board1_B.redLeds;
+          break;
+        }
+
+        switch (Board1_DW.exit_port_index_ComputeDecision) {
+         case 2:
+          Board1_DW.exit_port_index_ComputeDecision = 0U;
+          Board1_DW.is_CommunicationPhase = Board1_IN_ErrorStateDecision;
+          Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateRoverState_h;
+
+          /* ModelReference: '<Root>/Boards_Health' */
+          Boards_Hea_Update_boards_status(&Board1_B.errorB1, &Board1_B.errorB2,
+            &Board1_B.Status_Board1, &Board1_B.Status_Board2);
+          break;
+
+         case 3:
+          Board1_DW.exit_port_index_ComputeDecision = 0U;
+          Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeDecision;
+
+          /*  Entry exchange decision */
+          Board1_DW.txPayload = ((uint8_T)DECISION_FRAME_SIZE);
+          Board1_DW.rxPayload = ((uint8_T)DECISION_FRAME_SIZE);
+          serializeDecision(&Board1_Y.tx_buffer[0], &Board1_B.board1Decision);
+          computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
+          Board1_DW.is_ExchangeDecision = Board1_IN_D_Transmit;
+          Board1_DW.is_D_Transmit = Board1_IN_ReceivingRTR;
+          break;
+        }
         break;
 
-       case Board1_IN_LightEvaluation:
-        Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
-        Board1_DW.exit_port_index_ComputeDecision = 2U;
+       case Board1_IN_ErrorStateDecision:
+        switch (Board1_DW.is_ErrorStateDecision) {
+         case Board1_IN_DegradedCase:
+          Board1_DW.is_ErrorStateDecision = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_ErrorStateDecis = 2U;
+          break;
+
+         case Board1_IN_EmergencyCase:
+          Board1_DW.is_ErrorStateDecision = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_ErrorStateDecis = 2U;
+          break;
+
+         case Board1_IN_UpdateDecision:
+          switch (Board1_B.board1Decision.roverState) {
+           case FAULTY_B1_DEGRADED_B2:
+            Board1_DW.is_ErrorStateDecision = Board1_IN_DegradedCase;
+            Board1_B.board1Decision.actuator = BOARD2;
+            break;
+
+           case EMERGENCY:
+            Board1_DW.is_ErrorStateDecision = Board1_IN_EmergencyCase;
+
+            /* CHI DEVE ATTUARE? */
+            Board1_B.board1Decision.safeAction = SA_BRAKING_HARD;
+            Board1_B.board1Decision.roverAction = RA_BRAKING_HARD;
+            Board1_B.board1Decision.userAction = UA_BRAKING_HARD;
+            Board1_B.board1Decision.setPoint.leftAxis = 0.0F;
+            Board1_B.board1Decision.setPoint.rightAxis = 0.0F;
+            break;
+
+           default:
+            Board1_DW.is_ErrorStateDecision = Board1_IN_NO_ACTIVE_CHILD;
+            Board1_DW.exit_port_index_ErrorStateDecis = 2U;
+            break;
+          }
+          break;
+
+         default:
+          /* case IN_UpdateRoverState: */
+          Board1_B.board1Decision.roverState = Board1_convertInENUMRoverStatus
+            (Board1_B.Status_Board1, Board1_B.Status_Board2);
+          Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateDecision;
+
+          /*  printRoverState(board1Decision); */
+          Board1_B.board1Decision.leds.red.left = RED_BLINKING;
+          Board1_B.board1Decision.leds.red.right =
+            Board1_B.board1Decision.leds.red.left;
+          break;
+        }
+
+        if (Board1_DW.exit_port_index_ErrorStateDecis == 2U) {
+          Board1_DW.exit_port_index_ErrorStateDecis = 0U;
+          Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeDecision;
+
+          /*  Entry exchange decision */
+          Board1_DW.txPayload = ((uint8_T)DECISION_FRAME_SIZE);
+          Board1_DW.rxPayload = ((uint8_T)DECISION_FRAME_SIZE);
+          serializeDecision(&Board1_Y.tx_buffer[0], &Board1_B.board1Decision);
+          computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
+          Board1_DW.is_ExchangeDecision = Board1_IN_D_Transmit;
+          Board1_DW.is_D_Transmit = Board1_IN_ReceivingRTR;
+        }
         break;
 
-       case Board_IN_RoverActionComputation:
-        Board1_DW.is_ComputeDecision = Board1_IN_LightEvaluation;
-        Board1_B.board1Decision.leds.white.left = Board1_evaluateLed
-          (Board1_B.board1GlobalState.localStateB2.remoteController.buttons,
-           Board1_DW.previousButtons, Board1_DW.previousWhiteLeftLed, ((uint16_T)
-            WHITE_LEFT_LED_MASK));
-        Board1_B.board1Decision.leds.white.right = Board1_evaluateLed
-          (Board1_B.board1GlobalState.localStateB2.remoteController.buttons,
-           Board1_DW.previousButtons, Board1_DW.previousWhiteRightLed,
-           ((uint16_T)WHITE_RIGHT_LED_MASK));
-
-        /*  Aggiornamento variabili di stato */
-        Board1_DW.previousButtons =
-          Board1_B.board1GlobalState.localStateB2.remoteController.buttons;
-        Board1_DW.previousWhiteLeftLed = Board1_B.board1Decision.leds.white.left;
-        Board1_DW.previousWhiteRightLed =
-          Board1_B.board1Decision.leds.white.right;
+       case Board1_IN_ExchangeDecision:
+        Board1_ExchangeDecision();
         break;
 
-       case B_IN_StateCoherenceVerification:
-        Board1_DW.is_ComputeDecision = Board_IN_EmergencyStateAnalysis;
+       case Board1_IN_ExchangeGlobalState:
+        Board1_ExchangeGlobalState();
         break;
 
        default:
-        /* case IN_UserActionComputation: */
-        Board1_DW.is_ComputeDecision = Board_IN_RoverActionComputation;
-
-        /* ModelReference: '<Root>/ActionsModel' incorporates:
-         *  Outport: '<Root>/currentUserAction'
-         *  Outport: '<Root>/roverAction'
-         *  Outport: '<Root>/safeAction'
-         *  Outport: '<Root>/setPoint'
-         */
-        ActionsModel_ComputeRoverAction(&Board1_Y.currentUserAction,
-          &Board1_B.board1GlobalState.localStateB1.speed,
-          &Board1_B.board1GlobalState.localStateB2.remoteController.x_lever,
-          &Board1_B.board1GlobalState.localStateB2.remoteController.y_lever,
-          &Board1_B.board1GlobalState.localStateB2.gyroscope,
-          &Board1_B.board1GlobalState.localStateB2.sonar, &Board1_Y.setPoint,
-          &Board1_Y.roverAction, &Board1_Y.safeAction, &Board1_B.redLeds);
-        Board1_B.board1Decision.roverAction = Board1_Y.roverAction;
-        Board1_B.board1Decision.safeAction = Board1_Y.safeAction;
-        Board1_B.board1Decision.setPoint = Board1_Y.setPoint;
-
-        /*  Light update */
-        Board1_B.board1Decision.leds.red = Board1_B.redLeds;
+        /* case IN_ExchangeLocalState: */
+        Board1_ExchangeLocalState();
         break;
       }
 
-      if (Board1_DW.exit_port_index_ComputeDecision == 2U) {
-        Board1_DW.exit_port_index_ComputeDecision = 0U;
-        Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeDecision;
+      switch (Board1_DW.exit_port_index_CommunicationPh) {
+       case 2:
+        Board1_DW.exit_port_index_CommunicationPh = 0U;
+        Board1_DW.is_RoverState = Board1_IN_Degraded;
+        enterDegraded();
+        break;
 
-        /*  Entry exchange decision */
-        Board1_DW.txPayload = ((uint8_T)DECISION_FRAME_SIZE);
-        Board1_DW.rxPayload = ((uint8_T)DECISION_FRAME_SIZE);
-        serializeDecision(&Board1_Y.tx_buffer[0], &Board1_B.board1Decision);
-        computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
-        Board1_DW.is_ExchangeDecision = Board1_IN_D_Transmit;
-        Board1_DW.is_D_Transmit = Board1_IN_ReceivingRTR;
+       case 3:
+        Board1_DW.exit_port_index_CommunicationPh = 0U;
+        Board1_DW.is_RoverState = Board1_IN_Emergency;
+
+        /* enterEmergency(); */
+        break;
+
+       case 4:
+        Board1_DW.exit_port_index_CommunicationPh = 0U;
+        Board1_DW.is_RoverState = Board1_IN_Faulty;
+
+        /* enterFaulty(); */
+        break;
+
+       case 5:
+        Board1_DW.exit_port_index_CommunicationPh = 0U;
+        Board1_DW.is_RoverState = Board1_IN_NotCommunicating;
+
+        /* Outport: '<Root>/supervision_ended' */
+        Board1_Y.supervision_ended = 0U;
+        break;
       }
       break;
 
-     case Board1_IN_ExchangeDecision:
-      Board1_ExchangeDecision();
-      break;
-
-     case Board1_IN_ExchangeGlobalState:
-      Board1_ExchangeGlobalState();
+     case Board1_IN_Degraded:
+     case Board1_IN_Emergency:
+     case Board1_IN_Faulty:
       break;
 
      default:
-      /* case IN_ExchangeLocalState: */
-      if (Board1_DW.is_ExchangeLocalState == Board1_IN_LS_Receive) {
-        switch (Board1_DW.is_LS_Receive) {
-         case Board1_IN_ArmingReceive:
-          if (Board1_DW.receiveArmed == 1) {
-            Board1_DW.is_LS_Receive = Board1_IN_ReadyToReceive;
-            setRTR();
-          }
-          break;
+      /* Outport: '<Root>/supervision_ended' */
+      /* case IN_NotCommunicating: */
+      Board1_Y.supervision_ended = 0U;
+      Board1_DW.board1LocalState.speed = Board1_U.speed;
+      Board1_DW.board1LocalState.temperature = Board1_U.temperature;
+      Board1_DW.board1LocalState.batteryLevel = Board1_U.batteryLevel;
+      Board1_DW.board1LocalState.sensorReadings = Board1_U.areSensorsValid;
+      Board1_DW.is_RoverState = Board1_IN_CommunicationPhase;
+      Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeLocalState;
 
-         case Board1_IN_CheckCRC:
-          switch (Board1_DW.flagCRC) {
-           case 1:
-            Board1_DW.is_LS_Receive = Board1_IN_SendAck;
-            UART_SendAckIT();
-            break;
-
-           case 0:
-            Board1_DW.is_LS_Receive = Board1_IN_SendNack;
-            UART_SendNackIT();
-            break;
-          }
-          break;
-
-         case Board1_IN_EnterDegraded:
-          break;
-
-         case Board1_IN_R_ArmingReceive:
-          if (Board1_DW.receiveArmed == 1) {
-            Board1_DW.is_LS_Receive = Board1_IN_R_ReadyToReceive;
-            setRTR();
-          }
-          break;
-
-         case Board1_IN_R_CheckCRC:
-          switch (Board1_DW.flagCRC) {
-           case 1:
-            Board1_DW.is_LS_Receive = Board1_IN_SendAck;
-            UART_SendAckIT();
-            break;
-
-           case 0:
-            Board1_DW.is_LS_Receive = Board1_IN_R_SendNack;
-            UART_SendNackIT();
-            break;
-          }
-          break;
-
-         case Board1_IN_R_ReadyToReceive:
-          if (errorReceived() == 1) {
-            resetRTR();
-            Board1_DW.is_LS_Receive = Board1_IN_R_SendNack;
-            UART_SendNackIT();
-          } else if (hasReceived() == 1) {
-            Board1_DW.flagCRC = 0U;
-            resetRTR();
-            Board1_DW.is_LS_Receive = Board1_IN_R_CheckCRC;
-            Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
-              Board1_DW.rxPayload);
-          }
-          break;
-
-         case Board1_IN_R_SendNack:
-          Board1_DW.is_LS_Receive = Board1_IN_EnterDegraded;
-          enterDegraded();
-          break;
-
-         case Board1_IN_ReadyToReceive:
-          if (errorReceived() == 1) {
-            /* RxErrorCallBack */
-            resetRTR();
-            Board1_DW.is_LS_Receive = Board1_IN_SendNack;
-            UART_SendNackIT();
-          } else if (hasReceived() == 1) {
-            Board1_DW.flagCRC = 0U;
-            resetRTR();
-            Board1_DW.is_LS_Receive = Board1_IN_CheckCRC;
-            Board1_DW.flagCRC = compareCRC(&Board1_U.rx_buffer[0],
-              Board1_DW.rxPayload);
-          }
-          break;
-
-         case Board1_IN_SendAck:
-          Board1_DW.is_LS_Receive = Board1_IN_NO_ACTIVE_CHILD;
-          Board1_DW.exit_port_index_LS_Receive = 2U;
-          break;
-
-         default:
-          /* case IN_SendNack: */
-          Board1_DW.is_LS_Receive = Board1_IN_R_ArmingReceive;
-          Board1_DW.receiveArmed = UART_ReceiveIT(&Board1_U.rx_buffer[0],
-            (uint64_T)(Board1_DW.rxPayload + ((uint8_T)CRC_SIZE)));
-          break;
-        }
-
-        if (Board1_DW.exit_port_index_LS_Receive == 2U) {
-          Board1_DW.exit_port_index_LS_Receive = 0U;
-          deserializeLocalStateB2(&Board1_U.rx_buffer[0], Board1_DW.rxPayload,
-            &Board1_DW.board2LocalState);
-          Board1_DW.is_ExchangeLocalState = Board1_IN_NO_ACTIVE_CHILD;
-          Board1_DW.exit_port_index_ExchangeLocalSt = 2U;
-        }
-      } else {
-        /* case IN_LS_Transmit: */
-        switch (Board1_DW.is_LS_Transmit) {
-         case Board1_IN_EnterDegraded_k:
-          break;
-
-         case Board1_IN_R_ReceivingRTR:
-          if (checkRTR() != 0) {
-            Board1_DW.is_LS_Transmit = Board1_IN_R_Trasmit;
-            UART_ReceiveAckIT();
-            UART_TransmitIT(&Board1_Y.tx_buffer[0], (uint64_T)
-                            (Board1_DW.txPayload + ((uint8_T)CRC_SIZE)));
-          }
-          break;
-
-         case Board1_IN_R_Trasmit:
-          Board1_DW.is_LS_Transmit = Board1_IN_R_WaitAck;
-          break;
-
-         case Board1_IN_R_WaitAck:
-          if (hasReceived() == 1) {
-            if (UART_CheckAck() == 0) {
-              Board1_DW.is_LS_Transmit = Board1_IN_EnterDegraded_k;
-              enterDegraded();
-            } else if (UART_CheckAck() == 1) {
-              Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
-              Board1_DW.exit_port_index_LS_Transmit = 2U;
-            }
-          }
-          break;
-
-         case Board1_IN_ReceivingRTR:
-          if (checkRTR() != 0) {
-            Board1_DW.is_LS_Transmit = Board1_IN_Trasmit;
-            UART_ReceiveAckIT();
-            UART_TransmitIT(&Board1_Y.tx_buffer[0], (uint64_T)
-                            (Board1_DW.txPayload + ((uint8_T)CRC_SIZE)));
-          }
-          break;
-
-         case Board1_IN_Trasmit:
-          Board1_DW.is_LS_Transmit = Board1_IN_WaitAck;
-          break;
-
-         default:
-          /* case IN_WaitAck: */
-          if (hasReceived() == 1) {
-            if (UART_CheckAck() == 1) {
-              Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
-              Board1_DW.exit_port_index_LS_Transmit = 2U;
-            } else if (UART_CheckAck() == 0) {
-              Board1_DW.is_LS_Transmit = Board1_IN_R_ReceivingRTR;
-            }
-          }
-          break;
-        }
-
-        if (Board1_DW.exit_port_index_LS_Transmit == 2U) {
-          Board1_DW.exit_port_index_LS_Transmit = 0U;
-          Board1_DW.is_ExchangeLocalState = Board1_IN_LS_Receive;
-          Board1_DW.is_LS_Receive = Board1_IN_ArmingReceive;
-          Board1_DW.receiveArmed = UART_ReceiveIT(&Board1_U.rx_buffer[0],
-            (uint64_T)(Board1_DW.rxPayload + ((uint8_T)CRC_SIZE)));
-        }
-      }
-
-      if (Board1_DW.exit_port_index_ExchangeLocalSt == 2U) {
-        Board1_DW.exit_port_index_ExchangeLocalSt = 0U;
-        Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeGlobalState;
-
-        /*  Entry exchange global state */
-        Board1_DW.txPayload = ((uint8_T)GLOBAL_STATE_FRAME_SIZE);
-        Board1_DW.rxPayload = ((uint8_T)GLOBAL_STATE_FRAME_SIZE);
-        Board1_DW.is_ExchangeGlobalState = Boar_IN_ComputingOwnGlobalState;
-        Board1_B.board1GlobalState.localStateB1 = Board1_DW.board1LocalState;
-        Board1_B.board1GlobalState.localStateB2 = Board1_DW.board2LocalState;
-      }
+      /*  Entry exchange local state */
+      Board1_DW.txPayload = ((uint8_T)LOCAL_STATE_B1_FRAME_SIZE);
+      Board1_DW.rxPayload = ((uint8_T)LOCAL_STATE_B2_FRAME_SIZE);
+      serializeLocalStateB1(&Board1_Y.tx_buffer[0], &Board1_DW.board1LocalState);
+      computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
+      Board1_DW.is_ExchangeLocalState = Board1_IN_LS_Transmit;
+      Board1_DW.is_LS_Transmit = Board1_IN_ReceivingRTR;
       break;
     }
-
-    if (Board1_DW.exit_port_index_CommunicationPh == 2U) {
-      Board1_DW.exit_port_index_CommunicationPh = 0U;
-      Board1_DW.is_RoverState = Board1_IN_NotCommunicating;
-
-      /* Outport: '<Root>/supervision_ended' */
-      Board1_Y.supervision_ended = 0U;
-    }
-  } else {
-    /* Outport: '<Root>/supervision_ended' */
-    /* case IN_NotCommunicating: */
-    Board1_Y.supervision_ended = 0U;
-    Board1_DW.board1LocalState.speed = Board1_U.speed;
-    Board1_DW.board1LocalState.temperature = Board1_U.temperature;
-    Board1_DW.board1LocalState.batteryLevel = Board1_U.batteryLevel;
-    Board1_DW.is_RoverState = Board1_IN_CommunicationPhase;
-    Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeLocalState;
-
-    /*  Entry exchange local state */
-    Board1_DW.txPayload = ((uint8_T)LOCAL_STATE_B1_FRAME_SIZE);
-    Board1_DW.rxPayload = ((uint8_T)LOCAL_STATE_B2_FRAME_SIZE);
-    serializeLocalStateB1(&Board1_Y.tx_buffer[0], &Board1_DW.board1LocalState);
-    computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
-    Board1_DW.is_ExchangeLocalState = Board1_IN_LS_Transmit;
-    Board1_DW.is_LS_Transmit = Board1_IN_ReceivingRTR;
   }
 
   /* End of Chart: '<Root>/SupervisorB1' */
+
+  /* Outport: '<Root>/roverState' */
+  Board1_Y.roverState = Board1_B.board1Decision.roverState;
 }
 
 /* Model initialize function */
@@ -898,6 +1386,9 @@ void Board1_initialize(void)
 {
   /* Model Initialize function for ModelReference Block: '<Root>/ActionsModel' */
   ActionsModel_initialize(rtmGetErrorStatusPointer(Board1_M));
+
+  /* Model Initialize function for ModelReference Block: '<Root>/Boards_Health' */
+  Boards_Health_initialize(rtmGetErrorStatusPointer(Board1_M));
 
   /* Model Initialize function for ModelReference Block: '<Root>/RedLedsActuation' */
   RedLedsActuation_initialize(rtmGetErrorStatusPointer(Board1_M));
@@ -912,6 +1403,9 @@ void Board1_initialize(void)
    *  Outport: '<Root>/setPoint'
    */
   ActionsModel_Init(&Board1_Y.setPoint, &Board1_Y.roverAction, &Board1_B.redLeds);
+
+  /* SystemInitialize for ModelReference: '<Root>/Boards_Health' */
+  Boards_Health_Init();
 }
 
 /* Model terminate function */
