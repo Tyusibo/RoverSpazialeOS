@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 6.90
+ * Model version                  : 7.10
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Mon Jan 26 15:51:24 2026
+ * C/C++ source code generated on : Mon Jan 26 17:47:50 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -31,12 +31,14 @@
 #include "BoardsHealth.h"
 #include "MotorsHealth.h"
 #include "RedLedsActuation.h"
+#include "RoverTemperatureHealth.h"
 
 /* Named constants for Chart: '<Root>/SupervisorB1' */
-#define B_IN_StateCoherenceVerification ((uint8_T)4U)
+#define B_IN_StateCoherenceVerification ((uint8_T)6U)
 #define Boar_IN_ComputingOwnGlobalState ((uint8_T)1U)
 #define Board1_IN_ArmingReceive        ((uint8_T)1U)
 #define Board1_IN_CheckCRC             ((uint8_T)2U)
+#define Board1_IN_CheckMotorsHealth    ((uint8_T)1U)
 #define Board1_IN_CommunicationPhase   ((uint8_T)1U)
 #define Board1_IN_CompareDecision      ((uint8_T)1U)
 #define Board1_IN_ComputeDecision      ((uint8_T)1U)
@@ -47,7 +49,7 @@
 #define Board1_IN_Emergency            ((uint8_T)3U)
 #define Board1_IN_EmergencyCase        ((uint8_T)2U)
 #define Board1_IN_EnterDegraded        ((uint8_T)3U)
-#define Board1_IN_EnterDegraded_k      ((uint8_T)1U)
+#define Board1_IN_EnterDegraded_j      ((uint8_T)1U)
 #define Board1_IN_ErrorStateDecision   ((uint8_T)2U)
 #define Board1_IN_ExchangeDecision     ((uint8_T)3U)
 #define Board1_IN_ExchangeGlobalState  ((uint8_T)4U)
@@ -57,7 +59,7 @@
 #define Board1_IN_GL_Transmit          ((uint8_T)3U)
 #define Board1_IN_LS_Receive           ((uint8_T)1U)
 #define Board1_IN_LS_Transmit          ((uint8_T)2U)
-#define Board1_IN_LightEvaluation      ((uint8_T)2U)
+#define Board1_IN_LightEvaluation      ((uint8_T)4U)
 #define Board1_IN_NO_ACTIVE_CHILD      ((uint8_T)0U)
 #define Board1_IN_NotCommunicating     ((uint8_T)5U)
 #define Board1_IN_R_ArmingReceive      ((uint8_T)4U)
@@ -75,12 +77,13 @@
 #define Board1_IN_SupervisionEnded     ((uint8_T)5U)
 #define Board1_IN_Trasmit              ((uint8_T)6U)
 #define Board1_IN_UpdateDecision       ((uint8_T)3U)
-#define Board1_IN_UpdateRoverState     ((uint8_T)5U)
-#define Board1_IN_UpdateRoverState_h   ((uint8_T)4U)
-#define Board1_IN_UserActionComputation ((uint8_T)6U)
+#define Board1_IN_UpdateRoverState     ((uint8_T)7U)
+#define Board1_IN_UpdateRoverState_a   ((uint8_T)4U)
+#define Board1_IN_UserActionComputation ((uint8_T)8U)
 #define Board1_IN_WaitAck              ((uint8_T)7U)
-#define Board_IN_EmergencyStateAnalysis ((uint8_T)1U)
-#define Board_IN_RoverActionComputation ((uint8_T)3U)
+#define Board_IN_CheckTemperatureHealth ((uint8_T)2U)
+#define Board_IN_EmergencyStateAnalysis ((uint8_T)3U)
+#define Board_IN_RoverActionComputation ((uint8_T)5U)
 #define IN_ValidateReceivedSensorReadin ((uint8_T)3U)
 
 /* Block signals (default storage) */
@@ -267,7 +270,7 @@ static void Board1_ExchangeLocalState(void)
 
    case Board1_IN_LS_Transmit:
     switch (Board1_DW.is_LS_Transmit) {
-     case Board1_IN_EnterDegraded_k:
+     case Board1_IN_EnterDegraded_j:
       break;
 
      case Board1_IN_R_ReceivingRTR:
@@ -288,7 +291,7 @@ static void Board1_ExchangeLocalState(void)
      case Board1_IN_R_WaitAck:
       if (hasReceived() == 1) {
         if (UART_CheckAck() == 0) {
-          Board1_DW.is_LS_Transmit = Board1_IN_EnterDegraded_k;
+          Board1_DW.is_LS_Transmit = Board1_IN_EnterDegraded_j;
           enterDegraded();
         } else if (UART_CheckAck() == 1) {
           Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
@@ -352,7 +355,7 @@ static void Board1_ExchangeLocalState(void)
    case 2:
     Board1_DW.exit_port_index_ExchangeLocalSt = 0U;
     Board1_DW.is_CommunicationPhase = Board1_IN_ErrorStateDecision;
-    Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateRoverState_h;
+    Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateRoverState_a;
 
     /* ModelReference: '<Root>/BoardsHealth' */
     BoardsHealth_UpdateBoardsStatus(&Board1_B.errorB1, &Board1_B.errorB2,
@@ -628,7 +631,7 @@ static void Board1_ExchangeDecision(void)
 
    case Board1_IN_D_Transmit:
     switch (Board1_DW.is_D_Transmit) {
-     case Board1_IN_EnterDegraded_k:
+     case Board1_IN_EnterDegraded_j:
       break;
 
      case Board1_IN_R_ReceivingRTR:
@@ -649,7 +652,7 @@ static void Board1_ExchangeDecision(void)
      case Board1_IN_R_WaitAck:
       if (hasReceived() == 1) {
         if (UART_CheckAck() == 0) {
-          Board1_DW.is_D_Transmit = Board1_IN_EnterDegraded_k;
+          Board1_DW.is_D_Transmit = Board1_IN_EnterDegraded_j;
           enterDegraded();
         } else if (UART_CheckAck() == 1) {
           Board1_DW.is_D_Transmit = Board1_IN_NO_ACTIVE_CHILD;
@@ -703,14 +706,8 @@ static void Board1_ExchangeDecision(void)
     /* Outport: '<Root>/supervision_ended' */
     Board1_Y.supervision_ended = 1U;
 
-    /* ModelReference: '<Root>/MotorsHealth' incorporates:
-     *  Outport: '<Root>/board1Decision'
-     *  Outport: '<Root>/board1GlobalState'
-     */
     /* printGlobalState(board1GlobalState); printGlobalState(board2GlobalState);
        printDecision(board1Decision); printDecision(board2Decision); */
-    MotorsHealth_checkMotorHealth(&Board1_Y.board1Decision.setPoint,
-      &Board1_Y.board1GlobalState.localStateB1.speed, &Board1_B.motorsHealth);
     break;
 
    default:
@@ -998,7 +995,7 @@ static void Board1_ExchangeGlobalState(void)
    default:
     /* case IN_GL_Transmit: */
     switch (Board1_DW.is_GL_Transmit) {
-     case Board1_IN_EnterDegraded_k:
+     case Board1_IN_EnterDegraded_j:
       break;
 
      case Board1_IN_R_ReceivingRTR:
@@ -1019,7 +1016,7 @@ static void Board1_ExchangeGlobalState(void)
      case Board1_IN_R_WaitAck:
       if (hasReceived() == 1) {
         if (UART_CheckAck() == 0) {
-          Board1_DW.is_GL_Transmit = Board1_IN_EnterDegraded_k;
+          Board1_DW.is_GL_Transmit = Board1_IN_EnterDegraded_j;
           enterDegraded();
         } else if (UART_CheckAck() == 1) {
           Board1_DW.is_GL_Transmit = Board1_IN_NO_ACTIVE_CHILD;
@@ -1128,14 +1125,37 @@ void Board1_step(void)
       switch (Board1_DW.is_CommunicationPhase) {
        case Board1_IN_ComputeDecision:
         switch (Board1_DW.is_ComputeDecision) {
+         case Board1_IN_CheckMotorsHealth:
+          Board1_DW.is_ComputeDecision = Board_IN_CheckTemperatureHealth;
+
+          /* ModelReference: '<Root>/RoverTemperatureHealth' incorporates:
+           *  Outport: '<Root>/board1GlobalState'
+           */
+          Ro_UpdateRoverTemperatureHealth
+            (&Board1_Y.board1GlobalState.localStateB1.temperature,
+             &Board1_B.roverTemperatureHealth);
+          break;
+
+         case Board_IN_CheckTemperatureHealth:
+          Board1_DW.is_ComputeDecision = Board1_IN_UpdateRoverState;
+
+          /* ModelReference: '<Root>/BoardsHealth' */
+          BoardsHealth_UpdateBoardsStatus(&Board1_B.errorB1, &Board1_B.errorB2,
+            &Board1_B.Status_Board1, &Board1_B.Status_Board2);
+          break;
+
          case Board_IN_EmergencyStateAnalysis:
           if ((Board1_B.errorB1 == NO_ERROR) && (Board1_B.errorB2 == NO_ERROR))
           {
-            Board1_DW.is_ComputeDecision = Board1_IN_UpdateRoverState;
+            Board1_DW.is_ComputeDecision = Board1_IN_CheckMotorsHealth;
 
-            /* ModelReference: '<Root>/BoardsHealth' */
-            BoardsHealth_UpdateBoardsStatus(&Board1_B.errorB1, &Board1_B.errorB2,
-              &Board1_B.Status_Board1, &Board1_B.Status_Board2);
+            /* ModelReference: '<Root>/MotorsHealth' incorporates:
+             *  Outport: '<Root>/board1Decision'
+             *  Outport: '<Root>/board1GlobalState'
+             */
+            MotorsHealth_UpdateMotorsHealth(&Board1_Y.board1Decision.setPoint,
+              &Board1_Y.board1GlobalState.localStateB1.speed,
+              &Board1_B.motorsHealth);
           } else {
             Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
             Board1_DW.exit_port_index_ComputeDecision = 2U;
@@ -1230,7 +1250,7 @@ void Board1_step(void)
          case 2:
           Board1_DW.exit_port_index_ComputeDecision = 0U;
           Board1_DW.is_CommunicationPhase = Board1_IN_ErrorStateDecision;
-          Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateRoverState_h;
+          Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateRoverState_a;
 
           /* ModelReference: '<Root>/BoardsHealth' */
           BoardsHealth_UpdateBoardsStatus(&Board1_B.errorB1, &Board1_B.errorB2,
@@ -1406,6 +1426,9 @@ void Board1_initialize(void)
   /* Model Initialize function for ModelReference Block: '<Root>/RedLedsActuation' */
   RedLedsActuation_initialize(rtmGetErrorStatusPointer(Board1_M));
 
+  /* Model Initialize function for ModelReference Block: '<Root>/RoverTemperatureHealth' */
+  RoverTemperatureHeal_initialize(rtmGetErrorStatusPointer(Board1_M));
+
   /* SystemInitialize for ModelReference: '<Root>/RedLedsActuation' incorporates:
    *  Outport: '<Root>/board1Decision'
    */
@@ -1424,6 +1447,11 @@ void Board1_initialize(void)
    *  Outport: '<Root>/board1GlobalState'
    */
   MotorsHealth_Init();
+
+  /* SystemInitialize for ModelReference: '<Root>/RoverTemperatureHealth' incorporates:
+   *  Outport: '<Root>/board1GlobalState'
+   */
+  RoverTemperatureHealth_Init();
 }
 
 /* Model terminate function */
