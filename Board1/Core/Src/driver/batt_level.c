@@ -141,24 +141,24 @@ int8_t battery_get_percentage_linear(float voltage, float min_v, float max_v, ui
     float perc = 0;
 
     if(percentage == NULL){
-        return -1;
+        return BATT_LEVEL_FAIL;
     }
 
     if(voltage < 0){
-        return -1;
+        return BATT_LEVEL_FAIL;
     }
 
     if(voltage <= min_v){
         *percentage = MIN_BATT_PERC;
-        return 0;
+        return BATT_LEVEL_OK;
     }
     if(voltage >= max_v){
         *percentage = MAX_BATT_PERC;
-        return 0;
+        return BATT_LEVEL_OK;
     }
 
     perc = ((voltage - min_v)/(max_v-min_v))*100.0f;
     *percentage = (uint8_t)(perc + 0.5f);
 
-    return 0;
+    return BATT_LEVEL_OK;
 }

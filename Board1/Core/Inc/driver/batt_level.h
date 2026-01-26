@@ -51,6 +51,17 @@
 #define MIN_BATT_PERC (0)
 
 /**
+ * @brief Operation successful.
+ */
+#define BATT_LEVEL_OK (0)
+
+/**
+ * @brief Operation failed.
+ */
+#define BATT_LEVEL_FAIL (-1)
+
+
+/**
  * @brief Battery level monitor structure.
  *
  * This structure holds the configuration and state for a battery level monitor instance.
