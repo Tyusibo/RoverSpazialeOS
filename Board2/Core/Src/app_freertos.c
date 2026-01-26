@@ -377,13 +377,13 @@ void StartSupervisor(void *argument) {
 
 		/* Applica disabilitazione */
 		if (disable_left)
-			Board2_U.sonar.left = 500;
+			Board2_U.sonar.left = 400;
 
 		if (disable_front)
-			Board2_U.sonar.front = 500;
+			Board2_U.sonar.front = 400;
 
 		if (disable_right)
-			Board2_U.sonar.right = 500;
+			Board2_U.sonar.right = 400;
 
 		/* END FAKE SONAR */
 
@@ -471,7 +471,7 @@ void StartReadSonars(void *argument) {
 
 		Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,
 						sonarRight.distance };
-//		Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, (uint16_t) 500,
+//		Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, (uint16_t) 400,
 //						sonarRight.distance };
 
 #if PRINT_TASK

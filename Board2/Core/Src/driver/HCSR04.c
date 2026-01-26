@@ -30,7 +30,7 @@
 #define TIM2_TICKS_PER_US     (16.0f)           // 16 MHz -> 16 ticks/us
 #define TRIG_PULSE_US         (10u)
 #define DISTANCE_LIMIT 		  400  // 400 cm = 4 m
-#define DEFAULT_TIMEOUT_VALUE 500  // 500 cm = 5 m
+#define DEFAULT_TIMEOUT_VALUE 390  // 390 cm = 3.9 m
 #define MAX_SECONDS 240000  // 24,000 us = 24 ms = 0.024 s
 // Equivalent to time to travel 8 meters round trip (4m max range standard sonar)
 
