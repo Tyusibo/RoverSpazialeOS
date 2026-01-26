@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 6.29
+ * Model version                  : 6.39
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Sun Jan 25 18:57:00 2026
+ * C/C++ source code generated on : Mon Jan 26 15:56:59 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -21,14 +21,15 @@
 #include "rtwtypes.h"
 #include "sensors.h"
 #include "states.h"
-#include "enums.h"
+#include "Board2_types.h"
 #include "decision.h"
 #include <math.h>
 #include "controller_masks.h"
 #include "frame_size.h"
 #include "crc_functions.h"
 #include "ActionsModel.h"
-#include "Boards_Health.h"
+#include "BoardsHealth.h"
+#include "MotorsHealth.h"
 
 /* Named constants for Chart: '<Root>/SupervisorB2' */
 #define B_IN_StateCoherenceVerification ((uint8_T)4U)
@@ -350,8 +351,8 @@ static void Board2_ExchangeLocalState(void)
     Board2_DW.is_CommunicationPhase = Board2_IN_ErrorStateDecision;
     Board2_DW.is_ErrorStateDecision = Board2_IN_UpdateRoverState_b;
 
-    /* ModelReference: '<Root>/Boards_Health' */
-    Boards_Hea_Update_boards_status(&Board2_B.errorB1, &Board2_B.errorB2,
+    /* ModelReference: '<Root>/BoardsHealth' */
+    BoardsHealth_UpdateBoardsStatus(&Board2_B.errorB1, &Board2_B.errorB2,
       &Board2_B.Status_Board1, &Board2_B.Status_Board2);
     break;
 
@@ -363,11 +364,10 @@ static void Board2_ExchangeLocalState(void)
     Board2_DW.txPayload = ((uint8_T)GLOBAL_STATE_FRAME_SIZE);
     Board2_DW.rxPayload = ((uint8_T)GLOBAL_STATE_FRAME_SIZE);
     Board2_DW.is_ExchangeGlobalState = Boar_IN_ComputingOwnGlobalState;
-    Board2_B.board2GlobalState.localStateB1 = Board2_DW.board1LocalState;
 
-    /*  forse dovrei fare una copia del backup all'inizio del mio stato,
-       siccome durante la trasmissione le variabili possono cambiare */
-    Board2_B.board2GlobalState.localStateB2 = Board2_DW.board2LocalState;
+    /* Outport: '<Root>/board1GlobalState' */
+    Board2_Y.board1GlobalState.localStateB1 = Board2_DW.board1LocalState;
+    Board2_Y.board1GlobalState.localStateB2 = Board2_DW.board2LocalState;
     break;
   }
 }
@@ -505,8 +505,14 @@ static void Board2_ExchangeDecision(void)
       /* Outport: '<Root>/supervision_ended' */
       Board2_Y.supervision_ended = 1U;
 
+      /* ModelReference: '<Root>/MotorsHealth' incorporates:
+       *  Outport: '<Root>/board1Decision'
+       *  Outport: '<Root>/board1GlobalState'
+       */
       /* printGlobalState(board1GlobalState); printGlobalState(board2GlobalState);
          printDecision(board1Decision); printDecision(board2Decision); */
+      MotorsHealth_checkMotorHealth(&Board2_Y.board1Decision.setPoint,
+        &Board2_Y.board1GlobalState.localStateB1.speed, &Board2_B.motorsHealth);
     }
     break;
 
@@ -616,8 +622,10 @@ static void Board2_ExchangeDecision(void)
       deserializeDecision(&Board2_U.rx_buffer[0], Board2_DW.rxPayload,
                           &Board2_DW.board1Decision);
 
-      /* Outport: '<Root>/tx_buffer' */
-      serializeDecision(&Board2_Y.tx_buffer[0], &Board2_B.board2Decision);
+      /* Outport: '<Root>/tx_buffer' incorporates:
+       *  Outport: '<Root>/board1Decision'
+       */
+      serializeDecision(&Board2_Y.tx_buffer[0], &Board2_Y.board1Decision);
       computeCRC(&Board2_Y.tx_buffer[0], Board2_DW.txPayload);
       Board2_DW.is_ExchangeDecision = Board2_IN_D_Transmit;
       Board2_DW.is_D_Transmit = Board2_IN_ReceivingRTR;
@@ -687,8 +695,10 @@ static void Board2_ExchangeDecision(void)
     if (Board2_DW.exit_port_index_D_Transmit == 2U) {
       Board2_DW.exit_port_index_D_Transmit = 0U;
       Board2_DW.is_ExchangeDecision = Board2_IN_CompareDecision;
+
+      /* Outport: '<Root>/board1Decision' */
       Board2_DW.result = BUS_Decision_Equals(&Board2_DW.board1Decision,
-        &Board2_B.board2Decision);
+        &Board2_Y.board1Decision);
     }
     break;
 
@@ -967,8 +977,10 @@ static void Board2_ExchangeGlobalState(void)
       deserializeGlobalState(&Board2_U.rx_buffer[0], Board2_DW.rxPayload,
         &Board2_DW.board1GlobalState);
 
-      /* Outport: '<Root>/tx_buffer' */
-      serializeGlobalState(&Board2_Y.tx_buffer[0], &Board2_B.board2GlobalState);
+      /* Outport: '<Root>/tx_buffer' incorporates:
+       *  Outport: '<Root>/board1GlobalState'
+       */
+      serializeGlobalState(&Board2_Y.tx_buffer[0], &Board2_Y.board1GlobalState);
       computeCRC(&Board2_Y.tx_buffer[0], Board2_DW.txPayload);
       Board2_DW.is_ExchangeGlobalState = Board2_IN_GL_Transmit;
       Board2_DW.is_GL_Transmit = Board2_IN_ReceivingRTR;
@@ -1050,6 +1062,8 @@ static void Board2_ExchangeGlobalState(void)
 
     /*  Entry compute decision */
     Board2_DW.is_ComputeDecision = B_IN_StateCoherenceVerification;
+
+    /* Outport: '<Root>/board1GlobalState' */
     Board2_coherenceVerification(Board2_DW.board1LocalState.speed.motor1,
       Board2_DW.board1LocalState.speed.motor2,
       Board2_DW.board1LocalState.speed.motor3,
@@ -1065,8 +1079,8 @@ static void Board2_ExchangeGlobalState(void)
       Board2_DW.board2LocalState.remoteController.x_lever,
       Board2_DW.board2LocalState.remoteController.buttons,
       Board2_DW.board2LocalState.sensorReadings,
-      Board2_B.board2GlobalState.localStateB1,
-      Board2_B.board2GlobalState.localStateB2, &Board2_B.errorB1,
+      Board2_Y.board1GlobalState.localStateB1,
+      Board2_Y.board1GlobalState.localStateB2, &Board2_B.errorB1,
       &Board2_B.errorB2);
   }
 }
@@ -1080,22 +1094,21 @@ void Board2_step(void)
    *  Inport: '<Root>/remoteController'
    *  Inport: '<Root>/rx_buffer'
    *  Inport: '<Root>/sonar'
-   *  Outport: '<Root>/roverAction'
-   *  Outport: '<Root>/safeAction'
-   *  Outport: '<Root>/setPoint'
+   *  Outport: '<Root>/board1Decision'
+   *  Outport: '<Root>/board1GlobalState'
    */
   if (Board2_DW.is_active_c3_Board2 == 0U) {
     Board2_DW.is_active_c3_Board2 = 1U;
-    Board2_B.board2Decision.actuator = BOARD1;
-
-    /* Outport: '<Root>/currentUserAction' */
-    Board2_Y.currentUserAction = UA_NONE;
+    Board2_Y.board1Decision.actuator = BOARD1;
+    Board2_B.previousUserAction = UA_NONE;
     Board2_DW.previousButtons = 0U;
     Board2_DW.previousWhiteLeftLed = WHITE_OFF;
     Board2_DW.previousWhiteRightLed = WHITE_OFF;
     Board2_DW.is_RoverState = Board2_IN_NotCommunicating;
 
-    /* Outport: '<Root>/supervision_ended' */
+    /* Outport: '<Root>/supervision_ended' incorporates:
+     *  Outport: '<Root>/board1Decision'
+     */
     Board2_Y.supervision_ended = 0U;
   } else {
     switch (Board2_DW.is_RoverState) {
@@ -1108,8 +1121,8 @@ void Board2_step(void)
           {
             Board2_DW.is_ComputeDecision = Board2_IN_UpdateRoverState;
 
-            /* ModelReference: '<Root>/Boards_Health' */
-            Boards_Hea_Update_boards_status(&Board2_B.errorB1, &Board2_B.errorB2,
+            /* ModelReference: '<Root>/BoardsHealth' */
+            BoardsHealth_UpdateBoardsStatus(&Board2_B.errorB1, &Board2_B.errorB2,
               &Board2_B.Status_Board1, &Board2_B.Status_Board2);
           } else {
             Board2_DW.is_ComputeDecision = Board2_IN_NO_ACTIVE_CHILD;
@@ -1124,22 +1137,22 @@ void Board2_step(void)
 
          case Board_IN_RoverActionComputation:
           Board2_DW.is_ComputeDecision = Board2_IN_LightEvaluation;
-          Board2_B.board2Decision.leds.white.left = Board2_evaluateLed
-            (Board2_B.board2GlobalState.localStateB2.remoteController.buttons,
+          Board2_Y.board1Decision.leds.white.left = Board2_evaluateLed
+            (Board2_Y.board1GlobalState.localStateB2.remoteController.buttons,
              Board2_DW.previousButtons, Board2_DW.previousWhiteLeftLed,
              ((uint16_T)WHITE_LEFT_LED_MASK));
-          Board2_B.board2Decision.leds.white.right = Board2_evaluateLed
-            (Board2_B.board2GlobalState.localStateB2.remoteController.buttons,
+          Board2_Y.board1Decision.leds.white.right = Board2_evaluateLed
+            (Board2_Y.board1GlobalState.localStateB2.remoteController.buttons,
              Board2_DW.previousButtons, Board2_DW.previousWhiteRightLed,
              ((uint16_T)WHITE_RIGHT_LED_MASK));
 
           /*  Aggiornamento variabili di stato */
           Board2_DW.previousButtons =
-            Board2_B.board2GlobalState.localStateB2.remoteController.buttons;
+            Board2_Y.board1GlobalState.localStateB2.remoteController.buttons;
           Board2_DW.previousWhiteLeftLed =
-            Board2_B.board2Decision.leds.white.left;
+            Board2_Y.board1Decision.leds.white.left;
           Board2_DW.previousWhiteRightLed =
-            Board2_B.board2Decision.leds.white.right;
+            Board2_Y.board1Decision.leds.white.right;
           break;
 
          case B_IN_StateCoherenceVerification:
@@ -1147,18 +1160,18 @@ void Board2_step(void)
           {
             Board2_DW.is_ComputeDecision = Boar_IN_EmergencyStateAnalysis1;
             Board2_emergencyCheck
-              (Board2_B.board2GlobalState.localStateB1.speed.motor1,
-               Board2_B.board2GlobalState.localStateB1.speed.motor2,
-               Board2_B.board2GlobalState.localStateB1.speed.motor3,
-               Board2_B.board2GlobalState.localStateB1.speed.motor4,
-               Board2_B.board2GlobalState.localStateB1.temperature,
-               Board2_B.board2GlobalState.localStateB1.batteryLevel,
-               Board2_B.board2GlobalState.localStateB2.sonar.left,
-               Board2_B.board2GlobalState.localStateB2.sonar.front,
-               Board2_B.board2GlobalState.localStateB2.sonar.right,
-               Board2_B.board2GlobalState.localStateB2.gyroscope,
-               Board2_B.board2GlobalState.localStateB2.remoteController.y_lever,
-               Board2_B.board2GlobalState.localStateB2.remoteController.x_lever,
+              (Board2_Y.board1GlobalState.localStateB1.speed.motor1,
+               Board2_Y.board1GlobalState.localStateB1.speed.motor2,
+               Board2_Y.board1GlobalState.localStateB1.speed.motor3,
+               Board2_Y.board1GlobalState.localStateB1.speed.motor4,
+               Board2_Y.board1GlobalState.localStateB1.temperature,
+               Board2_Y.board1GlobalState.localStateB1.batteryLevel,
+               Board2_Y.board1GlobalState.localStateB2.sonar.left,
+               Board2_Y.board1GlobalState.localStateB2.sonar.front,
+               Board2_Y.board1GlobalState.localStateB2.sonar.right,
+               Board2_Y.board1GlobalState.localStateB2.gyroscope,
+               Board2_Y.board1GlobalState.localStateB2.remoteController.y_lever,
+               Board2_Y.board1GlobalState.localStateB2.remoteController.x_lever,
                &Board2_B.errorB1, &Board2_B.errorB2);
           } else {
             Board2_DW.is_ComputeDecision = Board2_IN_NO_ACTIVE_CHILD;
@@ -1167,17 +1180,15 @@ void Board2_step(void)
           break;
 
          case Board2_IN_UpdateRoverState:
-          Board2_B.board2Decision.roverState = Board2_convertInENUMRoverStatus
+          Board2_Y.board1Decision.roverState = Board2_convertInENUMRoverStatus
             (Board2_B.Status_Board1, Board2_B.Status_Board2);
           Board2_DW.is_ComputeDecision = Board2_IN_UserActionComputation;
-          Board2_B.board2Decision.userAction = Board2_computeUserAction
-            (Board2_B.board2GlobalState.localStateB2.remoteController.x_lever,
-             Board2_B.board2GlobalState.localStateB2.remoteController.y_lever,
-             Board2_B.board2GlobalState.localStateB2.remoteController.buttons,
+          Board2_Y.board1Decision.userAction = Board2_computeUserAction
+            (Board2_Y.board1GlobalState.localStateB2.remoteController.x_lever,
+             Board2_Y.board1GlobalState.localStateB2.remoteController.y_lever,
+             Board2_Y.board1GlobalState.localStateB2.remoteController.buttons,
              ((uint16_T)BRAKING_HARD_MASK), ((uint16_T)BRAKING_SMOOTH_MASK));
-
-          /* Outport: '<Root>/currentUserAction' */
-          Board2_Y.currentUserAction = Board2_B.board2Decision.userAction;
+          Board2_B.previousUserAction = Board2_Y.board1Decision.userAction;
           break;
 
          default:
@@ -1185,24 +1196,21 @@ void Board2_step(void)
           Board2_DW.is_ComputeDecision = Board_IN_RoverActionComputation;
 
           /* ModelReference: '<Root>/ActionsModel' incorporates:
-           *  Outport: '<Root>/currentUserAction'
-           *  Outport: '<Root>/roverAction'
-           *  Outport: '<Root>/safeAction'
-           *  Outport: '<Root>/setPoint'
+           *  Outport: '<Root>/board1GlobalState'
            */
-          ActionsModel_ComputeRoverAction(&Board2_Y.currentUserAction,
-            &Board2_B.board2GlobalState.localStateB1.speed,
-            &Board2_B.board2GlobalState.localStateB2.remoteController.x_lever,
-            &Board2_B.board2GlobalState.localStateB2.remoteController.y_lever,
-            &Board2_B.board2GlobalState.localStateB2.gyroscope,
-            &Board2_B.board2GlobalState.localStateB2.sonar, &Board2_Y.setPoint,
-            &Board2_Y.roverAction, &Board2_Y.safeAction, &Board2_B.redLeds);
-          Board2_B.board2Decision.roverAction = Board2_Y.roverAction;
-          Board2_B.board2Decision.safeAction = Board2_Y.safeAction;
-          Board2_B.board2Decision.setPoint = Board2_Y.setPoint;
+          ActionsModel_ComputeRoverAction(&Board2_B.previousUserAction,
+            &Board2_Y.board1GlobalState.localStateB1.speed,
+            &Board2_Y.board1GlobalState.localStateB2.remoteController.x_lever,
+            &Board2_Y.board1GlobalState.localStateB2.remoteController.y_lever,
+            &Board2_Y.board1GlobalState.localStateB2.gyroscope,
+            &Board2_Y.board1GlobalState.localStateB2.sonar, &Board2_B.setPoint,
+            &Board2_B.roverAction, &Board2_B.safeAction, &Board2_B.redLeds);
+          Board2_Y.board1Decision.roverAction = Board2_B.roverAction;
+          Board2_Y.board1Decision.safeAction = Board2_B.safeAction;
+          Board2_Y.board1Decision.setPoint = Board2_B.setPoint;
 
           /*  Light update */
-          Board2_B.board2Decision.leds.red = Board2_B.redLeds;
+          Board2_Y.board1Decision.leds.red = Board2_B.redLeds;
           break;
         }
 
@@ -1212,8 +1220,8 @@ void Board2_step(void)
           Board2_DW.is_CommunicationPhase = Board2_IN_ErrorStateDecision;
           Board2_DW.is_ErrorStateDecision = Board2_IN_UpdateRoverState_b;
 
-          /* ModelReference: '<Root>/Boards_Health' */
-          Boards_Hea_Update_boards_status(&Board2_B.errorB1, &Board2_B.errorB2,
+          /* ModelReference: '<Root>/BoardsHealth' */
+          BoardsHealth_UpdateBoardsStatus(&Board2_B.errorB1, &Board2_B.errorB2,
             &Board2_B.Status_Board1, &Board2_B.Status_Board2);
           break;
 
@@ -1245,21 +1253,21 @@ void Board2_step(void)
           break;
 
          case Board2_IN_UpdateLed:
-          switch (Board2_B.board2Decision.roverState) {
+          switch (Board2_Y.board1Decision.roverState) {
            case FAULTY_B1_DEGRADED_B2:
             Board2_DW.is_ErrorStateDecision = Board2_IN_ChangeActuatorToB2;
-            Board2_B.board2Decision.actuator = BOARD2;
+            Board2_Y.board1Decision.actuator = BOARD2;
             break;
 
            case EMERGENCY:
             Board2_DW.is_ErrorStateDecision = Board2_IN_EmergencyCase;
 
             /* CHI DEVE ATTUARE? */
-            Board2_B.board2Decision.safeAction = SA_BRAKING_HARD;
-            Board2_B.board2Decision.roverAction = RA_BRAKING_HARD;
-            Board2_B.board2Decision.userAction = UA_BRAKING_HARD;
-            Board2_B.board2Decision.setPoint.leftAxis = 0.0F;
-            Board2_B.board2Decision.setPoint.rightAxis = 0.0F;
+            Board2_Y.board1Decision.safeAction = SA_BRAKING_HARD;
+            Board2_Y.board1Decision.roverAction = RA_BRAKING_HARD;
+            Board2_Y.board1Decision.userAction = UA_BRAKING_HARD;
+            Board2_Y.board1Decision.setPoint.leftAxis = 0.0F;
+            Board2_Y.board1Decision.setPoint.rightAxis = 0.0F;
             break;
 
            default:
@@ -1271,12 +1279,12 @@ void Board2_step(void)
 
          default:
           /* case IN_UpdateRoverState: */
-          Board2_B.board2Decision.roverState = Board2_convertInENUMRoverStatus
+          Board2_Y.board1Decision.roverState = Board2_convertInENUMRoverStatus
             (Board2_B.Status_Board1, Board2_B.Status_Board2);
           Board2_DW.is_ErrorStateDecision = Board2_IN_UpdateLed;
-          Board2_B.board2Decision.leds.red.left = RED_BLINKING;
-          Board2_B.board2Decision.leds.red.right =
-            Board2_B.board2Decision.leds.red.left;
+          Board2_Y.board1Decision.leds.red.left = RED_BLINKING;
+          Board2_Y.board1Decision.leds.red.right =
+            Board2_Y.board1Decision.leds.red.left;
           break;
         }
 
@@ -1367,9 +1375,6 @@ void Board2_step(void)
   }
 
   /* End of Chart: '<Root>/SupervisorB2' */
-
-  /* Outport: '<Root>/roverState' */
-  Board2_Y.roverState = Board2_B.board2Decision.roverState;
 }
 
 /* Model initialize function */
@@ -1378,19 +1383,25 @@ void Board2_initialize(void)
   /* Model Initialize function for ModelReference Block: '<Root>/ActionsModel' */
   ActionsModel_initialize(rtmGetErrorStatusPointer(Board2_M));
 
-  /* Model Initialize function for ModelReference Block: '<Root>/Boards_Health' */
-  Boards_Health_initialize(rtmGetErrorStatusPointer(Board2_M));
+  /* Model Initialize function for ModelReference Block: '<Root>/BoardsHealth' */
+  BoardsHealth_initialize(rtmGetErrorStatusPointer(Board2_M));
+
+  /* Model Initialize function for ModelReference Block: '<Root>/MotorsHealth' */
+  MotorsHealth_initialize(rtmGetErrorStatusPointer(Board2_M));
 
   /* SystemInitialize for ModelReference: '<Root>/ActionsModel' incorporates:
-   *  Outport: '<Root>/currentUserAction'
-   *  Outport: '<Root>/roverAction'
-   *  Outport: '<Root>/safeAction'
-   *  Outport: '<Root>/setPoint'
+   *  Outport: '<Root>/board1GlobalState'
    */
-  ActionsModel_Init(&Board2_Y.setPoint, &Board2_Y.roverAction, &Board2_B.redLeds);
+  ActionsModel_Init(&Board2_B.setPoint, &Board2_B.roverAction, &Board2_B.redLeds);
 
-  /* SystemInitialize for ModelReference: '<Root>/Boards_Health' */
-  Boards_Health_Init();
+  /* SystemInitialize for ModelReference: '<Root>/BoardsHealth' */
+  BoardsHealth_Init();
+
+  /* SystemInitialize for ModelReference: '<Root>/MotorsHealth' incorporates:
+   *  Outport: '<Root>/board1Decision'
+   *  Outport: '<Root>/board1GlobalState'
+   */
+  MotorsHealth_Init();
 }
 
 /* Model terminate function */

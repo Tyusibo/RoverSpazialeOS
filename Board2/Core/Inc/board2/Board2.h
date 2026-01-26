@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 6.29
+ * Model version                  : 6.39
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Sun Jan 25 18:57:00 2026
+ * C/C++ source code generated on : Mon Jan 26 15:56:59 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -27,9 +27,8 @@
 
 #include "Board2_types.h"
 #include "sensors.h"
-#include "decision.h"
 #include "states.h"
-#include "enums.h"
+#include "decision.h"
 
 /* Macros for accessing real-time model data structure */
 #ifndef rtmGetErrorStatus
@@ -46,7 +45,6 @@
 
 /* user code (top of header file) */
 #include "controller_masks.h"
-#include "enums.h"
 #include "serialize.h"
 #include "deserialize.h"
 #include "comparator.h"
@@ -56,13 +54,16 @@
 
 /* Block signals (default storage) */
 typedef struct {
-  BUS_GlobalState board2GlobalState;   /* '<Root>/SupervisorB2' */
-  BUS_Decision board2Decision;         /* '<Root>/SupervisorB2' */
+  BUS_SetPoint setPoint;               /* '<Root>/ActionsModel' */
   BUS_RedLeds redLeds;                 /* '<Root>/ActionsModel' */
+  ENUM_UserAction previousUserAction;  /* '<Root>/SupervisorB2' */
+  ENUM_SafeAction safeAction;          /* '<Root>/ActionsModel' */
+  ENUM_RoverAction roverAction;        /* '<Root>/ActionsModel' */
+  ENUM_MotorStatus motorsHealth;       /* '<Root>/MotorsHealth' */
   ENUM_Error errorB1;                  /* '<Root>/SupervisorB2' */
   ENUM_Error errorB2;                  /* '<Root>/SupervisorB2' */
-  ENUM_BoardStatus Status_Board1;      /* '<Root>/Boards_Health' */
-  ENUM_BoardStatus Status_Board2;      /* '<Root>/Boards_Health' */
+  ENUM_BoardStatus Status_Board1;      /* '<Root>/BoardsHealth' */
+  ENUM_BoardStatus Status_Board2;      /* '<Root>/BoardsHealth' */
 } B_Board2_T;
 
 /* Block states (default storage) for system '<Root>' */
@@ -125,12 +126,9 @@ typedef struct {
 /* External outputs (root outports fed by signals with default storage) */
 typedef struct {
   uint8_T tx_buffer[64];               /* '<Root>/tx_buffer' */
-  BUS_SetPoint setPoint;               /* '<Root>/setPoint' */
-  ENUM_RoverAction roverAction;        /* '<Root>/roverAction' */
-  ENUM_SafeAction safeAction;          /* '<Root>/safeAction' */
-  ENUM_UserAction currentUserAction;   /* '<Root>/currentUserAction' */
   uint8_T supervision_ended;           /* '<Root>/supervision_ended' */
-  ENUM_StatusRover roverState;         /* '<Root>/roverState' */
+  BUS_GlobalState board1GlobalState;   /* '<Root>/board1GlobalState' */
+  BUS_Decision board1Decision;         /* '<Root>/board1Decision' */
 } ExtY_Board2_T;
 
 /* Real-time Model Data Structure */
