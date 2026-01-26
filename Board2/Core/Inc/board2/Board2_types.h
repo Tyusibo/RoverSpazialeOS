@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 6.39
+ * Model version                  : 7.2
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Mon Jan 26 15:56:59 2026
+ * C/C++ source code generated on : Mon Jan 26 17:51:08 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -44,13 +44,23 @@ typedef enum {
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_ENUM_MotorStatus_
-#define DEFINED_TYPEDEF_FOR_ENUM_MotorStatus_
+#ifndef DEFINED_TYPEDEF_FOR_ENUM_MotorsStatus_
+#define DEFINED_TYPEDEF_FOR_ENUM_MotorsStatus_
 
 typedef enum {
-  OK = 0,                              /* Default value */
-  NOT_OK
-} ENUM_MotorStatus;
+  MOTORS_OK = 0,                       /* Default value */
+  MOTORS_NOT_OK
+} ENUM_MotorsStatus;
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_ENUM_TemperatureStatus_
+#define DEFINED_TYPEDEF_FOR_ENUM_TemperatureStatus_
+
+typedef enum {
+  TEMPERATURE_OK = 0,                  /* Default value */
+  TEMPERATURE_NOT_OK
+} ENUM_TemperatureStatus;
 
 #endif
 
