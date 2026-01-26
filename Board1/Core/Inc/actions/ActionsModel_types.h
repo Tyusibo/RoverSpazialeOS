@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 6.1
+ * Model version                  : 6.4
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Sun Jan 25 18:42:04 2026
+ * C/C++ source code generated on : Mon Jan 26 15:42:24 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -20,8 +20,18 @@
 #ifndef ActionsModel_types_h_
 #define ActionsModel_types_h_
 #include "sensors.h"
-#include "enums.h"
+#include "rtwtypes.h"
 #include "decision.h"
+#ifndef DEFINED_TYPEDEF_FOR_ENUM_TrackingObstacles_
+#define DEFINED_TYPEDEF_FOR_ENUM_TrackingObstacles_
+
+typedef enum {
+  NOT_TRACKING = 0,                    /* Default value */
+  NO_OBSTACLE_MOVING,
+  OBSTACLE_MOVING
+} ENUM_TrackingObstacles;
+
+#endif
 
 /* Forward declaration for rtModel */
 typedef struct tag_RTM_ActionsModel_T RT_MODEL_ActionsModel_T;

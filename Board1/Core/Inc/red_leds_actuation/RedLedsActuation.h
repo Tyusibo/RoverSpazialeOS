@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'RedLedsActuation'.
  *
- * Model version                  : 17.20
+ * Model version                  : 17.21
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Sun Jan 25 18:42:17 2026
+ * C/C++ source code generated on : Mon Jan 26 15:42:56 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -33,8 +33,8 @@
 typedef struct tag_RTM_RedLedsActuation_T RT_MODEL_RedLedsActuation_T;
 
 /* user code (top of header file) */
-#include "redLeds_functions.h"
 #include "decision.h"
+#include "redLeds_functions.h"
 
 /* Block signals and states (default storage) for model 'RedLedsActuation' */
 typedef struct {

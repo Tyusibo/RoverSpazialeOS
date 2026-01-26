@@ -3,13 +3,13 @@
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
  *
- * File: Board1_types.h
+ * File: BoardsHealth_types.h
  *
- * Code generated for Simulink model 'Board1'.
+ * Code generated for Simulink model 'BoardsHealth'.
  *
- * Model version                  : 6.90
+ * Model version                  : 6.25
  * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Mon Jan 26 15:51:24 2026
+ * C/C++ source code generated on : Mon Jan 26 15:51:11 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -17,12 +17,9 @@
  * Validation result: Not run
  */
 
-#ifndef Board1_types_h_
-#define Board1_types_h_
-#include "sensors.h"
-#include "decision.h"
+#ifndef BoardsHealth_types_h_
+#define BoardsHealth_types_h_
 #include "rtwtypes.h"
-#include "states.h"
 #ifndef DEFINED_TYPEDEF_FOR_ENUM_Error_
 #define DEFINED_TYPEDEF_FOR_ENUM_Error_
 
@@ -44,20 +41,10 @@ typedef enum {
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_ENUM_MotorStatus_
-#define DEFINED_TYPEDEF_FOR_ENUM_MotorStatus_
-
-typedef enum {
-  OK = 0,                              /* Default value */
-  NOT_OK
-} ENUM_MotorStatus;
-
-#endif
-
 /* Forward declaration for rtModel */
-typedef struct tag_RTM_Board1_T RT_MODEL_Board1_T;
+typedef struct tag_RTM_BoardsHealth_T RT_MODEL_BoardsHealth_T;
 
-#endif                                 /* Board1_types_h_ */
+#endif                                 /* BoardsHealth_types_h_ */
 
 /*
  * File trailer for generated code.
