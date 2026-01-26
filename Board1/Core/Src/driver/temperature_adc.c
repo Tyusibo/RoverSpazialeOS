@@ -122,15 +122,15 @@ int8_t temp_ky028_read_temperature(temp_ky028_t* temp, float* temperature) {
     float resistance = temp_ky028_read_resistance(temp);
 
     if (resistance <= 0) {
-        return -1;
+        return TEMP_DRIVER_FAIL;
     }
 
     if (isinf(resistance)) {
-        return -1;
+        return TEMP_DRIVER_FAIL;
     }
 
     *temperature = temp_ky028_resistance_to_temp(resistance, temp->ntc_r25, temp->ntc_b);
-    return 0;
+    return TEMP_DRIVER_OK;
 }
 
 /**
@@ -153,7 +153,7 @@ int8_t temp_ky028_read_temperature_avg(temp_ky028_t* temp, uint8_t samples, floa
 
     for (uint8_t i = 0; i < samples; i++) {
         float temp_val = 0;
-        if (temp_ky028_read_temperature(temp, &temp_val) == 0) {
+        if (temp_ky028_read_temperature(temp, &temp_val) == TEMP_DRIVER_OK) {
             if (temp_val > -200.0f && temp_val < 200.0f) {
                 sum += temp_val;
                 valid_samples++;
@@ -164,11 +164,11 @@ int8_t temp_ky028_read_temperature_avg(temp_ky028_t* temp, uint8_t samples, floa
     }
 
     if (valid_samples == 0) {
-        return -1;
+        return TEMP_DRIVER_FAIL;
     }
 
     *temperature = sum / valid_samples;
-    return 0;
+    return TEMP_DRIVER_OK;
 }
 
 /**

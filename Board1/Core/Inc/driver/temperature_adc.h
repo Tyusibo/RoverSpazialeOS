@@ -36,6 +36,9 @@
 #define MIN_TEMPERATURE        (-55.0f)    /**< Minimum supported temperature */
 #define MAX_TEMPERATURE        (125.0f)    /**< Maximum supported temperature */
 
+#define TEMP_DRIVER_OK          0
+#define TEMP_DRIVER_FAIL       -1
+
 /**
  * @brief Structure to hold temperature sensor configuration and state.
  */
