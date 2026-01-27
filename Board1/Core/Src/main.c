@@ -190,6 +190,9 @@ int main(void)
 	battery_sensor_init();
 
 
+	// Safe start, allowing Board2 to initialize
+	HAL_Delay(1000);
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
