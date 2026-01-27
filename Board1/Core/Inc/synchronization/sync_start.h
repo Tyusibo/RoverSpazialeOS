@@ -3,6 +3,7 @@
 
 #include "cmsis_os2.h"
 #include <stdint.h>
+#include "stm32g474xx.h"
 
 #include "actual_board.h"
 
@@ -12,9 +13,12 @@
 /* Inizializza i pin usati dal sync:
  * - Board1: in = ACK_IN,  out = SYNC_OUT
  * - Board2: in = SYNC_IN, out = ACK_OUT
+ *
+ * Configura anche i flag da usare per la sincronizzazione.
  */
 void Sync_Init(GPIO_TypeDef *in_port, uint16_t in_pin,
-               GPIO_TypeDef *out_port, uint16_t out_pin);
+               GPIO_TypeDef *out_port, uint16_t out_pin,
+               uint32_t flag_start, uint32_t flag_sync, uint32_t flag_ack);
 
 /* Chiamare all'inizio di OGNI task applicativo */
 void Sync_WaitStart(osEventFlagsId_t flagsSync);
@@ -26,7 +30,7 @@ void Sync_OnAckEdgeFromISR (osEventFlagsId_t flagsSync);
 /* Wrapper: su Board1 setta ACK, su Board2 setta SYNC */
 static inline void Sync_OnEdgeFromISR(osEventFlagsId_t flagsSync)
 {
-#if defined(BOARD1)
+#if defined(SYNC_BOARD1)
   Sync_OnAckEdgeFromISR(flagsSync);
 #else
   Sync_OnSyncEdgeFromISR(flagsSync);
