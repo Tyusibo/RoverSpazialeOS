@@ -3,4 +3,6 @@
 
 #define BOARD1
 
+//#define BOARD2
+
 #endif /* INC_SYNCHRONIZATION_ACTUAL_BOARD_H_ */
