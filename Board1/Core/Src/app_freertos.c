@@ -385,8 +385,8 @@ void StartSupervisor(void *argument)
 		cycle_count++;
 		if (cycle_count >= 100) {
 			cycle_count = 0;
-			printGlobalState(&Board1_B.board1GlobalState);
-			printDecision(&Board1_B.board1Decision);
+//			printGlobalState(&Board1_B.board1GlobalState);
+//			printDecision(&Board1_B.board1Decision);
 //			printMsg("Miss P:");
 //			printInt(MissPID);
 //			printMsg(" S:");
