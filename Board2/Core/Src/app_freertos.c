@@ -231,7 +231,10 @@ void MX_FREERTOS_Init(void) {
 	flagsOSHandle = osEventFlagsNew(&flagsOS_attributes);
 
 	/* USER CODE BEGIN RTOS_EVENTS */
-	/* add events, ... */
+	Sync_Init(flagsOSHandle,
+				RTR_IN_GPIO_Port, RTR_IN_Pin,
+	            RTR_OUT_GPIO_Port, RTR_OUT_Pin,
+	            FLAG_START, FLAG_SYNC, FLAG_ACK);
 	/* USER CODE END RTOS_EVENTS */
 
 }
@@ -246,7 +249,7 @@ void MX_FREERTOS_Init(void) {
 void StartReadController(void *argument) {
 	/* USER CODE BEGIN StartReadController */
 
-	Sync_WaitStart(flagsOSHandle);
+	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_REMOTE_CONTROLLER);
 	uint32_t next = osKernelGetTickCount();
@@ -299,7 +302,7 @@ void StartReadController(void *argument) {
 void StartReadGyroscope(void *argument) {
 	/* USER CODE BEGIN StartReadGyroscope */
 
-	Sync_WaitStart(flagsOSHandle);
+	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_GYROSCOPE);
 	uint32_t next = osKernelGetTickCount();
@@ -353,7 +356,7 @@ void StartReadGyroscope(void *argument) {
 void StartSupervisor(void *argument) {
 	/* USER CODE BEGIN StartSupervisor */
 
-	Sync_WaitStart(flagsOSHandle);
+	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
@@ -437,7 +440,7 @@ void StartSupervisor(void *argument) {
 void StartReadSonars(void *argument) {
 	/* USER CODE BEGIN StartReadSonars */
 
-	Sync_WaitStart(flagsOSHandle);
+	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_SONAR);
 	const uint32_t TIMEOUT_TICKS = ms_to_ticks(40); // 40ms safety timeout
@@ -521,6 +524,8 @@ void StartSeggerTask(void *argument) {
 }
 
 /* USER CODE BEGIN Header_StartSynchronization */
+// This feature is extern to the library behavior
+extern volatile system_phase_t system_phase;
 /**
  * @brief Function implementing the Synchronization thread.
  * @param argument: Not used
@@ -530,14 +535,15 @@ void StartSeggerTask(void *argument) {
 void StartSynchronization(void *argument) {
 	/* USER CODE BEGIN StartSynchronization */
 
-	osEventFlagsSet(flagsOSHandle, FLAG_START);
+	system_phase = SYNCHRONIZATION_PHASE;
 
-	/* Infinite loop */
-	for (;;) {
-		break;
-	}
+	SyncThread();
 
+	system_phase = WORKING_PHASE;
+
+	// Termination, if clock drift is not critical
 	osThreadTerminate(osThreadGetId());
+
 	/* USER CODE END StartSynchronization */
 }
 

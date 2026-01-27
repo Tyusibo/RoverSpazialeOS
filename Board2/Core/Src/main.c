@@ -92,8 +92,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-volatile uint8_t rx_debug_byte;
-volatile uint8_t flow_control_flag = 0;
+
+volatile system_phase_t system_phase = SYNCHRONIZATION_PHASE;
 
 /* USER CODE END PV */
 

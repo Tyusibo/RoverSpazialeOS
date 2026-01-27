@@ -1,6 +1,6 @@
 #include "sync_start.h"
 
-#include "gpio.h"
+#include "gpio.h"  // For write pin functions
 
 /* Pin configurati a runtime */
 static GPIO_TypeDef *g_in_port  = NULL;
@@ -14,7 +14,11 @@ static uint32_t      g_flag_start = 0;
 static uint32_t      g_flag_sync  = 0;
 static uint32_t      g_flag_ack   = 0;
 
-void Sync_Init(GPIO_TypeDef *in_port, uint16_t in_pin,
+/* Oggetto EventFlags */
+static osEventFlagsId_t g_flagsSync = NULL;
+
+void Sync_Init(osEventFlagsId_t flagsSync,
+               GPIO_TypeDef *in_port, uint16_t in_pin,
                GPIO_TypeDef *out_port, uint16_t out_pin,
                uint32_t flag_start, uint32_t flag_sync, uint32_t flag_ack)
 {
@@ -26,6 +30,8 @@ void Sync_Init(GPIO_TypeDef *in_port, uint16_t in_pin,
   g_flag_start = flag_start;
   g_flag_sync  = flag_sync;
   g_flag_ack   = flag_ack;
+  
+  g_flagsSync  = flagsSync;
 
   /* output a 0 per sicurezza */
   if (g_out_port != NULL) {
@@ -33,9 +39,12 @@ void Sync_Init(GPIO_TypeDef *in_port, uint16_t in_pin,
   }
 }
 
-void Sync_WaitStart(osEventFlagsId_t flagsSync)
+void Sync_WaitStart(void)
 {
-  uint32_t flags = osEventFlagsWait(flagsSync,
+  if (g_flagsSync == NULL) {
+    return;
+  }
+  uint32_t flags = osEventFlagsWait(g_flagsSync,
                                     g_flag_start,
                                     osFlagsWaitAny | osFlagsNoClear,
                                     osWaitForever);
@@ -52,20 +61,24 @@ void Sync_WaitStart(osEventFlagsId_t flagsSync)
 }
 
 /* ISR-safe */
-void Sync_OnSyncEdgeFromISR(osEventFlagsId_t flagsSync)
+void Sync_OnSyncEdgeFromISR(void)
 {
-  (void)osEventFlagsSet(flagsSync, g_flag_sync);
+  if (g_flagsSync != NULL) {
+    (void)osEventFlagsSet(g_flagsSync, g_flag_sync);
+  }
 }
 
-void Sync_OnAckEdgeFromISR(osEventFlagsId_t flagsSync)
+void Sync_OnAckEdgeFromISR(void)
 {
-  (void)osEventFlagsSet(flagsSync, g_flag_ack);
+  if (g_flagsSync != NULL) {
+    (void)osEventFlagsSet(g_flagsSync, g_flag_ack);
+  }
 }
 
-void SyncThread(osEventFlagsId_t flagsSync)
+void SyncThread(void)
 {
-
-  if ((g_in_port == NULL) || (g_out_port == NULL)) {
+  
+  if ((g_flagsSync == NULL) || (g_in_port == NULL) || (g_out_port == NULL)) {
     osThreadTerminate(osThreadGetId());
     return;
   }
@@ -79,7 +92,7 @@ void SyncThread(osEventFlagsId_t flagsSync)
   */
   HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_SET);
 
-  (void)osEventFlagsWait(flagsSync, g_flag_ack,
+  (void)osEventFlagsWait(g_flagsSync, g_flag_ack,
                          osFlagsWaitAll, osWaitForever);
 
   HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_RESET);
@@ -87,7 +100,7 @@ void SyncThread(osEventFlagsId_t flagsSync)
   uint32_t t0 = osKernelGetTickCount() + SYNC_K_TICKS;
   (void)osDelayUntil(t0);
 
-  (void)osEventFlagsSet(flagsSync, g_flag_start);
+  (void)osEventFlagsSet(g_flagsSync, g_flag_start);
 
 #else /* BOARD2 */
   /* SLAVE:
@@ -97,7 +110,7 @@ void SyncThread(osEventFlagsId_t flagsSync)
      4) ACK_OUT = 0 (se vuoi impulso)
      5) set START
   */
-  (void)osEventFlagsWait(flagsSync, g_flag_sync,
+  (void)osEventFlagsWait(g_flagsSync, g_flag_sync,
                          osFlagsWaitAll, osWaitForever);
 
   HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_SET);
@@ -108,7 +121,7 @@ void SyncThread(osEventFlagsId_t flagsSync)
   /* impulso: abbasso dopo t0 (se preferisci livello stabile, commenta) */
   HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_RESET);
 
-  (void)osEventFlagsSet(flagsSync, g_flag_start);
+  (void)osEventFlagsSet(g_flagsSync, g_flag_start);
 #endif
 
   /* finito */

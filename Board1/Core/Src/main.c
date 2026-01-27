@@ -91,7 +91,7 @@
 
 /* USER CODE BEGIN PV */
 
-system_phase_t system_phase = SYNCHRONIZATION_PHASE;
+volatile system_phase_t system_phase = SYNCHRONIZATION_PHASE;
 
 /* USER CODE END PV */
 

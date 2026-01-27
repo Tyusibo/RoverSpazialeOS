@@ -196,11 +196,6 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
  */
 void MX_FREERTOS_Init(void) {
 	/* USER CODE BEGIN Init */
-
-	Sync_Init(RTR_IN_GPIO_Port, RTR_IN_Pin,
-	               RTR_OUT_GPIO_Port, RTR_OUT_Pin,
-	               FLAG_START, FLAG_SYNC, FLAG_ACK);
-
 	/* USER CODE END Init */
 
 	/* USER CODE BEGIN RTOS_MUTEX */
@@ -261,8 +256,10 @@ void MX_FREERTOS_Init(void) {
 	flagsOSHandle = osEventFlagsNew(&flagsOS_attributes);
 
 	/* USER CODE BEGIN RTOS_EVENTS */
-	/* add events, ... */
-
+	Sync_Init(flagsOSHandle,
+				RTR_IN_GPIO_Port, RTR_IN_Pin,
+	            RTR_OUT_GPIO_Port, RTR_OUT_Pin,
+	            FLAG_START, FLAG_SYNC, FLAG_ACK);
 	/* USER CODE END RTOS_EVENTS */
 
 }
@@ -277,7 +274,7 @@ void MX_FREERTOS_Init(void) {
 void StartPID(void *argument) {
 	/* USER CODE BEGIN StartPID */
 
-	Sync_WaitStart(flagsOSHandle);
+	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_PID);
 	uint32_t next = osKernelGetTickCount();
@@ -332,7 +329,7 @@ void StartPID(void *argument) {
 void StartSupervisor(void *argument) {
 	/* USER CODE BEGIN StartSupervisor */
 
-	Sync_WaitStart(flagsOSHandle);
+	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
@@ -389,7 +386,7 @@ void StartSupervisor(void *argument) {
 void StartReadTemperature(void *argument) {
 	/* USER CODE BEGIN StartReadTemperature */
 
-	Sync_WaitStart(flagsOSHandle);
+	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_TEMPERATURE);
 	uint32_t next = osKernelGetTickCount();
@@ -433,7 +430,7 @@ void StartReadTemperature(void *argument) {
 void StartReadBattery(void *argument) {
 	/* USER CODE BEGIN StartReadBattery */
 
-	Sync_WaitStart(flagsOSHandle);
+	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_BATTERY);
 	uint32_t next = osKernelGetTickCount();
@@ -489,7 +486,7 @@ void StartSeggerTask(void *argument) {
 
 /* USER CODE BEGIN Header_StartSynchronization */
 // This feature is extern to the library behavior
-extern system_phase_t system_phase;
+extern volatile system_phase_t system_phase;
 /**
  * @brief Function implementing the Synchronization thread.
  * @param argument: Not used
@@ -501,7 +498,7 @@ void StartSynchronization(void *argument) {
 
 	system_phase = SYNCHRONIZATION_PHASE;
 
-	void SyncThread(osEventFlagsId_t flagsSync);
+	SyncThread();
 
 	system_phase = WORKING_PHASE;
 
