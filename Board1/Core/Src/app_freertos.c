@@ -325,7 +325,7 @@ void StartPID(void *argument)
 #endif
 
 #else
-        HAL_Delay(C_PID);
+        HAL_Delay(WCET_PID);
 #endif
 
 		periodic_wait(&next, T, &MissPID);
@@ -429,7 +429,7 @@ void StartReadTemperature(void *argument)
 #endif
 
 #else
-        HAL_Delay(C_TEMPERATURE);
+        HAL_Delay(WCET_TEMPERATURE);
 #endif
 
 		periodic_wait(&next, T, &MissReadTemperature);
@@ -472,7 +472,7 @@ void StartReadBattery(void *argument)
 #endif
 
 #else
-        HAL_Delay(C_BATTERY);
+        HAL_Delay(WCET_BATTERY);
 #endif
 
 		periodic_wait(&next, T, &MissReadBattery);

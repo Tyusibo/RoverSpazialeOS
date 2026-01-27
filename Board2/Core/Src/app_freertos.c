@@ -56,6 +56,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 typedef StaticTask_t osStaticThreadDef_t;
+typedef StaticTimer_t osStaticTimerDef_t;
 typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* USER CODE BEGIN PTD */
 
@@ -83,6 +84,7 @@ volatile uint32_t MissReadController = 0;
 volatile uint32_t MissReadGyroscope = 0;
 volatile uint32_t MissSupervisor = 0;
 volatile uint32_t MissReadSonars = 0;
+volatile uint32_t MissPollingServer = 0;
 
 /* STATUS FLAGS */
 uint8_t pad_receiver_read_failed = 0;
@@ -162,6 +164,26 @@ const osThreadAttr_t Synchronization_attributes = {
   .cb_size = sizeof(SynchronizationControlBlock),
   .priority = (osPriority_t) osPriorityHigh6,
 };
+/* Definitions for PollingServer */
+osThreadId_t PollingServerHandle;
+uint32_t PollingServerBuffer[ 2048 ];
+osStaticThreadDef_t PollingServerControlBlock;
+const osThreadAttr_t PollingServer_attributes = {
+  .name = "PollingServer",
+  .stack_mem = &PollingServerBuffer[0],
+  .stack_size = sizeof(PollingServerBuffer),
+  .cb_mem = &PollingServerControlBlock,
+  .cb_size = sizeof(PollingServerControlBlock),
+  .priority = (osPriority_t) osPriorityHigh,
+};
+/* Definitions for SonarMonitoring */
+osTimerId_t SonarMonitoringHandle;
+osStaticTimerDef_t SonarMonitoringControlBlock;
+const osTimerAttr_t SonarMonitoring_attributes = {
+  .name = "SonarMonitoring",
+  .cb_mem = &SonarMonitoringControlBlock,
+  .cb_size = sizeof(SonarMonitoringControlBlock),
+};
 /* Definitions for flagsOS */
 osEventFlagsId_t flagsOSHandle;
 osStaticEventGroupDef_t flagsOSControlBlock;
@@ -186,6 +208,8 @@ void StartSupervisor(void *argument);
 void StartReadSonars(void *argument);
 void StartSeggerTask(void *argument);
 void StartSynchronization(void *argument);
+void StartPollingServer(void *argument);
+void SonarTimeout(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -206,6 +230,10 @@ void MX_FREERTOS_Init(void) {
   /* USER CODE BEGIN RTOS_SEMAPHORES */
 	/* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
+
+  /* Create the timer(s) */
+  /* creation of SonarMonitoring */
+  SonarMonitoringHandle = osTimerNew(SonarTimeout, osTimerOnce, NULL, &SonarMonitoring_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
@@ -234,6 +262,9 @@ void MX_FREERTOS_Init(void) {
   /* creation of Synchronization */
   SynchronizationHandle = osThreadNew(StartSynchronization, NULL, &Synchronization_attributes);
 
+  /* creation of PollingServer */
+  PollingServerHandle = osThreadNew(StartPollingServer, NULL, &PollingServer_attributes);
+
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -258,51 +289,51 @@ void MX_FREERTOS_Init(void) {
  * @retval None
  */
 /* USER CODE END Header_StartReadController */
-void StartReadController(void *argument)
-{
-  /* USER CODE BEGIN StartReadController */
+void StartReadController(void *argument) {
+	/* USER CODE BEGIN StartReadController */
 
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_REMOTE_CONTROLLER);
 	uint32_t next = osKernelGetTickCount();
 
+	/* Return code of the last I2C request:
+	 * PAD_OK  -> request started successfully (asynchronous reception in progress)
+	 * PAD_ERR -> request not started (I2C busy or HAL start error)
+	 */
 	int8_t result = PAD_ERR;
 
 	/* Infinite loop */
 	for (;;) {
 
 #if REAL_TASK
+
+		/* Start an asynchronous I2C read from the remote controller.
+		 * Note: PAD_OK only means the reception was successfully started.
+		 * The final outcome (success/error) is reported later via callbacks
+		 * and can be eventually checked through PadReceiver_GetStatus().
+		 */
 		result = PadReceiver_Request();
 
+		/* Handle immediate start failure:
+		 * If the request could not be started (bus busy or HAL error),
+		 * raise an error flag to notify other tasks/components.
+		 */
 		if (result == PAD_ERR) {
-//			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
-//			break;         // Riprova
+			osEventFlagsSet(flagsOSHandle, FLAG_PAD_ERROR);
 		}
 
-		while (PadReceiver_GetStatus() == PAD_RX_IN_PROGRESS) {
-
-		};
-
-		// Trasferisce i dati dal buffer del driver alla struttura locale
-		// La struttura locale del modello Simulink è copiata all'interno di uno stato locale
-		// e mai più usata altrove, quindi non ci sono problemi di concorrenza
-		PadReceiver_Read(&Board2_U.remoteController);
-
-#if PRINT_TASK
-		printRemoteController(&Board2_U.remoteController);
-		HAL_Delay(2000); // Per non intasare la seriale
-#endif
-
 #else
-		HAL_Delay(C_CONTROLLER);
+		HAL_Delay(WCET_CONTROLLER);
 #endif
 
+		/* Wait until next period and track deadline miss if any */
 		periodic_wait(&next, T, &MissReadController);
 	}
 
 	osThreadTerminate(osThreadGetId());
-  /* USER CODE END StartReadController */
+
+	/* USER CODE END StartReadController */
 }
 
 /* USER CODE BEGIN Header_StartReadGyroscope */
@@ -312,53 +343,55 @@ void StartReadController(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReadGyroscope */
-void StartReadGyroscope(void *argument)
-{
-  /* USER CODE BEGIN StartReadGyroscope */
+void StartReadGyroscope(void *argument) {
+	/* USER CODE BEGIN StartReadGyroscope */
 
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_GYROSCOPE);
 	uint32_t next = osKernelGetTickCount();
 
+	/* Return code of the last gyroscope read request:
+	 * MPU_OK  -> request started successfully (asynchronous I2C reception in progress)
+	 * MPU_ERR -> request not started (I2C busy or HAL start error)
+	 *
+	 * Note: MPU_OK does NOT mean that MPU6050_Yaw has been updated yet.
+	 * The final outcome is provided later by callbacks / driver status.
+	 */
 	int8_t result = MPU_ERR;
 
 	/* Infinite loop */
 	for (;;) {
 
 #if REAL_TASK
+
+		/* Start an asynchronous read of the yaw value from the MPU6050 via I2C interrupt.
+		 * If the request starts correctly, the driver will update MPU6050_Yaw later
+		 * (typically in the Rx complete callback).
+		 */
 		result = MPU6050_Read_Yaw_IT(&hi2c3, &MPU6050_Yaw);
 
+		/* Handle immediate start failure:
+		 * If the read request cannot be started (bus busy or HAL error),
+		 * raise an error flag to notify other tasks/components.
+		 */
 		if (result == MPU_ERR) {
-//			HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET); // Accendo LED di errore
-//			break;         // Riprova
+			osEventFlagsSet(flagsOSHandle, FLAG_GYRO_ERROR);
 		}
-
-		while (MPU6050_GetStatus() == MPU_RX_IN_PROGRESS) {
-
-		}
-		MPU6050_Process_Yaw_IT_Data();
-
-		// rivedere la struttua, magari fare una get come per il padreceiver
-		Board2_U.gyroscope = MPU6050_Yaw.KalmanAngleZ;
-
-#if PRINT_TASK
-		printGyroscope((float)Board2_U.gyroscope);
-		HAL_Delay(2000); // Per non intasare la seriale
-#endif
 
 #else
-		HAL_Delay(C_GYROSCOPE);
-
+		HAL_Delay(WCET_GYROSCOPE);
 #endif
 
+		/* Wait until next period and track deadline miss if any */
 		periodic_wait(&next, T, &MissReadGyroscope);
 	}
 
 	osThreadTerminate(osThreadGetId());
 
-  /* USER CODE END StartReadGyroscope */
+	/* USER CODE END StartReadGyroscope */
 }
+
 
 /* USER CODE BEGIN Header_StartSupervisor */
 /**
@@ -452,18 +485,15 @@ void StartSupervisor(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReadSonars */
-void StartReadSonars(void *argument)
-{
-  /* USER CODE BEGIN StartReadSonars */
+void StartReadSonars(void *argument) {
+	/* USER CODE BEGIN StartReadSonars */
 
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_SONAR);
-	const uint32_t TIMEOUT_TICKS = ms_to_ticks(40); // 40ms safety timeout
 	uint32_t next = osKernelGetTickCount();
 
-	uint32_t start_wait;
-
+	const uint32_t TIMEOUT_TICKS = ms_to_ticks(40); // 40ms safety timeout
 	/* Infinite loop */
 	for (;;) {
 
@@ -473,47 +503,21 @@ void StartReadSonars(void *argument)
 		hcsr04_trigger(&sonarFront);
 		hcsr04_trigger(&sonarRight);
 
-		start_wait = osKernelGetTickCount();
-
-		while (1) {
-
-			if (all_sonar_done() == 1) {
-				break; // Tutti i sonar hanno finito
-			}
-
-			// Timeout safety
-			if ((osKernelGetTickCount() - start_wait) > TIMEOUT_TICKS) {
-#if PRINT_TASK
-				printMsg("Sonar read timeout!\r\n");
-#endif
-				break;
-			}
-		}
-
-		// Valutazione esito lettura per ogni sensore
-		hcsr04_handle_reading(&sonarLeft);
-		hcsr04_handle_reading(&sonarFront);
-		hcsr04_handle_reading(&sonarRight);
-
-		Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, sonarFront.distance,
-						sonarRight.distance };
-//		Board2_U.sonar = (BUS_Sonar ) { sonarLeft.distance, (uint16_t) 500,
-//						sonarRight.distance };
-
-#if PRINT_TASK
-        printSonar(&Board2_U.sonar);
-#endif
-
-		periodic_wait(&next, T, &MissReadSonars);
+		// Eventualmente start timer, il cui handler vede chi ha finito e chi no
+		osTimerStart(SonarMonitoringHandle, ms_to_ticks(TIMEOUT_TICKS));
 
 #else
-		HAL_Delay(C_SONAR);
+		HAL_Delay(WCET_SONAR);
 #endif
+
+		/* Wait until next period and track deadline miss if any */
+		periodic_wait(&next, T, &MissReadSonars);
 	}
 
 	osThreadTerminate(osThreadGetId());
-  /* USER CODE END StartReadSonars */
+	/* USER CODE END StartReadSonars */
 }
+
 
 /* USER CODE BEGIN Header_StartSeggerTask */
 /**
@@ -566,6 +570,139 @@ void StartSynchronization(void *argument)
 	osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartSynchronization */
+}
+
+/* USER CODE BEGIN Header_StartPollingServer */
+/**
+ * @brief Function implementing the PollingServer thread.
+ * @param argument: Not used
+ * @retval None
+ */
+/* USER CODE END Header_StartPollingServer */
+void StartPollingServer(void *argument) {
+	/* USER CODE BEGIN StartPollingServer */
+
+	Sync_WaitStart();
+
+	const uint32_t T = ms_to_ticks(T_POLLING_SERVER);
+	uint32_t next = osKernelGetTickCount();
+
+	BUS_RemoteController default_controller =
+			(BUS_RemoteController ) { 0, 0, 0 };
+	//Gyroscope default_gyroscope;
+
+	/* Infinite loop */
+	for (;;) {
+
+#if REAL_TASK
+
+		/* Upon server activation, process all pending requests, if any */
+		uint32_t flags = osEventFlagsWait(flagsOSHandle,
+		FLAGS_POLLING_SERVER_WAIT,
+		osFlagsWaitAny | osFlagsNoClear, 0);
+
+		if ((int32_t) flags < 0) {
+			// Error or timeout (no flags set)
+		} else {
+			/* --- Controller / Pad --- */
+			if (flags & FLAG_PAD_OK) {
+				PadReceiver_Read(&Board2_U.remoteController);
+				osEventFlagsClear(flagsOSHandle, FLAG_PAD_OK);
+			}
+
+			if (flags & FLAG_PAD_ERROR) {
+				Board2_U.remoteController = default_controller;
+				osEventFlagsClear(flagsOSHandle, FLAG_PAD_ERROR);
+			}
+
+			/* --- Gyroscope --- */
+			if (flags & FLAG_GYRO_OK) {
+				MPU6050_Process_Yaw_IT_Data();
+				Board2_U.gyroscope = MPU6050_Yaw.KalmanAngleZ;
+				osEventFlagsClear(flagsOSHandle, FLAG_GYRO_OK);
+			}
+
+			if (flags & FLAG_GYRO_ERROR) {
+				// Preserve last valid data in Board2_U.gyroscope
+//				MPU6050_Process_Yaw_IT_Data();
+//				Board2_U.gyroscope = MPU6050_Yaw.KalmanAngleZ;
+				osEventFlagsClear(flagsOSHandle, FLAG_GYRO_ERROR);
+			}
+
+			/* --- Sonar Left --- */
+			if (flags & FLAG_SONAR_LEFT_OK) {
+				hcsr04_process_distance(&sonarLeft);
+				Board2_U.sonar.left = sonarLeft.distance;
+				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_LEFT_OK);
+			}
+
+			if (flags & FLAG_SONAR_LEFT_TIMEOUT) {
+				// Preserve last valid data in Board2_U.sonar.left
+				hcsr04_reset_sonar(&sonarLeft);
+//		        hcsr04_set_default_distance(&sonarLeft);
+//				Board2_U.sonar.left = sonarLeft.distance;
+				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_LEFT_TIMEOUT);
+			}
+
+			/* --- Sonar Front --- */
+			if (flags & FLAG_SONAR_FRONT_OK) {
+				hcsr04_process_distance(&sonarFront);
+				Board2_U.sonar.front = sonarFront.distance;
+				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_FRONT_OK);
+			}
+
+			if (flags & FLAG_SONAR_FRONT_TIMEOUT) {
+				// Preserve last valid data in Board2_U.sonar.front
+				hcsr04_reset_sonar(&sonarFront);
+//		        hcsr04_set_default_distance(&sonarFront);
+//				Board2_U.sonar.front = sonarFront.distance;
+				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_FRONT_TIMEOUT);
+			}
+
+			/* --- Sonar Right --- */
+			if (flags & FLAG_SONAR_RIGHT_OK) {
+				hcsr04_process_distance(&sonarRight);
+				Board2_U.sonar.right = sonarRight.distance;
+				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_RIGHT_OK);
+			}
+
+			if (flags & FLAG_SONAR_RIGHT_TIMEOUT) {
+				// Preserve last valid data in Board2_U.sonar.right
+				hcsr04_reset_sonar(&sonarRight);
+//		        hcsr04_set_default_distance(&sonarRight);
+//				Board2_U.sonar.right = sonarRight.distance;
+				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_RIGHT_TIMEOUT);
+			}
+
+		}
+
+#else
+		HAL_Delay(WCET_POLLING_SERVER);
+#endif
+
+		periodic_wait(&next, T, &MissPollingServer);
+
+	}
+
+	osThreadTerminate(osThreadGetId());
+
+	/* USER CODE END StartPollingServer */
+}
+
+/* SonarTimeout function */
+void SonarTimeout(void *argument) {
+	/* USER CODE BEGIN SonarTimeout */
+	// Check each sonar and set timeout flags if not done
+	if (!hcsr04_is_done(&sonarLeft)) {
+		osEventFlagsSet(flagsOSHandle, FLAG_SONAR_LEFT_TIMEOUT);
+	}
+	if (!hcsr04_is_done(&sonarFront)) {
+		osEventFlagsSet(flagsOSHandle, FLAG_SONAR_FRONT_TIMEOUT);
+	}
+	if (!hcsr04_is_done(&sonarRight)) {
+		osEventFlagsSet(flagsOSHandle, FLAG_SONAR_RIGHT_TIMEOUT);
+	}
+	/* USER CODE END SonarTimeout */
 }
 
 /* Private application code --------------------------------------------------*/
