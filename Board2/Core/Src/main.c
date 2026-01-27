@@ -186,35 +186,6 @@ int main(void)
 	Motors_StartAllPwm();
 	Motors_SetDefaultCcr(757);
 
-
-	// Codice con while (1) per testare il sonar left
-
-
-//	HAL_UART_Receive_IT(&huart2, &rx_debug_byte, 1); // Abilita ricezione interrupt debug
-//	while (1){
-//		hcsr04_t* sonarTested = &sonarFront;
-//		hcsr04_trigger(sonarTested);
-////		sonarLeft
-////		sonarFront
-////		sonarRight
-//
-//		while (1) {
-//			if (hcsr04_is_done(sonarTested)) {
-//				hcsr04_process_distance(sonarTested);
-//				uint16_t dist = sonarTested->distance;
-//				char buffer[50];
-//				int len = snprintf(buffer, sizeof(buffer), "Sonar Distance: %u cm\r\n", dist);
-//				HAL_UART_Transmit(&huart2, (uint8_t*)buffer, len, HAL_MAX_DELAY);
-//				HAL_Delay(1000);
-//				break;
-//			}
-//			if (flow_control_flag == 1) {
-//				flow_control_flag = 0;
-//				break;
-//			}
-//		}
-//	}
-
   /* USER CODE END 2 */
 
   /* Init scheduler */
