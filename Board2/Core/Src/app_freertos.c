@@ -528,7 +528,7 @@ void StartSeggerTask(void *argument) {
 void StartSynchronization(void *argument) {
 	/* USER CODE BEGIN StartSynchronization */
 
-	osEventFlagsSet(flagsOSHandle, FLAG_SYNCHRONIZATION);
+	osEventFlagsSet(flagsOSHandle, FLAG_START);
 
 	/* Infinite loop */
 	for (;;) {
@@ -701,7 +701,7 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 
 static void waitForSynchonization(void) {
 	uint32_t flags = osEventFlagsWait(flagsOSHandle,
-	FLAG_SYNCHRONIZATION,
+	FLAG_START,
 	osFlagsWaitAny | osFlagsNoClear,
 	osWaitForever);
 
@@ -712,7 +712,7 @@ static void waitForSynchonization(void) {
 	}
 
 	/* Se per qualche motivo il flag non è presente (non dovrebbe accadere) */
-	if ((flags & FLAG_SYNCHRONIZATION) == 0U) {
+	if ((flags & FLAG_START) == 0U) {
 		osThreadTerminate(osThreadGetId());
 		return;
 	}
