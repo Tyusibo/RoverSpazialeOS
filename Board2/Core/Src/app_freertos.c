@@ -435,13 +435,13 @@ void StartSupervisor(void *argument)
 
 		/* Applica disabilitazione */
 		if (disable_left)
-			Board2_U.sonar.left = 500;
+			Board2_U.sonar.left = 380;
 
 		if (disable_front)
-			Board2_U.sonar.front = 500;
+			Board2_U.sonar.front = 380;
 
 		if (disable_right)
-			Board2_U.sonar.right = 500;
+			Board2_U.sonar.right = 380;
 
 		/* END FAKE SONAR */
 
