@@ -30,8 +30,10 @@
 #include "SEGGER_SYSVIEW_FreeRTOS.h"
 #endif
 
+// OS
 #include "scheduling_constants.h"
 #include "event_flags_constant.h"
+#include "sync_start.h"
 
 // Simulink Model
 #include "Board1.h"
@@ -166,10 +168,10 @@ const osEventFlagsAttr_t flagsOS_attributes = { .name = "flagsOS", .cb_mem =
 /* USER CODE BEGIN FunctionPrototypes */
 
 /* SCHEDULING FUNCTIONS */
+
 static uint32_t ms_to_ticks(uint32_t ms);
 static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 		volatile uint32_t *miss_counter);
-static void waitForSynchonization(void);
 
 /* DECISION FUNCTIONS */
 static inline void actuate_white_leds(void);
@@ -273,7 +275,7 @@ void MX_FREERTOS_Init(void) {
 void StartPID(void *argument) {
 	/* USER CODE BEGIN StartPID */
 
-	waitForSynchonization();
+	Sync_WaitStart(flagsOSHandle);
 
 	const uint32_t T = ms_to_ticks(T_PID);
 	uint32_t next = osKernelGetTickCount();
@@ -328,7 +330,7 @@ void StartPID(void *argument) {
 void StartSupervisor(void *argument) {
 	/* USER CODE BEGIN StartSupervisor */
 
-	waitForSynchonization();
+	Sync_WaitStart(flagsOSHandle);
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
@@ -385,7 +387,7 @@ void StartSupervisor(void *argument) {
 void StartReadTemperature(void *argument) {
 	/* USER CODE BEGIN StartReadTemperature */
 
-	waitForSynchonization();
+	Sync_WaitStart(flagsOSHandle);
 
 	const uint32_t T = ms_to_ticks(T_TEMPERATURE);
 	uint32_t next = osKernelGetTickCount();
@@ -429,7 +431,7 @@ void StartReadTemperature(void *argument) {
 void StartReadBattery(void *argument) {
 	/* USER CODE BEGIN StartReadBattery */
 
-	waitForSynchonization();
+	Sync_WaitStart(flagsOSHandle);
 
 	const uint32_t T = ms_to_ticks(T_BATTERY);
 	uint32_t next = osKernelGetTickCount();
@@ -548,27 +550,6 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 	osDelayUntil(*next_release);
 }
 
-static void waitForSynchonization(void) {
-	uint32_t flags = osEventFlagsWait(flagsOSHandle,
-	FLAG_START,
-	osFlagsWaitAny | osFlagsNoClear,
-	osWaitForever);
-
-	/* Se osEventFlagsWait fallisce ritorna un codice errore (valore negativo) */
-	if ((int32_t) flags < 0) {
-		osThreadTerminate(osThreadGetId());
-		return;
-	}
-
-	/* Se per qualche motivo il flag non è presente (non dovrebbe accadere) */
-	if ((flags & FLAG_START) == 0U) {
-		osThreadTerminate(osThreadGetId());
-		return;
-	}
-
-	/* OK */
-	return;
-}
 
 /* DECISION FUNCTIONS */
 

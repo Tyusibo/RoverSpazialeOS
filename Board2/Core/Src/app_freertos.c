@@ -43,8 +43,10 @@
 #include "print.h"
 #include "debug.h"
 
+// OS
 #include "scheduling_constants.h"
 #include "event_flags_constant.h"
+#include "sync_start.h"
 
 #if SEGGER_BUILD
 #include "SEGGER_SYSVIEW_FreeRTOS.h"
@@ -148,10 +150,10 @@ const osEventFlagsAttr_t flagsOS_attributes = { .name = "flagsOS", .cb_mem =
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
+
 static uint32_t ms_to_ticks(uint32_t ms);
 static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 		volatile uint32_t *miss_counter);
-static void waitForSynchonization(void);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -239,7 +241,7 @@ void MX_FREERTOS_Init(void) {
 void StartReadController(void *argument) {
 	/* USER CODE BEGIN StartReadController */
 
-	waitForSynchonization();
+	Sync_WaitStart(flagsOSHandle);
 
 	const uint32_t T = ms_to_ticks(T_REMOTE_CONTROLLER);
 	uint32_t next = osKernelGetTickCount();
@@ -292,7 +294,7 @@ void StartReadController(void *argument) {
 void StartReadGyroscope(void *argument) {
 	/* USER CODE BEGIN StartReadGyroscope */
 
-	waitForSynchonization();
+	Sync_WaitStart(flagsOSHandle);
 
 	const uint32_t T = ms_to_ticks(T_GYROSCOPE);
 	uint32_t next = osKernelGetTickCount();
@@ -346,7 +348,7 @@ void StartReadGyroscope(void *argument) {
 void StartSupervisor(void *argument) {
 	/* USER CODE BEGIN StartSupervisor */
 
-	waitForSynchonization();
+	Sync_WaitStart(flagsOSHandle);
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
@@ -430,7 +432,7 @@ void StartSupervisor(void *argument) {
 void StartReadSonars(void *argument) {
 	/* USER CODE BEGIN StartReadSonars */
 
-	waitForSynchonization();
+	Sync_WaitStart(flagsOSHandle);
 
 	const uint32_t T = ms_to_ticks(T_SONAR);
 	const uint32_t TIMEOUT_TICKS = ms_to_ticks(40); // 40ms safety timeout
@@ -561,27 +563,6 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 	osDelayUntil(*next_release);
 }
 
-static void waitForSynchonization(void) {
-	uint32_t flags = osEventFlagsWait(flagsOSHandle,
-	FLAG_START,
-	osFlagsWaitAny | osFlagsNoClear,
-	osWaitForever);
-
-	/* Se osEventFlagsWait fallisce ritorna un codice errore (valore negativo) */
-	if ((int32_t) flags < 0) {
-		osThreadTerminate(osThreadGetId());
-		return;
-	}
-
-	/* Se per qualche motivo il flag non è presente (non dovrebbe accadere) */
-	if ((flags & FLAG_START) == 0U) {
-		osThreadTerminate(osThreadGetId());
-		return;
-	}
-
-	/* OK */
-	return;
-}
 
 /* USER CODE END Application */
 
