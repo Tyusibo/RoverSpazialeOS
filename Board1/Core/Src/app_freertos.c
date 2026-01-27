@@ -525,6 +525,8 @@ void StartSynchronization(void *argument)
 
 	system_phase = WORKING_PHASE;
 
+	HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
+
 	// Termination, if clock drift is not critical
 	osThreadTerminate(osThreadGetId());
 

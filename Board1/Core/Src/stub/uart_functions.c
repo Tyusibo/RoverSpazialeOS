@@ -39,7 +39,6 @@ UART_HandleTypeDef * getComunicationHandler() {
 /* Trasmissione */
 
 uint8_t checkRTR(void) {
-	return 1;
     return (flagRTR == 1);
 }
 

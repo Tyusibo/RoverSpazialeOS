@@ -95,8 +95,6 @@ void SyncThread(void)
   (void)osEventFlagsWait(g_flagsSync, g_flag_ack,
                          osFlagsWaitAll, osWaitForever);
 
-  //HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_RESET);
-
   uint32_t t0 = osKernelGetTickCount() + SYNC_K_TICKS;
   (void)osDelayUntil(t0);
 
@@ -118,8 +116,6 @@ void SyncThread(void)
   uint32_t t0 = osKernelGetTickCount() + SYNC_K_TICKS;
   (void)osDelayUntil(t0);
 
-  /* impulso: abbasso dopo t0 (se preferisci livello stabile, commenta) */
-  // HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_RESET);
 
   (void)osEventFlagsSet(g_flagsSync, g_flag_start);
 #endif
