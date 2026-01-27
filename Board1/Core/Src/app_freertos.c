@@ -494,12 +494,13 @@ void StartSeggerTask(void *argument) {
 /* USER CODE END Header_StartSynchronization */
 void StartSynchronization(void *argument) {
 	/* USER CODE BEGIN StartSynchronization */
+
+
+
+	void SyncThread(osEventFlagsId_t flagsSync);
+
 	osEventFlagsSet(flagsOSHandle, FLAG_START);
 
-	/* Infinite loop */
-	for (;;) {
-		break;
-	}
 
 	osThreadTerminate(osThreadGetId());
 

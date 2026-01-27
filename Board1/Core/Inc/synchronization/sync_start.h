@@ -1,11 +1,15 @@
-#ifndef INC_SYNC_START_H_
-#define INC_SYNC_START_H_
+#ifndef INC_SYNCHRONIZATION_SYNC_START_H_
+#define INC_SYNCHRONIZATION_SYNC_START_H_
 
 #include "cmsis_os2.h"
 #include <stdint.h>
 
+#include "actual_board.h"
+
 /* Configura questo valore: margine di sicurezza per partire "tra poco" */
 #define SYNC_K_TICKS 10u
+
+void Sync_Init();
 
 /* Chiamare all'inizio di OGNI task applicativo */
 void Sync_WaitStart(osEventFlagsId_t flagsSync);
@@ -16,4 +20,4 @@ void Sync_OnSyncEdgeFromISR(osEventFlagsId_t flagsSync);
 
 void SyncThread(osEventFlagsId_t flagsSync);
 
-#endif /* INC_SYNC_START_H_ */
+#endif /* INC_SYNCHRONIZATION_SYNC_START_H_ */

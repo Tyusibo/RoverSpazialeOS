@@ -217,6 +217,8 @@ void LPUART1_IRQHandler(void)
 /* USER CODE BEGIN 1 */
 
 extern volatile uint8_t flagRTR;
+extern volatile uint8_t flagSYNC;
+extern volatile uint8_t phase;
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {

@@ -1,0 +1,9 @@
+#ifndef INC_SYNCHRONIZATION_PHASE_H_
+#define INC_SYNCHRONIZATION_PHASE_H_
+
+typedef enum {
+    SYNCHRONIZATION_PHASE = 0,
+    WORKING_PHASE
+} system_phase_t;
+
+#endif /* INC_SYNCHRONIZATION_PHASE_H_ */

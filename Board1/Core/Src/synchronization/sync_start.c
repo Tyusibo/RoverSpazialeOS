@@ -4,6 +4,7 @@
 #include "gpio.h"
 
 #include "event_flags_constant.h"
+#include
 
 /* =========================
    CONFIG GPIO (DA ADATTARE)
@@ -13,6 +14,18 @@
    - Board2: SYNC_IN (input con EXTI) e ACK_OUT (output)
 */
 
+static SYNC_GPIO_Port;
+static SYNC_Pin;
+
+static ACK_GPIO_Port;
+static ACK_Pin;
+
+void Sync_Init(GPIO_Port, Pin)
+{
+	se board 1 metti tutto in ACK
+	se board 2 metti tutto in SYNC
+
+}
 
 void Sync_WaitStart(osEventFlagsId_t flagsSync)
 {
