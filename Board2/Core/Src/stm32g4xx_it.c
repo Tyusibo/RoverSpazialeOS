@@ -25,9 +25,14 @@
 #include "hcsr04.h"
 #include "pad_receiver.h"
 #include "mpu6050.h"
-#include "print.h"
+
 #include "uart_functions.h"
+
+#include "print.h"
 #include "debug.h"
+
+#include "sync_start.h"
+#include "phase.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -321,26 +326,46 @@ void I2C3_ER_IRQHandler(void)
 
 extern volatile uint8_t flagRTR;
 
+extern volatile system_phase_t system_phase;
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == RTR_IN_Pin)
     {
-        GPIO_PinState state = HAL_GPIO_ReadPin(RTR_IN_GPIO_Port, RTR_IN_Pin);
+    	GPIO_PinState state = HAL_GPIO_ReadPin(RTR_IN_GPIO_Port, RTR_IN_Pin);
+    	switch (system_phase)
+    	{
 
-        if (state == GPIO_PIN_SET)
-        {
-            // Rising edge
-            PRINT_DBG("RTR Rising\n\r");
-            flagRTR = 1;
-        }
-        else
-        {
-            // Falling edge
-            PRINT_DBG("RTR Falling\n\r");
-            flagRTR = 0;
-        }
+    		case SYNCHRONIZATION_PHASE:
+    			if (state == GPIO_PIN_SET){
+    				// Rising edge
+        			Sync_OnEdgeFromISR();
+    			} else {
+    				// Falling edge
+					// No action needed
+    			}
+				break;
+
+			case WORKING_PHASE:
+		        if (state == GPIO_PIN_SET)
+		        {
+		            // Rising edge
+		            flagRTR = 1;
+		        }
+		        else
+		        {
+		            // Falling edge
+		            flagRTR = 0;
+		        }
+		        break;
+
+			default:
+				PRINT_DBG("RTR IRQ in UNKNOWN PHASE\n\r");
+				break;
+    	}
     }
 }
+
 
 
 extern hcsr04_t sonarLeft;
