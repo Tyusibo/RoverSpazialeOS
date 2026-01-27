@@ -1,105 +1,116 @@
 #include "sync_start.h"
-#include "main.h"
-#include "cmsis_os2.h"
+
 #include "gpio.h"
 
-#include "event_flags_constant.h"
+/* Pin configurati a runtime */
+static GPIO_TypeDef *g_in_port  = NULL;
+static uint16_t      g_in_pin   = 0;
 
-/* =========================
-   CONFIG GPIO (DA ADATTARE)
-   =========================
-   Assumo che tu abbia:
-   - Board1: SYNC_OUT (output) e ACK_IN (input con EXTI)
-   - Board2: SYNC_IN (input con EXTI) e ACK_OUT (output)
-*/
+static GPIO_TypeDef *g_out_port = NULL;
+static uint16_t      g_out_pin  = 0;
 
+/* Flag bitmasks configurati a runtime */
+static uint32_t      g_flag_start = 0;
+static uint32_t      g_flag_sync  = 0;
+static uint32_t      g_flag_ack   = 0;
+
+void Sync_Init(GPIO_TypeDef *in_port, uint16_t in_pin,
+               GPIO_TypeDef *out_port, uint16_t out_pin,
+               uint32_t flag_start, uint32_t flag_sync, uint32_t flag_ack)
+{
+  g_in_port  = in_port;
+  g_in_pin   = in_pin;
+  g_out_port = out_port;
+  g_out_pin  = out_pin;
+  
+  g_flag_start = flag_start;
+  g_flag_sync  = flag_sync;
+  g_flag_ack   = flag_ack;
+
+  /* output a 0 per sicurezza */
+  if (g_out_port != NULL) {
+    HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_RESET);
+  }
+}
 
 void Sync_WaitStart(osEventFlagsId_t flagsSync)
 {
-	uint32_t flags = osEventFlagsWait(flagsSync,
-	FLAG_START,
-	osFlagsWaitAny | osFlagsNoClear,
-	osWaitForever);
+  uint32_t flags = osEventFlagsWait(flagsSync,
+                                    g_flag_start,
+                                    osFlagsWaitAny | osFlagsNoClear,
+                                    osWaitForever);
 
-	/* Se osEventFlagsWait fallisce ritorna un codice errore (valore negativo) */
-	if ((int32_t) flags < 0) {
-		osThreadTerminate(osThreadGetId());
-		return;
-	}
+  if ((int32_t)flags < 0) {
+    osThreadTerminate(osThreadGetId());
+    return;
+  }
 
-	/* Se per qualche motivo il flag non è presente (non dovrebbe accadere) */
-	if ((flags & FLAG_START) == 0U) {
-		osThreadTerminate(osThreadGetId());
-		return;
-	}
-
-	/* OK */
-	return;
+  if ((flags & g_flag_start) == 0U) {
+    osThreadTerminate(osThreadGetId());
+    return;
+  }
 }
 
-/* ISR-safe: CMSIS-RTOS2 consente osEventFlagsSet da ISR */
-//void Sync_OnSyncEdgeFromISR(osEventFlagsId_t flagsSync)
-//{
-//  (void)osEventFlagsSet(flagsSync, FLAG_ACK);
-//}
+/* ISR-safe */
+void Sync_OnSyncEdgeFromISR(osEventFlagsId_t flagsSync)
+{
+  (void)osEventFlagsSet(flagsSync, g_flag_sync);
+}
 
 void Sync_OnAckEdgeFromISR(osEventFlagsId_t flagsSync)
 {
-  (void)osEventFlagsSet(flagsSync, FLAG_SYNC);
+  (void)osEventFlagsSet(flagsSync, g_flag_ack);
 }
 
-/* ============ Thread di sync ============ */
 void SyncThread(osEventFlagsId_t flagsSync)
 {
 
-//  /* BOARD1 (MASTER):
-//     1) alza SYNC_OUT
-//     2) aspetta ACK_IN (arriva via EXTI -> FLAG_ACK_RX)
-//     3) dopo handshake: aspetta fino a t0 e rilascia START
-//  */
-//
-//  /* alza SYNC_OUT */
-//  HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_SET);
-//
-//  /* aspetta ACK dalla Board2 */
-//  osEventFlagsWait(flagsSync, FLAG_ACK,
-//                         osFlagsWaitAll, osWaitForever);
-//
-//  /* opzionale: abbassa SYNC_OUT dopo ACK */
-//  HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
-//
-//  /* scegli un istante futuro */
-//  uint32_t t0 = osKernelGetTickCount() + SYNC_K_TICKS;
-//  osDelayUntil(t0);
-//
-//  /* rilascia i task */
-//  (void)osEventFlagsSet(flagsSync, FLAG_START);
+  if ((g_in_port == NULL) || (g_out_port == NULL)) {
+    osThreadTerminate(osThreadGetId());
+    return;
+  }
 
-  /* BOARD2 (SLAVE):
-     1) aspetta SYNC_IN (via EXTI -> FLAG_SYNC_RX)
-     2) alza ACK_OUT
-     3) aspetta fino a t0 e rilascia START
+#if defined(SYNC_BOARD1)
+  /* MASTER:
+     1) SYNC_OUT = 1
+     2) aspetta ACK (EXTI -> FLAG_ACK)
+     3) SYNC_OUT = 0
+     4) delayUntil(t0) e set START
   */
+  HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_SET);
 
-  /* aspetta SYNC dal master */
-  osEventFlagsWait(flagsSync, FLAG_SYNC,
+  (void)osEventFlagsWait(flagsSync, g_flag_ack,
                          osFlagsWaitAll, osWaitForever);
 
-  /* segnala "sono pronta" */
-  HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_SET);
-
-  /* (opzionale) lascia ACK alto o fai un impulso breve */
-  // Fatto da chat
-//  osDelay(1);
-//  HAL_GPIO_WritePin(ACK_GPIO_Port, ACK_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_RESET);
 
   uint32_t t0 = osKernelGetTickCount() + SYNC_K_TICKS;
   (void)osDelayUntil(t0);
 
-  // Fatto da me
-  HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
+  (void)osEventFlagsSet(flagsSync, g_flag_start);
 
-  osEventFlagsSet(flagsSync, FLAG_START);
+#else /* BOARD2 */
+  /* SLAVE:
+     1) aspetta SYNC (EXTI -> FLAG_SYNC)
+     2) ACK_OUT = 1 (impulso o livello)
+     3) delayUntil(t0)
+     4) ACK_OUT = 0 (se vuoi impulso)
+     5) set START
+  */
+  (void)osEventFlagsWait(flagsSync, g_flag_sync,
+                         osFlagsWaitAll, osWaitForever);
 
+  HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_SET);
 
+  uint32_t t0 = osKernelGetTickCount() + SYNC_K_TICKS;
+  (void)osDelayUntil(t0);
+
+  /* impulso: abbasso dopo t0 (se preferisci livello stabile, commenta) */
+  HAL_GPIO_WritePin(g_out_port, g_out_pin, GPIO_PIN_RESET);
+
+  (void)osEventFlagsSet(flagsSync, g_flag_start);
+#endif
+
+  /* finito */
+  osThreadTerminate(osThreadGetId());
 }

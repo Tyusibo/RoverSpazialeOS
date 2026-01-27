@@ -26,31 +26,32 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "Board2.h" 	    // Simulink Model
+/* OS */
+#include "scheduling_constants.h"
+#include "event_flags_constant.h"
+#include "sync_start.h"
 
-#include "pad_receiver.h"   // Remote Controller
+/* Simulink Model */
+#include "Board2.h"
+
+/* Drivers */
+#include "pad_receiver.h"
 #include "gyroscope_init.h" // #include "mpu6050.h"
 #include "sonar_init.h"     // #include "HCSR04.h"
 #include "motors_init.h"
 /*
- #include "motors_control.h"
- #include "motor_constants.h"
- #include "regulator.h"
- */
+#include "motors_control.h"
+#include "motor_constants.h"
+#include "regulator.h"
+*/
 
 /* Utility */
 #include "DWT.h"
 #include "print.h"
 #include "debug.h"
+#include "phase.h"
 
-// OS
-#include "scheduling_constants.h"
-#include "event_flags_constant.h"
-#include "sync_start.h"
 
-#if SEGGER_BUILD
-#include "SEGGER_SYSVIEW_FreeRTOS.h"
-#endif
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,6 +63,10 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#if SEGGER_BUILD
+#include "SEGGER_SYSVIEW_FreeRTOS.h"
+#endif
 
 /* USER CODE END PD */
 
