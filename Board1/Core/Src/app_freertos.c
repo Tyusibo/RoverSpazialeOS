@@ -25,38 +25,32 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "debug.h"
-#if SEGGER_BUILD
-#include "SEGGER_SYSVIEW_FreeRTOS.h"
-#endif
 
-// OS
+/* OS */
 #include "scheduling_constants.h"
 #include "event_flags_constant.h"
 #include "sync_start.h"
 
-// Simulink Model
+/* Simulink Model */
 #include "Board1.h"
 
-// UART Handlers for communication inter board and debugging
-#include "uart_functions.h"
-#include "print.h"
-
-// Driver lights
-#include "lights_init.h"   // #include "a4wd3_led.h"
-
-// Driver motors
+/* Drivers */
+#include "lights_init.h"     // #include "a4wd3_led.h"
 #include "encoders_init.h"   // #include "encoders.h"
-#include "motors_init.h"     // #include "motors_control.h"
-// both #include "motor_constants.h"
-
+#include "motors_init.h"
+/*
+#include "motors_control.h"
+#include "motor_constants.h"
+#include "regulator.h"
+*/
 #include "battery_init.h"        // #include "batt_level.h"
 #include "temperature_init.h"    //#include "temperature_adc.h"
 
+/* Utility */
 #include "DWT.h"
-
-/* TEST */
-#include "lights_test.h"
+#include "print.h"
+#include "debug.h"
+#include "phase.h"
 
 /* USER CODE END Includes */
 
@@ -70,6 +64,10 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#if SEGGER_BUILD
+#include "SEGGER_SYSVIEW_FreeRTOS.h"
+#endif
 
 /* USER CODE END PD */
 
@@ -198,6 +196,10 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
  */
 void MX_FREERTOS_Init(void) {
 	/* USER CODE BEGIN Init */
+
+	Sync_Init(RTR_IN_GPIO_Port, RTR_IN_Pin,
+	               RTR_OUT_GPIO_Port, RTR_OUT_Pin,
+	               FLAG_START, FLAG_SYNC, FLAG_ACK);
 
 	/* USER CODE END Init */
 
@@ -486,6 +488,8 @@ void StartSeggerTask(void *argument) {
 }
 
 /* USER CODE BEGIN Header_StartSynchronization */
+// This feature is extern to the library behavior
+extern system_phase_t system_phase;
 /**
  * @brief Function implementing the Synchronization thread.
  * @param argument: Not used
@@ -495,13 +499,13 @@ void StartSeggerTask(void *argument) {
 void StartSynchronization(void *argument) {
 	/* USER CODE BEGIN StartSynchronization */
 
-
+	system_phase = SYNCHRONIZATION_PHASE;
 
 	void SyncThread(osEventFlagsId_t flagsSync);
 
-	osEventFlagsSet(flagsOSHandle, FLAG_START);
+	system_phase = WORKING_PHASE;
 
-
+	// Termination, if clock drift is not critical
 	osThreadTerminate(osThreadGetId());
 
 	/* USER CODE END StartSynchronization */

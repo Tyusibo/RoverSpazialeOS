@@ -28,30 +28,30 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "debug.h"
-// Simulink Model
+
+/* UART Handler for communication inter board */
+#include "uart_functions.h"
+
+/* Simulink Model */
 #include "Board1.h"
 
-// UART Handlers for communication inter board and debugging
-#include "uart_functions.h"
-#include "print.h"
-
-// Driver lights
-#include "lights_init.h"   // #include "a4wd3_led.h"
-
-// Driver motors
+/* Drivers */
+#include "lights_init.h"     // #include "a4wd3_led.h"
 #include "encoders_init.h"   // #include "encoders.h"
-#include "motors_init.h"     // #include "motors_control.h"
-// both #include "motor_constants.h"
-
+#include "motors_init.h"
+/*
+#include "motors_control.h"
+#include "motor_constants.h"
+#include "regulator.h"
+*/
 #include "battery_init.h"        // #include "batt_level.h"
 #include "temperature_init.h"    //#include "temperature_adc.h"
 
+/* Utility */
 #include "DWT.h"
-
-/* TEST */
-#include "lights_test.h"
-//#include "motors_test.h"
+#include "print.h"
+#include "debug.h"
+#include "phase.h"
 
 /* USER CODE END Includes */
 
@@ -90,6 +90,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
+system_phase_t system_phase = SYNCHRONIZATION_PHASE;
 
 /* USER CODE END PV */
 

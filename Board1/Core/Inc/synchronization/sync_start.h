@@ -38,6 +38,6 @@ static inline void Sync_OnEdgeFromISR(osEventFlagsId_t flagsSync)
 }
 
 /* Thread di sincronizzazione (da creare con osThreadNew) */
-void SyncThread(void *argument);
+void SyncThread(osEventFlagsId_t flagsSync);
 
 #endif /* INC_SYNCHRONIZATION_SYNC_START_H_ */

@@ -1,7 +1,6 @@
 #include "sync_start.h"
-#include "cmsis_os2.h"
+
 #include "gpio.h"
-/* #include "event_flags_constant.h" removed */
 
 /* Pin configurati a runtime */
 static GPIO_TypeDef *g_in_port  = NULL;
@@ -15,7 +14,6 @@ static uint32_t      g_flag_start = 0;
 static uint32_t      g_flag_sync  = 0;
 static uint32_t      g_flag_ack   = 0;
 
-/* flagsSync passato come argument al thread */
 void Sync_Init(GPIO_TypeDef *in_port, uint16_t in_pin,
                GPIO_TypeDef *out_port, uint16_t out_pin,
                uint32_t flag_start, uint32_t flag_sync, uint32_t flag_ack)
@@ -64,11 +62,10 @@ void Sync_OnAckEdgeFromISR(osEventFlagsId_t flagsSync)
   (void)osEventFlagsSet(flagsSync, g_flag_ack);
 }
 
-void SyncThread(void *argument)
+void SyncThread(osEventFlagsId_t flagsSync)
 {
-  osEventFlagsId_t flagsSync = (osEventFlagsId_t)argument;
 
-  if ((flagsSync == NULL) || (g_in_port == NULL) || (g_out_port == NULL)) {
+  if ((g_in_port == NULL) || (g_out_port == NULL)) {
     osThreadTerminate(osThreadGetId());
     return;
   }

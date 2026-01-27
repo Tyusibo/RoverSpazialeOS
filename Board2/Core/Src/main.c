@@ -29,9 +29,14 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "Board2.h" 	    // Simulink Model
+/* UART Handler for communication inter board */
+#include "uart_functions.h"
 
-#include "pad_receiver.h"   // Remote Controller
+/* Simulink Model */
+#include "Board2.h"
+
+/* Drivers */
+#include "pad_receiver.h"
 #include "gyroscope_init.h" // #include "mpu6050.h"
 #include "sonar_init.h"     // #include "HCSR04.h"
 #include "motors_init.h"
@@ -45,10 +50,6 @@
 #include "DWT.h"
 #include "print.h"
 #include "debug.h"
-
-
-#include "uart_functions.h"  // UART Handlers for communication inter board
-
 
 /* USER CODE END Includes */
 
