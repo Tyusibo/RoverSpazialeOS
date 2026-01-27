@@ -120,6 +120,4 @@ void SyncThread(void)
   (void)osEventFlagsSet(g_flagsSync, g_flag_start);
 #endif
 
-  /* finito */
-  osThreadTerminate(osThreadGetId());
 }
