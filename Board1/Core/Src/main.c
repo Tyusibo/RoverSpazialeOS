@@ -186,14 +186,11 @@ int main(void)
 
 	Motors_InitAll();
 	Motors_StartAllPwm();
-	Motors_SetDefaultCcr(757);
+	Motors_SetDefaultCcr(720);
 
 	temperature_sensor_init();
 	battery_sensor_init();
 
-
-	// Safe start, allowing Board2 to initialize
-	HAL_Delay(1000);
 
   /* USER CODE END 2 */
 

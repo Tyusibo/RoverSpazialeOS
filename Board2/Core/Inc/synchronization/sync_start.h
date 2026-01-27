@@ -31,7 +31,7 @@ void Sync_OnAckEdgeFromISR (void);
 /* Wrapper: su Board1 setta ACK, su Board2 setta SYNC */
 static inline void Sync_OnEdgeFromISR(void)
 {
-#if defined(SYNC_BOARD1)
+#if defined(SYNC_BOARD2)
   Sync_OnAckEdgeFromISR();
 #else
   Sync_OnSyncEdgeFromISR();
