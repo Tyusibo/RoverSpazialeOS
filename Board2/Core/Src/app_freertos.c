@@ -537,7 +537,11 @@ void StartSynchronization(void *argument) {
 
 	system_phase = SYNCHRONIZATION_PHASE;
 
+    int32_t lock = osKernelLock();   // Lock the scheduler (no context switch)
+
 	SyncThread();
+
+    osKernelRestoreLock(lock);       // Restore previous state
 
 	system_phase = WORKING_PHASE;
 
