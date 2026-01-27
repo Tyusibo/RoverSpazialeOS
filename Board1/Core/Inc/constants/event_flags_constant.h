@@ -7,7 +7,9 @@
 
 #define FLAG_START   (1U << 0)
 
-#define FLAG_ACK   (1U << 0)
+#define FLAG_SYNC    (1U << 1)
+
+#define FLAG_ACK     (1U << 2)
 
 
 
