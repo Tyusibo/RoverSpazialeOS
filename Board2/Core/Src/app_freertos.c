@@ -603,109 +603,91 @@ void StartPollingServer(void *argument)
 {
   /* USER CODE BEGIN StartPollingServer */
 
-	Sync_WaitStart();
+    Sync_WaitStart();
 
-	const uint32_t T = ms_to_ticks(T_POLLING_SERVER);
-	uint32_t next = osKernelGetTickCount();
+    const uint32_t T = ms_to_ticks(T_POLLING_SERVER);
+    uint32_t next = osKernelGetTickCount();
 
-	BUS_RemoteController default_controller =
-			(BUS_RemoteController ) { 0, 0, 0 };
-	//Gyroscope default_gyroscope;
+    BUS_RemoteController default_controller = { 0, 0, 0 };
 
-	/* Infinite loop */
-	for (;;) {
+    /* Infinite loop */
+    for (;;) {
 
 #if REAL_TASK
 
-		/* Upon server activation, process all pending requests, if any */
-		uint32_t flags = osEventFlagsWait(flagsOSHandle,
-		FLAGS_POLLING_SERVER_WAIT,
-		osFlagsWaitAny | osFlagsNoClear, 0);
+        /* Upon server activation, process all pending requests, if any */
+        uint32_t flags = osEventFlagsWait(flagsOSHandle,
+        FLAGS_POLLING_SERVER_WAIT,
+        osFlagsWaitAny | osFlagsNoClear, 0);
 
-		if ((int32_t) flags < 0) {
-			// Error or timeout (no flags set)
-		} else {
-			/* --- Controller / Pad --- */
-			if (flags & FLAG_PAD_OK) {
-				PadReceiver_Read(&Board2_U.remoteController);
-				osEventFlagsClear(flagsOSHandle, FLAG_PAD_OK);
-			}
+        if ((int32_t) flags > 0) {
+            
+            /* ---------------- REMOTE CONTROLLER ---------------- */
+            if (flags & FLAG_PAD_OK) {
+                PadReceiver_Read(&Board2_U.remoteController);
+                // Clear both to prioritize OK and prevent double handling
+                osEventFlagsClear(flagsOSHandle, FLAG_PAD_OK | FLAG_PAD_ERROR);
+            }
+            else if (flags & FLAG_PAD_ERROR) {
+                Board2_U.remoteController = default_controller;
+                osEventFlagsClear(flagsOSHandle, FLAG_PAD_ERROR);
+            }
 
-			if (flags & FLAG_PAD_ERROR) {
-				Board2_U.remoteController = default_controller;
-				osEventFlagsClear(flagsOSHandle, FLAG_PAD_ERROR);
-			}
+            /* ------------------- GYROSCOPE ------------------- */
+            if (flags & FLAG_GYRO_OK) {
+                MPU6050_Process_Yaw_IT_Data();
+                Board2_U.gyroscope = MPU6050_Yaw.KalmanAngleZ;
+                osEventFlagsClear(flagsOSHandle, FLAG_GYRO_OK | FLAG_GYRO_ERROR);
+            }
+            else if (flags & FLAG_GYRO_ERROR) {
+                // Preserve last valid data or handle error logic specifically
+                osEventFlagsClear(flagsOSHandle, FLAG_GYRO_ERROR);
+            }
 
-			/* --- Gyroscope --- */
-			if (flags & FLAG_GYRO_OK) {
-				MPU6050_Process_Yaw_IT_Data();
-				Board2_U.gyroscope = MPU6050_Yaw.KalmanAngleZ;
-				osEventFlagsClear(flagsOSHandle, FLAG_GYRO_OK);
-			}
+            /* ------------------ SONAR LEFT ------------------- */
+            if (flags & FLAG_SONAR_LEFT_OK) {
+                hcsr04_process_distance(&sonarLeft);
+                Board2_U.sonar.left = sonarLeft.distance;
+                osEventFlagsClear(flagsOSHandle, FLAG_SONAR_LEFT_OK | FLAG_SONAR_LEFT_TIMEOUT);
+            }
+            else if (flags & FLAG_SONAR_LEFT_TIMEOUT) {
+                hcsr04_reset_sonar(&sonarLeft); 
+                osEventFlagsClear(flagsOSHandle, FLAG_SONAR_LEFT_TIMEOUT);
+            }
 
-			if (flags & FLAG_GYRO_ERROR) {
-				// Preserve last valid data in Board2_U.gyroscope
-//				MPU6050_Process_Yaw_IT_Data();
-//				Board2_U.gyroscope = MPU6050_Yaw.KalmanAngleZ;
-				osEventFlagsClear(flagsOSHandle, FLAG_GYRO_ERROR);
-			}
+            /* ------------------ SONAR FRONT ------------------ */
+            if (flags & FLAG_SONAR_FRONT_OK) {
+                hcsr04_process_distance(&sonarFront);
+                Board2_U.sonar.front = sonarFront.distance;
+                osEventFlagsClear(flagsOSHandle, FLAG_SONAR_FRONT_OK | FLAG_SONAR_FRONT_TIMEOUT);
+            }
+            else if (flags & FLAG_SONAR_FRONT_TIMEOUT) {
+                hcsr04_reset_sonar(&sonarFront);
+                osEventFlagsClear(flagsOSHandle, FLAG_SONAR_FRONT_TIMEOUT);
+            }
 
-			/* --- Sonar Left --- */
-			if (flags & FLAG_SONAR_LEFT_OK) {
-				hcsr04_process_distance(&sonarLeft);
-				Board2_U.sonar.left = sonarLeft.distance;
-				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_LEFT_OK);
-			}
+            /* ------------------ SONAR RIGHT ------------------ */
+            if (flags & FLAG_SONAR_RIGHT_OK) {
+                hcsr04_process_distance(&sonarRight);
+                Board2_U.sonar.right = sonarRight.distance;
+                osEventFlagsClear(flagsOSHandle, FLAG_SONAR_RIGHT_OK | FLAG_SONAR_RIGHT_TIMEOUT);
+            }
+            else if (flags & FLAG_SONAR_RIGHT_TIMEOUT) {
+                hcsr04_reset_sonar(&sonarRight);
+                osEventFlagsClear(flagsOSHandle, FLAG_SONAR_RIGHT_TIMEOUT);
+            }
 
-			if (flags & FLAG_SONAR_LEFT_TIMEOUT) {
-				// Preserve last valid data in Board2_U.sonar.left
-				hcsr04_reset_sonar(&sonarLeft);
-//		        hcsr04_set_default_distance(&sonarLeft);
-//				Board2_U.sonar.left = sonarLeft.distance;
-				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_LEFT_TIMEOUT);
-			}
-
-			/* --- Sonar Front --- */
-			if (flags & FLAG_SONAR_FRONT_OK) {
-				hcsr04_process_distance(&sonarFront);
-				Board2_U.sonar.front = sonarFront.distance;
-				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_FRONT_OK);
-			}
-
-			if (flags & FLAG_SONAR_FRONT_TIMEOUT) {
-				// Preserve last valid data in Board2_U.sonar.front
-				hcsr04_reset_sonar(&sonarFront);
-//		        hcsr04_set_default_distance(&sonarFront);
-//				Board2_U.sonar.front = sonarFront.distance;
-				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_FRONT_TIMEOUT);
-			}
-
-			/* --- Sonar Right --- */
-			if (flags & FLAG_SONAR_RIGHT_OK) {
-				hcsr04_process_distance(&sonarRight);
-				Board2_U.sonar.right = sonarRight.distance;
-				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_RIGHT_OK);
-			}
-
-			if (flags & FLAG_SONAR_RIGHT_TIMEOUT) {
-				// Preserve last valid data in Board2_U.sonar.right
-				hcsr04_reset_sonar(&sonarRight);
-//		        hcsr04_set_default_distance(&sonarRight);
-//				Board2_U.sonar.right = sonarRight.distance;
-				osEventFlagsClear(flagsOSHandle, FLAG_SONAR_RIGHT_TIMEOUT);
-			}
-
-		}
+        }
 
 #else
-		HAL_Delay(WCET_POLLING_SERVER);
+        HAL_Delay(WCET_POLLING_SERVER);
 #endif
 
-		periodic_wait(&next, T, &MissPollingServer);
+        periodic_wait(&next, T, &MissPollingServer);
 
-	}
+    }
 
-	osThreadTerminate(osThreadGetId());
+    osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartPollingServer */
 }
