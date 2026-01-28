@@ -24,7 +24,8 @@
  */
 
 #include "HCSR04.h"
-#include "cmsis_os.h"  // osKernelLock, osKernelRestoreLock
+#include "cmsis_os.h"  // osPriority definitions
+#include "scheduler_utils.h"
 
 #define SOUND_SPEED_CM_PER_US (0.0343f / 2.0f)  // 0.01715 cm/us
 #define TIM2_TICKS_PER_US     (16.0f)           // 16 MHz -> 16 ticks/us
@@ -133,9 +134,10 @@ int8_t hcsr04_init(hcsr04_t *sensor,
 /**
  * @brief Sends a trigger pulse to the sensor to start a measurement.
  *
- * This function generates a 10us high pulse on the trigger pin. It locks
- * the scheduler to ensure precise timing. It also resets the capture state
- * and enables the interrupt for the echo pin.
+ * This function generates a 10us high pulse on the trigger pin. It raises
+ * the task priority to osPriorityHigh5 to ensure precise timing without
+ * disabling interrupts. It also resets the capture state and enables the
+ * interrupt for the echo pin.
  *
  * @param sensor Pointer to the HC-SR04 sensor handle.
  * @return int8_t HCSR04_OK on success, HCSR04_ERR on error.
@@ -150,13 +152,14 @@ int8_t hcsr04_trigger(hcsr04_t *sensor)
     __HAL_TIM_SET_CAPTUREPOLARITY(sensor->echo_tim, sensor->echo_channel, sensor->current_polarity);
 
     // 10us pulse on TRIG (TIM2 @ 16MHz => 160 ticks)
-    int32_t lock = osKernelLock();   // Lock the scheduler (no context switch)
+    // Elevate priority to prevent preemption (but allow ISRs)
+    osPriority_t old_prio = scheduler_set_high_priority();
 
     HAL_GPIO_WritePin(sensor->trigger_port, sensor->trigger_pin, GPIO_PIN_SET);
     delay_ticks(sensor->echo_tim, TRIG_PULSE_US * (uint32_t)TIM2_TICKS_PER_US, sensor->arr_timer_plus_one);
     HAL_GPIO_WritePin(sensor->trigger_port, sensor->trigger_pin, GPIO_PIN_RESET);
 
-    osKernelRestoreLock(lock);       // Restore previous state
+    scheduler_restore_priority(old_prio);       // Restore previous priority
 
     // Enable the correct capture interrupt for this channel
     uint32_t it = channel_to_it(sensor->echo_channel);
