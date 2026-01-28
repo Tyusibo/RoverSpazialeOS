@@ -25,6 +25,13 @@
 #define SEGGER_BUILD 0
 
 /**
+ * @brief LED Debug Enable
+ * 1: Enables debug LED
+ * 0: Disables debug LED
+ */
+#define LED_DEBUG 1
+
+/**
  * @brief Task Execution Mode
  * 1: Runs real code
  * 0: Simulates tasks with HAL_Delay

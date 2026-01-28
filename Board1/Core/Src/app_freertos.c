@@ -429,7 +429,9 @@ void StartSupervisor(void *argument)
 		}
 
 
+#if LED_DEBUG
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+#endif
 		periodic_wait(&next, T, &MissSupervisor);
 	}
 

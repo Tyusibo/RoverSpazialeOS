@@ -414,7 +414,9 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
 	if (h != NULL && huart->Instance == h->Instance) {
 
+#if LED_DEBUG
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
+#endif
 
 		errorReceiveFlag = 1;
 
