@@ -30,6 +30,7 @@
 #include "scheduling_constants.h"
 #include "event_flags_constant.h"
 #include "sync_start.h"
+#include "freeRTOS_functions.h"
 
 /* Simulink Model */
 #include "Board2.h"
