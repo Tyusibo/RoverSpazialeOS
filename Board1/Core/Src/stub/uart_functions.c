@@ -11,29 +11,29 @@
 #if VERBOSE_DEBUG == 1
     #define PRINT_DBG(msg) printMsg(msg)
 #else
-    #define PRINT_DBG(msg) ((void)0)
+#define PRINT_DBG(msg) ((void)0)
 #endif
 /* ---------------------------- */
 
 volatile uint8_t flagRTR = 0; 					    // Flag RTR
 
 volatile uint8_t receivedFlag = 0;  				// Avvenuta ricezione frame
-volatile uint8_t errorReceiveFlag = 0;  		 	// Avvenuto errore di ricezione
+volatile uint8_t errorReceiveFlag = 0;  		 // Avvenuto errore di ricezione
 
 static const uint8_t ack = 1;					// Ack
 static const uint8_t nack = 0; 					// Nack
 
-static uint8_t received_ack; 	  				// variabile di ricezione per l'ack
+static uint8_t received_ack; 	  			// variabile di ricezione per l'ack
 
 static UART_HandleTypeDef *current_handler; 	// Handler comunicazione
 
 /* Handler */
 void setComunicationHandler(UART_HandleTypeDef *uart_handler) {
-    current_handler = uart_handler;
+	current_handler = uart_handler;
 }
 
-UART_HandleTypeDef * getComunicationHandler() {
-   return current_handler;
+UART_HandleTypeDef* getComunicationHandler() {
+	return current_handler;
 }
 
 /* Trasmissione */
@@ -52,7 +52,7 @@ uint8_t checkRTR(void) {
 
 void UART_TransmitIT(uint8_t *pData, size_t size) {
 
-/* Test CRC, si cambia o un byte del CRC oppure del buffer*/
+	/* Test CRC, si cambia o un byte del CRC oppure del buffer*/
 //	static uint8_t jitter;
 //
 //	enum { ROMPO_QUI = 3 };
@@ -74,55 +74,70 @@ void UART_TransmitIT(uint8_t *pData, size_t size) {
 //	default:
 //		break;
 //	}
-
-    //HAL_UART_Transmit(&current_handler, pData, size, HAL_MAX_DELAY);
-    HAL_UART_Transmit_IT(current_handler, pData, size);
-    PRINT_DBG("B1 Transmitted\n\r\r\n");
+	//HAL_UART_Transmit(&current_handler, pData, size, HAL_MAX_DELAY);
+	HAL_UART_Transmit_IT(current_handler, pData, size);
+	PRINT_DBG("B1 Transmitted\n\r\r\n");
 }
 
 /* Ricezione */
 
 void setRTR(void) {
 	PRINT_DBG("SET RTR\n\r\r\n");
-    HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_SET);
 }
 
 void resetRTR() {
-    HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
 }
 
 uint8_t UART_ReceiveIT(uint8_t *pData, size_t size) {
 	//pulisco i falg
-    receivedFlag = 0;
-    errorReceiveFlag = 0;
+	receivedFlag = 0;
+	errorReceiveFlag = 0;
 
-    PRINT_DBG("B1 Wait receive\n\r");
+	PRINT_DBG("B1 Wait receive\n\r");
 
-    HAL_StatusTypeDef status_receive = HAL_UART_Receive_IT(current_handler, pData, size);
-    if (status_receive != HAL_OK) {
-    	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
-        PRINT_DBG("B1 RECEVE_INIT_ERR\n\r");
-        return 0; // errore
-    }
-    return 1; // ok
+	HAL_StatusTypeDef status_receive = HAL_UART_Receive_IT(current_handler,
+			pData, size);
+	if (status_receive != HAL_OK) {
+		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+		PRINT_DBG("B1 RECEVE_INIT_ERR\n\r");
+		return 0; // errore
+	}
+	return 1; // ok
 }
 
 uint8_t hasReceived(void) {
-    return receivedFlag;
+	return receivedFlag;
 }
 
 // Ritorna se c'è stato un errore di ricezione, abilitato nella callback di errore
 uint8_t errorReceived(void) {
-    return errorReceiveFlag;
+	static uint32_t count = 0;
+	// se count ack è pari manda l'ack altirmenti manda il nack
+
+	count++;
+	// Se ha davvero ricevuto
+	if (receivedFlag == 1){
+		if (count % 2 == 0) {
+				return 1;
+			} else {
+				return 0;
+			}
+	} else {
+		return 0;
+	}
+	// Vero funzionamento
+	//return errorReceiveFlag;
 }
 
 void UART_ReceiveAckIT(void) {
-    received_ack = 0; 							// Pulizia
-    UART_ReceiveIT(&received_ack, 1);
+	received_ack = 0; 							// Pulizia
+	UART_ReceiveIT(&received_ack, 1);
 }
 
 uint8_t UART_CheckAck(void) {
-    return received_ack;
+	return received_ack;
 }
 
 //void UART_SendAckIT(void) {
@@ -142,8 +157,6 @@ void UART_SendAckIT(void) {
 }
 
 void UART_SendNackIT(void) {
-    UART_TransmitIT((uint8_t*) &nack, 1);
+	UART_TransmitIT((uint8_t*) &nack, 1);
 }
-
-
 
