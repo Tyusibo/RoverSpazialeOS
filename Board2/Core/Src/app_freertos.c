@@ -184,6 +184,14 @@ const osTimerAttr_t SonarMonitoring_attributes = {
   .cb_mem = &SonarMonitoringControlBlock,
   .cb_size = sizeof(SonarMonitoringControlBlock),
 };
+/* Definitions for SupervisorKiller */
+osTimerId_t SupervisorKillerHandle;
+osStaticTimerDef_t SupervisorKillerControlBlock;
+const osTimerAttr_t SupervisorKiller_attributes = {
+  .name = "SupervisorKiller",
+  .cb_mem = &SupervisorKillerControlBlock,
+  .cb_size = sizeof(SupervisorKillerControlBlock),
+};
 /* Definitions for flagsOS */
 osEventFlagsId_t flagsOSHandle;
 osStaticEventGroupDef_t flagsOSControlBlock;
@@ -210,6 +218,7 @@ void StartSeggerTask(void *argument);
 void StartSynchronization(void *argument);
 void StartPollingServer(void *argument);
 void SonarTimeout(void *argument);
+void KillSupervisor(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -234,6 +243,9 @@ void MX_FREERTOS_Init(void) {
   /* Create the timer(s) */
   /* creation of SonarMonitoring */
   SonarMonitoringHandle = osTimerNew(SonarTimeout, osTimerOnce, NULL, &SonarMonitoring_attributes);
+
+  /* creation of SupervisorKiller */
+  SupervisorKillerHandle = osTimerNew(KillSupervisor, osTimerOnce, NULL, &SupervisorKiller_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
 	/* start timers, add new ones, ... */
@@ -289,8 +301,9 @@ void MX_FREERTOS_Init(void) {
  * @retval None
  */
 /* USER CODE END Header_StartReadController */
-void StartReadController(void *argument) {
-	/* USER CODE BEGIN StartReadController */
+void StartReadController(void *argument)
+{
+  /* USER CODE BEGIN StartReadController */
 
 	Sync_WaitStart();
 
@@ -333,7 +346,7 @@ void StartReadController(void *argument) {
 
 	osThreadTerminate(osThreadGetId());
 
-	/* USER CODE END StartReadController */
+  /* USER CODE END StartReadController */
 }
 
 /* USER CODE BEGIN Header_StartReadGyroscope */
@@ -343,8 +356,9 @@ void StartReadController(void *argument) {
  * @retval None
  */
 /* USER CODE END Header_StartReadGyroscope */
-void StartReadGyroscope(void *argument) {
-	/* USER CODE BEGIN StartReadGyroscope */
+void StartReadGyroscope(void *argument)
+{
+  /* USER CODE BEGIN StartReadGyroscope */
 
 	Sync_WaitStart();
 
@@ -389,9 +403,8 @@ void StartReadGyroscope(void *argument) {
 
 	osThreadTerminate(osThreadGetId());
 
-	/* USER CODE END StartReadGyroscope */
+  /* USER CODE END StartReadGyroscope */
 }
-
 
 /* USER CODE BEGIN Header_StartSupervisor */
 /**
@@ -485,8 +498,9 @@ void StartSupervisor(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartReadSonars */
-void StartReadSonars(void *argument) {
-	/* USER CODE BEGIN StartReadSonars */
+void StartReadSonars(void *argument)
+{
+  /* USER CODE BEGIN StartReadSonars */
 
 	Sync_WaitStart();
 
@@ -515,9 +529,8 @@ void StartReadSonars(void *argument) {
 	}
 
 	osThreadTerminate(osThreadGetId());
-	/* USER CODE END StartReadSonars */
+  /* USER CODE END StartReadSonars */
 }
-
 
 /* USER CODE BEGIN Header_StartSeggerTask */
 /**
@@ -579,8 +592,9 @@ void StartSynchronization(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartPollingServer */
-void StartPollingServer(void *argument) {
-	/* USER CODE BEGIN StartPollingServer */
+void StartPollingServer(void *argument)
+{
+  /* USER CODE BEGIN StartPollingServer */
 
 	Sync_WaitStart();
 
@@ -686,12 +700,13 @@ void StartPollingServer(void *argument) {
 
 	osThreadTerminate(osThreadGetId());
 
-	/* USER CODE END StartPollingServer */
+  /* USER CODE END StartPollingServer */
 }
 
 /* SonarTimeout function */
-void SonarTimeout(void *argument) {
-	/* USER CODE BEGIN SonarTimeout */
+void SonarTimeout(void *argument)
+{
+  /* USER CODE BEGIN SonarTimeout */
 	// Check each sonar and set timeout flags if not done
 	if (!hcsr04_is_done(&sonarLeft)) {
 		osEventFlagsSet(flagsOSHandle, FLAG_SONAR_LEFT_TIMEOUT);
@@ -702,7 +717,15 @@ void SonarTimeout(void *argument) {
 	if (!hcsr04_is_done(&sonarRight)) {
 		osEventFlagsSet(flagsOSHandle, FLAG_SONAR_RIGHT_TIMEOUT);
 	}
-	/* USER CODE END SonarTimeout */
+  /* USER CODE END SonarTimeout */
+}
+
+/* KillSupervisor function */
+void KillSupervisor(void *argument)
+{
+  /* USER CODE BEGIN KillSupervisor */
+
+  /* USER CODE END KillSupervisor */
 }
 
 /* Private application code --------------------------------------------------*/

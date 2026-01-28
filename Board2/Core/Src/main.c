@@ -1,5 +1,4 @@
 /* USER CODE BEGIN Header */
-/* PROVA COD GEN B2 */
 /**
  ******************************************************************************
  * @file           : main.c
@@ -134,37 +133,44 @@ int main(void)
   MX_I2C3_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
-	//init DWT
+
+    /* Init DWT for WCET measurement */
 
 	DWT_Init();
 
+	/* Set UART Handlers */
+
 	setComunicationHandler(&hlpuart1);
-	setPrinterHandler(&huart2); // Imposta UART per debug
+
+	setPrinterHandler(&huart2);
+
+#if VERBOSE_DEBUG_MAIN
+
 	clearScreen();
 
-	printMsg("BEGIN B2 INIT...\r\n");
+	PRINT_DBG("BEGIN B2 INIT...\r\n");
 
-	// Init Modello Simulink
+#endif
+
+	/* Init Simulink Model with default values */
 	Board2_initialize();
 	Board2_U.remoteController = (BUS_RemoteController ) { 0, 0, 0 };
 	Board2_U.gyroscope = 0.0f;
 	Board2_U.sonar = (BUS_Sonar ) { 0, 0, 0 };
 
-	// Init Sonar
+	/* Init drivers */
 	if (Sonar_InitAll() == 1) {
 		PRINT_DBG("ERROR SONAR INIT\r\n");
 	}
 	StartSonarTimer();
 
-	// Init Gyroscope (IMU)
 	if (MPU6050_Init(&hi2c3) == 1) {
 		PRINT_DBG("ERROR GYRO INIT\r\n");
 	}
 
-	// Init Motori
 	Motors_InitAll();
 	Motors_StartAllPwm();
-	Motors_SetDefaultCcr(757);
+	Motors_SetDefaultCcr(720);
 
   /* USER CODE END 2 */
 
