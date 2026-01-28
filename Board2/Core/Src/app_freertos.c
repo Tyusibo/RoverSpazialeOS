@@ -466,6 +466,12 @@ void StartSupervisor(void *argument)
 			Board2_step();
 		} while (Board2_Y.supervision_ended != 1);
 
+
+		while(Board2_Y.supervision_ended == 1){
+			Board2_step();
+		}
+
+
 		/* STOP TIMER FOR MONITORING WCET */
 		osTimerStop(SupervisorKillerHandle);
 

@@ -335,7 +335,6 @@ void StartPID(void *argument)
 
 #if PRINT_TASK
         printMotorSpeeds(&Board1_U.speed);
-        //HAL_Delay(2000); // Per non intasare la seriale
 #endif
 
 #else
@@ -377,6 +376,8 @@ void StartSupervisor(void *argument)
 			Board1_step();
 		} while (Board1_Y.supervision_ended != 1);
 
+
+
 		/* FINALIZING DECISION */
 		actuate_white_leds();
 		change_set_point();
@@ -385,9 +386,6 @@ void StartSupervisor(void *argument)
 		/* STOP TIMER FOR MONITORING WCET */
 		osTimerStop(SupervisorKillerHandle);
 
-		// Stampo sempre per peppino
-		printGlobalState(&Board1_Y.board1GlobalState);
-		printDecision(&Board1_Y.board1Decision);
 
 #if PRINT_TASK
 
@@ -395,6 +393,10 @@ void StartSupervisor(void *argument)
 		// Stampa ogni TOT cicli
 		static uint32_t cycle_count = 0;
 		cycle_count++;
+		printMsg("Cycle Count B1: ");
+		printInt((int32_t)cycle_count);
+		printNewLine();
+
 		if (cycle_count >= 100) {
 			cycle_count = 0;
 //			printGlobalState(&Board1_Y.board1GlobalState);
@@ -408,7 +410,24 @@ void StartSupervisor(void *argument)
 //			printMsg(" B:");
 //			printInt(MissReadBattery);
 //			printNewLine();
+			// stampo con libreria print cycle_count
 		}
+
+		// Stampo sempre per peppino
+		printLocalStateB1(&Board1_DW.board1LocalState);
+//		printGlobalState(&Board1_Y.board1GlobalState);
+		printDecision(&Board1_Y.board1Decision);
+
+
+		if(Board1_Y.board1Decision.roverState == EMERGENCY ||
+				Board1_Y.board1Decision.roverState == FAULTY_B1_DEGRADED_B2){
+			break;
+		}
+
+		while(Board1_Y.supervision_ended == 1){
+			 Board1_step();
+		}
+
 
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
 		periodic_wait(&next, T, &MissSupervisor);
@@ -449,7 +468,6 @@ void StartReadTemperature(void *argument)
 
 #if PRINT_TASK
         printTemperature((float)Board1_U.temperature);
-        //HAL_Delay(2000);
 #endif
 
 #else
@@ -492,7 +510,6 @@ void StartReadBattery(void *argument)
 
 #if PRINT_TASK
         printBattery((float)Board1_U.batteryLevel);
-        //HAL_Delay(2000);
 #endif
 
 #else
@@ -577,7 +594,7 @@ void callbackToggleRightRedLed(void *argument)
 void KillSupervisor(void *argument)
 {
   /* USER CODE BEGIN KillSupervisor */
-
+	//Board1_U.supervisor_timeout++;
   /* USER CODE END KillSupervisor */
 }
 

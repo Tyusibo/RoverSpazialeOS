@@ -29,7 +29,7 @@
  * 1: Runs real code
  * 0: Simulates tasks with HAL_Delay
  */
-#define REAL_TASK 1
+#define REAL_TASK 0
 
 /**
  * @brief Global Debug Print Enable
@@ -54,7 +54,7 @@
  * @brief CRC Debug Verbosity
  * 1 to enable prints, 0 to disable them 
  */
-#define VERBOSE_DEBUG_CRC 1
+#define VERBOSE_DEBUG_CRC 0
 
 /** 
  * @brief UART Debug Verbosity

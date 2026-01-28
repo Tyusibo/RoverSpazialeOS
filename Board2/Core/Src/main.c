@@ -157,6 +157,7 @@ int main(void)
 	Board2_U.gyroscope = 0.0f;
 	Board2_U.sonar = (BUS_Sonar ) { 0, 0, 0 };
 	Board2_U.areSensorsValid = 0;
+	Board2_U.timeoutOccurred = 0;
 
 	/* Init drivers */
 	if (Sonar_InitAll() == 1) {

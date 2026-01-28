@@ -226,31 +226,15 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == RTR_IN_Pin)
     {
-    	GPIO_PinState state = HAL_GPIO_ReadPin(RTR_IN_GPIO_Port, RTR_IN_Pin);
     	switch (system_phase)
     	{
 
     		case SYNCHRONIZATION_PHASE:
-    			if (state == GPIO_PIN_SET){
-    				// Rising edge
         			Sync_OnEdgeFromISR();
-    			} else {
-    				// Falling edge
-					// No action needed
-    			}
 				break;
 
 			case WORKING_PHASE:
-		        if (state == GPIO_PIN_SET)
-		        {
-		            // Rising edge
 		            flagRTR = 1;
-		        }
-		        else
-		        {
-		            // Falling edge
-		            flagRTR = 0;
-		        }
 		        break;
 
 			default:

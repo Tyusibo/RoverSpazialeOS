@@ -38,7 +38,15 @@ UART_HandleTypeDef * getComunicationHandler() {
 
 //ritorna GPIO_PIN_RESET oppure GPIO_PIN_SET. Rispettivamente 0 o 1.
 uint8_t checkRTR(void) {
-	return (flagRTR == 1);
+	// se rtr è 1 torna 1 ma prima metti flag a 0
+	if (flagRTR == 1) {
+		flagRTR = 0;
+		PRINT_DBG("CHECK RTR: 1\n\r\r\n");
+		return 1;
+	} else {
+		PRINT_DBG("CHECK RTR: 0\n\r\r\n");
+		return 0;
+	}
 }
 
 void UART_TransmitIT(uint8_t *pData, size_t size) {

@@ -152,7 +152,7 @@ int main(void)
 
 #endif
 
-	PRINT_DBG("BEGIN B1 INIT...\r\n");
+	PRINT_DBG("BEGIN B1 INIT...\r\n\n\n");
 
 
 	/* Init Simulink Model with default values */
@@ -161,6 +161,7 @@ int main(void)
 	Board1_U.batteryLevel = 90.0f;
 	Board1_U.temperature = 30.0f;
 	Board1_U.areSensorsValid = 0;
+	Board1_U.timeoutOccurred = 0;
 
 	/* Init drivers */
 
