@@ -42,7 +42,7 @@
  * @brief Main Debug Verbosity
  * 1 to enable prints, 0 to disable them 
  */
-#define VERBOSE_DEBUG_MAIN 0
+#define VERBOSE_DEBUG_MAIN 1
 
 /** 
  * @brief Interrupt Debug Verbosity

@@ -48,7 +48,7 @@
 /* --- CONFIGURAZIONE DEBUG --- */
 
 #if VERBOSE_DEBUG_IT == 1
-#define PRINT_DBG(msg) PRINT_DBG(msg)
+#define PRINT_DBG(msg) printMsg(msg)
 #else
 #define PRINT_DBG(msg) ((void)0)
 #endif
@@ -410,7 +410,6 @@ void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	UART_HandleTypeDef *h = getComunicationHandler();
 	if (h != NULL && huart->Instance == h->Instance) {
-		PRINT_DBG("B2 Received\n\r");
 		if (receivedFlag == 0) {
 			receivedFlag = 1;
 		}
@@ -452,7 +451,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 			PRINT_DBG("Parity Error	 ");
 		}
 
-		printMsg("\r\n");
+		PRINT_DBG("\r\n");
 
 		// --- recovery minimo indispensabile ---
 		__HAL_UART_CLEAR_OREFLAG(huart);

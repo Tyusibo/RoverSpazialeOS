@@ -264,7 +264,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	UART_HandleTypeDef *h = getComunicationHandler();
 	if (h != NULL && huart->Instance == h->Instance) {
-		PRINT_DBG("B2 Received\n\r");
 		if (receivedFlag == 0) {
 			receivedFlag = 1;
 		}
@@ -285,19 +284,19 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
 		uint32_t err = huart->ErrorCode;
 
-		printMsg("UART ERROR: ");
+		PRINT_DBG("UART ERROR: ");
 
 		if (err & HAL_UART_ERROR_ORE) {
-			printMsg("Overrun Error (buffer pieno) ");
+			PRINT_DBG("Overrun Error (buffer pieno) ");
 		}
 		if (err & HAL_UART_ERROR_FE) {
-			printMsg("Framing Error (stop bit errato)	 ");
+			PRINT_DBG("Framing Error (stop bit errato)	 ");
 		}
 		if (err & HAL_UART_ERROR_NE) {
-			printMsg("Noise Error (rumore sul segnale) ");
+			PRINT_DBG("Noise Error (rumore sul segnale) ");
 		}
 		if (err & HAL_UART_ERROR_PE) {
-			printMsg("Parity Error	 ");
+			PRINT_DBG("Parity Error	 ");
 		}
 
 		printMsg("\r\n");
