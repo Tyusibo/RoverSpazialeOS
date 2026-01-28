@@ -149,9 +149,10 @@ int main(void)
 
 	clearScreen();
 
+#endif
+
 	PRINT_DBG("BEGIN B1 INIT...\r\n");
 
-#endif
 
 	/* Init Simulink Model with default values */
 	Board1_initialize();
