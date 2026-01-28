@@ -27,7 +27,7 @@
 #include "batt_level.h"
 #include <math.h>
 
-// Calibration offset: Difference between Multimeter (11.6V) and Average Report (~10.85V)
+// Calibration offset
 #define VOLTAGE_OFFSET (0.75f)
 
 /**
