@@ -238,40 +238,6 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-// Funzione di utilità per cambiare baudrate ST al volo
-void Reinit_UART_Baudrate(UART_HandleTypeDef *huart, uint32_t baudrate) {
-	huart->Init.BaudRate = baudrate;
-	if (HAL_UART_Init(huart) != HAL_OK) {
-		Error_Handler();
-	}
-}
-
-void Motors_SetPermanentBaudRate_38400(UART_HandleTypeDef *huart,
-		uint8_t address) {
-	// 1. Configuriamo STM32 a 9600 (default Sabertooth)
-	Reinit_UART_Baudrate(huart, 9600);
-	HAL_Delay(100);
-
-	// 2. Inviamo comando: Address, CMD=15, Value=4 (38400), Checksum
-	uint8_t command = 15;
-	uint8_t value = 4; // 4 = 38400 baud
-	uint8_t checksum = (address + command + value) & 0x7F;
-
-	uint8_t packet[4] = { address, command, value, checksum };
-	HAL_UART_Transmit(huart, packet, 4, 100);
-
-	HAL_Delay(200); // Tempo alla Sabertooth per scrivere EEPROM e cambiare baud
-
-	// 3. Ora riconfiguriamo STM32 a 38400 per poter parlare
-	Reinit_UART_Baudrate(huart, 38400);
-
-	// Opzionale: inviare 0xAA per risincronizzare nel dubbio
-	uint8_t sync = 0xAA;
-	HAL_UART_Transmit(huart, &sync, 1, 10);
-	HAL_Delay(100);
-}
-
-extern volatile unsigned long ulHighFrequencyTimerTicks; // Aggiungi se non visibile
 
 /* USER CODE END 4 */
 
