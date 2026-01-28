@@ -60,9 +60,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define Board2_IN_Execution ((uint8_T)2U)
 
-/* --- CONFIGURAZIONE DEBUG --- */
+/* --- DEBUG CONFIGURATIONS --- */
 
 #if VERBOSE_DEBUG_MAIN == 1
 #define PRINT_DBG(msg) printMsg(msg)

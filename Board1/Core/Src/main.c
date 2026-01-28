@@ -63,6 +63,7 @@
 /* USER CODE BEGIN PD */
 
 /* --- DEBUG CONFIGURATIONS --- */
+
 #if VERBOSE_DEBUG_MAIN == 1
 #define PRINT_DBG(msg) printMsg(msg)
 #else
