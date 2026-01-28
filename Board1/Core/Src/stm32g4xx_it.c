@@ -262,11 +262,21 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
 	if (h != NULL && huart->Instance == h->Instance) {
 
+		// Update model flag
+		errorReceiveFlag = 1;
+
+		// --- recovery ---
+		__HAL_UART_CLEAR_OREFLAG(huart);
+		__HAL_UART_CLEAR_FEFLAG(huart);
+		__HAL_UART_CLEAR_NEFLAG(huart);
+		__HAL_UART_CLEAR_PEFLAG(huart);
+
+
 #if LED_DEBUG
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
 #endif
 
-		errorReceiveFlag = 1;
+#if VERBOSE_DEBUG_IT
 
 		uint32_t err = huart->ErrorCode;
 
@@ -287,11 +297,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
 		PRINT_DBG("\r\n");
 
-		// --- recovery minimo indispensabile ---
-		__HAL_UART_CLEAR_OREFLAG(huart);
-		__HAL_UART_CLEAR_FEFLAG(huart);
-		__HAL_UART_CLEAR_NEFLAG(huart);
-		__HAL_UART_CLEAR_PEFLAG(huart);
+#endif
 
 	}
 }
