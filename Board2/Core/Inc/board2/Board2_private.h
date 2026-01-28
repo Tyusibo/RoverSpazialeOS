@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 5.5
- * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Fri Jan 23 13:37:44 2026
+ * Model version                  : 8.19
+ * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
+ * C/C++ source code generated on : Wed Jan 28 15:50:27 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M

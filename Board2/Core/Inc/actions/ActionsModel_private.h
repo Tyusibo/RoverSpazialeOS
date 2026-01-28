@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 5.14
- * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Fri Jan 23 13:35:07 2026
+ * Model version                  : 7.1
+ * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
+ * C/C++ source code generated on : Wed Jan 28 15:38:29 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -20,10 +20,9 @@
 #ifndef ActionsModel_private_h_
 #define ActionsModel_private_h_
 #include "rtwtypes.h"
-#include "enums.h"
+#include "ActionsModel_types.h"
 #include "decision.h"
 #include "sensors.h"
-#include "ActionsModel_types.h"
 
 /* Block states (default storage) for system '<Root>/MovingObstacles' */
 typedef struct {

@@ -5,11 +5,11 @@
  *
  * File: rtwtypes.h
  *
- * Code generated for Simulink model 'Board1'.
+ * Code generated for Simulink model 'BoardsHealth'.
  *
- * Model version                  : 6.14
- * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Thu Jan 22 23:31:09 2026
+ * Model version                  : 7.2
+ * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
+ * C/C++ source code generated on : Wed Jan 28 15:38:45 2026
  */
 
 #ifndef RTWTYPES_H
