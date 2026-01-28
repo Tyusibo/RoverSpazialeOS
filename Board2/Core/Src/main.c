@@ -61,17 +61,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#if SEGGER_BUILD
-/* DWT Registers for Cortex-M4 (STM32G4) */
-#define DEMCR           (*((volatile uint32_t *)0xE000EDFC))
-#define DWT_CTRL        (*((volatile uint32_t *)0xE0001000))
-#define DWT_CYCCNT      (*((volatile uint32_t *)0xE0001004))
-
-/* Bitmask */
-#define TRCENA          (1 << 24)
-#define DWT_CYCCNTENA   (1 << 0)
-#endif
-
 #define Board2_IN_Execution ((uint8_T)2U)
 
 /* --- CONFIGURAZIONE DEBUG --- */
@@ -116,16 +105,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-  #if SEGGER_BUILD
-	/* 1. Enable Trace Registers access (TRCENA) */
-	  DEMCR |= TRCENA;
-
-	  /* 2. Reset the cycle counter to 0 */
-	  DWT_CYCCNT = 0;
-
-	  /* 3. Enable the cycle counter (CYCCNTENA) */
-	  DWT_CTRL |= DWT_CYCCNTENA;
-  #endif
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -156,6 +135,7 @@ int main(void)
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 	//init DWT
+
 	DWT_Init();
 
 	setComunicationHandler(&hlpuart1);

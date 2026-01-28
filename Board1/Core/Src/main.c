@@ -70,16 +70,6 @@
 	#define PRINT_DBG(msg) ((void)0)
 #endif
 /* ---------------------------- */
-#if SEGGER_BUILD
-/* DWT registers for Cortex-M4 (STM32G4) */
-#define DEMCR           (*((volatile uint32_t *)0xE000EDFC))
-#define DWT_CTRL        (*((volatile uint32_t *)0xE0001000))
-#define DWT_CYCCNT      (*((volatile uint32_t *)0xE0001004))
-
-/* Bitmask */
-#define TRCENA          (1 << 24)
-#define DWT_CYCCNTENA   (1 << 0)
-#endif
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -114,16 +104,6 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	#if SEGGER_BUILD
-	/* 1. Enable access to Trace registers (TRCENA) */
-	DEMCR |= TRCENA;
-
-	/* 2. Reset counter */
-	DWT_CYCCNT = 0;
-
-	/* 3. Enable the cycle counter (CYCCNTENA) */
-	DWT_CTRL |= DWT_CYCCNTENA;
-	#endif
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
