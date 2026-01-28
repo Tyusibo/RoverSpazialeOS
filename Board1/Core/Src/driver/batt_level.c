@@ -27,6 +27,9 @@
 #include "batt_level.h"
 #include <math.h>
 
+// Calibration offset: Difference between Multimeter (11.6V) and Average Report (~10.85V)
+#define VOLTAGE_OFFSET (0.75f)
+
 /**
  * @brief Initializes the battery level monitor structure.
  *
@@ -95,7 +98,9 @@ float battery_read_voltage(batt_level_t* bat){
     }
 
     adc_voltage = ((float)adc_raw*bat->adc_vref)/bat->adc_resolution;
-    battery_voltage = adc_voltage*((bat->r1 + bat->r2)/bat->r2);
+    
+    // Calculate voltage and apply calibration offset
+    battery_voltage = (adc_voltage*((bat->r1 + bat->r2)/bat->r2)) + VOLTAGE_OFFSET;
 
     if(battery_voltage < MIN_VOLTAGE){
         battery_voltage = MIN_VOLTAGE;
