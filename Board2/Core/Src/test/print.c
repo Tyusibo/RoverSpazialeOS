@@ -1,10 +1,34 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * @file print.c
+ * @brief Implementation of serial printing utilities and debug helpers.
+ */
+
 #include "print.h"
 
 /* -------------------------------------------------- */
-/* UART corrente                                      */
+/* Current UART                                       */
 /* -------------------------------------------------- */
 static UART_HandleTypeDef *current_printer;
 
+/**
+ * @brief Sets the UART handler for the printer.
+ * @param huart Pointer to the UART handle.
+ */
 void setPrinterHandler(UART_HandleTypeDef *huart)
 {
     if (huart != NULL) {
@@ -12,11 +36,18 @@ void setPrinterHandler(UART_HandleTypeDef *huart)
     }
 }
 
+/**
+ * @brief Gets the current UART handler used by the printer.
+ * @return Pointer to the UART handle.
+ */
 UART_HandleTypeDef* getPrinterHandler(void) {
-    return current_printer; // O il nome della variabile statica usata in setPrinter
+    return current_printer; // Or the name of the static variable used in setPrinter
 }
 
-/* Utility interna: trasmette una stringa già pronta */
+/**
+ * @brief Internal utility: transmits a ready-made string.
+ * @param s String to transmit.
+ */
 static void prv_tx_str(const char *s)
 {
     if (s == NULL) return;
@@ -25,7 +56,11 @@ static void prv_tx_str(const char *s)
     HAL_UART_Transmit(current_printer, (uint8_t*)s, (uint16_t)strlen(s), HAL_MAX_DELAY);
 }
 
-/* Utility interna: trasmette buffer raw */
+/**
+ * @brief Internal utility: transmits a raw buffer.
+ * @param buf Pointer to the buffer.
+ * @param len Length of the buffer.
+ */
 static void prv_tx_buf(const uint8_t *buf, uint32_t len)
 {
     if (buf == NULL || len == 0) return;
@@ -37,24 +72,41 @@ static void prv_tx_buf(const uint8_t *buf, uint32_t len)
 /* -------------------------------------------------- */
 /* Base / low-level                                   */
 /* -------------------------------------------------- */
+
+/**
+ * @brief Alias for printing a string over UART.
+ * @param msg Message string.
+ */
 void uartPrint(const char *msg)
 {
     prv_tx_str(msg);
 }
 
+/**
+ * @brief Implementation of message printing.
+ * @param pData Message string.
+ */
 void printMsg_impl(const char *pData)
 {
     prv_tx_str(pData);
 }
 
+/**
+ * @brief Clears the screen using ANSI escape codes.
+ */
 void clearScreen(void)
 {
     printMsg(CLRSCR);
 }
 
 /* -------------------------------------------------- */
-/* Primitivi (stampe testabili)                        */
+/* Primitives (testable prints)                        */
 /* -------------------------------------------------- */
+
+/**
+ * @brief Prints a signed integer.
+ * @param v Integer value.
+ */
 void printInt(int32_t v)
 {
     char msg[24];
@@ -62,15 +114,20 @@ void printInt(int32_t v)
     prv_tx_str(msg);
 }
 
+/**
+ * @brief Prints a float value with a specified number of decimals.
+ * @param v Float value.
+ * @param decimals Number of decimal digits.
+ */
 void printFloat(float v, uint8_t decimals)
 {
-    /* decimals clamp (evita formati assurdi) */
+    /* decimals clamp (avoid absurd formats) */
     if (decimals > 6) decimals = 6;
 
     char fmt[8];
     char msg[32];
 
-    /* fmt tipo: "%.2f" */
+    /* fmt type: "%.2f" */
     snprintf(fmt, sizeof(fmt), "%%.%uf", (unsigned)decimals);
     snprintf(msg, sizeof(msg), fmt, (double)v);
 
@@ -80,6 +137,10 @@ void printFloat(float v, uint8_t decimals)
 /* -------------------------------------------------- */
 /* Debug frame sizes                                  */
 /* -------------------------------------------------- */
+
+/**
+ * @brief Prints the sizes of various data frames/structures.
+ */
 void UART_PrintFrameSizes(void)
 {
     char buf[64];
@@ -95,7 +156,7 @@ void UART_PrintFrameSizes(void)
         }                                                        \
     } while (0)
 
-    /* --- Sensori --- */
+    /* --- Sensors --- */
     PRINT_SIZE("SPEED_FRAME_SIZE", SPEED_FRAME_SIZE);
     PRINT_SIZE("TEMPERATURE_FRAME_SIZE", TEMPERATURE_FRAME_SIZE);
     PRINT_SIZE("BATTERY_LEVEL_FRAME_SIZE", BATTERY_LEVEL_FRAME_SIZE);
@@ -103,12 +164,12 @@ void UART_PrintFrameSizes(void)
     PRINT_SIZE("GYROSCOPE_FRAME_SIZE", GYROSCOPE_FRAME_SIZE);
     PRINT_SIZE("REMOTE_CONTROLLER_FRAME_SIZE", REMOTE_CONTROLLER_FRAME_SIZE);
 
-    /* --- Stati --- */
+    /* --- States --- */
     PRINT_SIZE("LOCAL_STATE_B1_FRAME_SIZE", LOCAL_STATE_B1_FRAME_SIZE);
     PRINT_SIZE("LOCAL_STATE_B2_FRAME_SIZE", LOCAL_STATE_B2_FRAME_SIZE);
     PRINT_SIZE("GLOBAL_STATE_FRAME_SIZE", GLOBAL_STATE_FRAME_SIZE);
 
-    /* --- Decisione / Controllo --- */
+    /* --- Decision / Control --- */
     PRINT_SIZE("SET_POINT_FRAME_SIZE", SET_POINT_FRAME_SIZE);
     PRINT_SIZE("DECISION_FRAME_SIZE", DECISION_FRAME_SIZE);
 
@@ -118,6 +179,13 @@ void UART_PrintFrameSizes(void)
 /* -------------------------------------------------- */
 /* Debug print full buffer in HEX                     */
 /* -------------------------------------------------- */
+
+/**
+ * @brief Prints a buffer content in hexadecimal format.
+ * @param tag String tag to identify the buffer.
+ * @param buf Pointer to the buffer.
+ * @param len Length of the buffer.
+ */
 void uartPrintBuffHex(const char *tag, const uint8_t *buf, uint32_t len)
 {
     char msg[80];
@@ -133,14 +201,23 @@ void uartPrintBuffHex(const char *tag, const uint8_t *buf, uint32_t len)
 }
 
 /* -------------------------------------------------- */
-/* Strutture complesse (costruite con elementari)      */
+/* Complex structures (built with elementary ones)     */
 /* -------------------------------------------------- */
+
+/**
+ * @brief Prints a section header.
+ * @param title Title of the section.
+ */
 void printHeader(const char *title)
 {
     printMsg(title);
     printMsg("\r\n");
 }
 
+/**
+ * @brief Prints a label for a value.
+ * @param label The label string.
+ */
 void printLabel(const char *label)
 {
     printMsg("  ");
@@ -148,12 +225,20 @@ void printLabel(const char *label)
     printMsg(": ");
 }
 
+/**
+ * @brief Prints a newline.
+ */
 void printNewLine(void)
 {
     printMsg("\r\n");
 }
 
 /* ---- LocalStateB1 ---- */
+
+/**
+ * @brief Prints motor speed values.
+ * @param sp Pointer to the speed structure.
+ */
 void printMotorSpeeds(const BUS_Speed *sp)
 {
     char msg[128];
@@ -163,6 +248,10 @@ void printMotorSpeeds(const BUS_Speed *sp)
     uartPrint(msg);
 }
 
+/**
+ * @brief Prints temperature value.
+ * @param t Temperature value.
+ */
 void printTemperature(float t)
 {
     char msg[64];
@@ -170,12 +259,24 @@ void printTemperature(float t)
     uartPrint(msg);
 }
 
+/**
+ * @brief Prints battery level.
+ * @param b Battery level.
+ */
 void printBattery(uint8_t b)
 {
     char msg[64];
     snprintf(msg, sizeof(msg), "  Battery: %u %%\r\n", (unsigned int)b);
     uartPrint(msg);
 }
+
+void printSensorReadings(uint8_t readings)
+{
+    char msg[64];
+    snprintf(msg, sizeof(msg), "  SensorReadings: 0x%02X\r\n", readings);
+    uartPrint(msg);
+}
+
 
 void printLocalStateB1(const BUS_LocalStateB1 *s)
 {
@@ -185,9 +286,15 @@ void printLocalStateB1(const BUS_LocalStateB1 *s)
     printMotorSpeeds(&s->speed);
     printTemperature(s->temperature);
     printBattery(s->batteryLevel);
+    printSensorReadings(s->sensorReadings);
 }
 
 /* ---- LocalStateB2 ---- */
+
+/**
+ * @brief Prints sonar readings.
+ * @param sn Pointer to sonar structure.
+ */
 void printSonar(const BUS_Sonar *sn)
 {
     char msg[96];
@@ -196,6 +303,10 @@ void printSonar(const BUS_Sonar *sn)
     uartPrint(msg);
 }
 
+/**
+ * @brief Prints gyroscope value.
+ * @param g Gyroscope value.
+ */
 void printGyroscope(uint16_t g)
 {
     char msg[64];
@@ -203,6 +314,10 @@ void printGyroscope(uint16_t g)
     uartPrint(msg);
 }
 
+/**
+ * @brief Prints remote controller state.
+ * @param rc Pointer to remote controller structure.
+ */
 void printRemoteController(const BUS_RemoteController *rc)
 {
     char msg[128];
@@ -212,6 +327,10 @@ void printRemoteController(const BUS_RemoteController *rc)
     uartPrint(msg);
 }
 
+/**
+ * @brief Prints the local state of Board 2.
+ * @param s Pointer to LocalStateB2 structure.
+ */
 void printLocalStateB2(const BUS_LocalStateB2 *s)
 {
     if (s == NULL) return;
@@ -220,9 +339,15 @@ void printLocalStateB2(const BUS_LocalStateB2 *s)
     printSonar(&s->sonar);
     printGyroscope(s->gyroscope);
     printRemoteController(&s->remoteController);
+    printSensorReadings(s->sensorReadings);
 }
 
 /* ---- GlobalState ---- */
+
+/**
+ * @brief Prints the global state.
+ * @param g Pointer to GlobalState structure.
+ */
 void printGlobalState(const BUS_GlobalState *g)
 {
     if (g == NULL) return;
@@ -233,6 +358,12 @@ void printGlobalState(const BUS_GlobalState *g)
 }
 
 /* ---- Decision ---- */
+
+/**
+ * @brief Prints a line with a label and an integer value (usually for enums).
+ * @param label Label string.
+ * @param v Integer value.
+ */
 void printEnumLine(const char *label, int v)
 {
     printLabel(label);
@@ -240,6 +371,10 @@ void printEnumLine(const char *label, int v)
     printNewLine();
 }
 
+/**
+ * @brief Prints set point values.
+ * @param sp Pointer to set point structure.
+ */
 void printSetPoint(const BUS_SetPoint *sp)
 {
     char msg[96];
@@ -249,6 +384,11 @@ void printSetPoint(const BUS_SetPoint *sp)
     uartPrint(msg);
 }
 
+/**
+ * @brief Gets the name of the White LED status.
+ * @param v White LED status enum.
+ * @return String representation of the status.
+ */
 static const char* getStatusWhiteLedName(ENUM_StatusWhiteLed v) {
     switch (v) {
         case WHITE_OFF: return "WHITE_OFF";
@@ -257,6 +397,11 @@ static const char* getStatusWhiteLedName(ENUM_StatusWhiteLed v) {
     }
 }
 
+/**
+ * @brief Gets the name of the Red LED status.
+ * @param v Red LED status enum.
+ * @return String representation of the status.
+ */
 static const char* getStatusRedLedName(ENUM_StatusRedLed v) {
     switch (v) {
         case RED_OFF: return "RED_OFF";
@@ -266,6 +411,10 @@ static const char* getStatusRedLedName(ENUM_StatusRedLed v) {
     }
 }
 
+/**
+ * @brief Prints LED states.
+ * @param leds Pointer to LED structure.
+ */
 void printLeds(const BUS_Leds *leds)
 {
     char msg[256];
@@ -278,6 +427,11 @@ void printLeds(const BUS_Leds *leds)
     uartPrint(msg);
 }
 
+/**
+ * @brief Gets the name of the actuator.
+ * @param v Actuator enum.
+ * @return String representation of the actuator.
+ */
 static const char* getActuatorName(ENUM_Actuator v) {
     switch (v) {
         case BOARD1: return "BOARD1";
@@ -286,6 +440,11 @@ static const char* getActuatorName(ENUM_Actuator v) {
     }
 }
 
+/**
+ * @brief Gets the name of the user action.
+ * @param v User action enum.
+ * @return String representation of the user action.
+ */
 static const char* getUserActionName(ENUM_UserAction v) {
     switch (v) {
         case UA_NONE: return "UA_NONE";
@@ -299,6 +458,11 @@ static const char* getUserActionName(ENUM_UserAction v) {
     }
 }
 
+/**
+ * @brief Gets the name of the rover action.
+ * @param v Rover action enum.
+ * @return String representation of the rover action.
+ */
 static const char* getRoverActionName(ENUM_RoverAction v) {
     switch (v) {
         case RA_IDLE: return "RA_IDLE";
@@ -306,11 +470,17 @@ static const char* getRoverActionName(ENUM_RoverAction v) {
         case RA_ROTATE_LEFT: return "RA_ROTATE_LEFT";
         case RA_ROTATE_RIGHT: return "RA_ROTATE_RIGHT";
         case RA_BRAKING_HARD: return "RA_BRAKING_HARD";
+        case RA_BRAKING_MODERATE: return "RA_BRAKING_MODERATE";
         case RA_BRAKING_SMOOTH: return "RA_BRAKING_SMOOTH";
         default: return "UNKNOWN";
     }
 }
 
+/**
+ * @brief Gets the name of the safe action.
+ * @param v Safe action enum.
+ * @return String representation of the safe action.
+ */
 static const char* getSafeActionName(ENUM_SafeAction v) {
     switch (v) {
         case SA_NONE: return "SA_NONE";
@@ -322,6 +492,24 @@ static const char* getSafeActionName(ENUM_SafeAction v) {
     }
 }
 
+static const char* getRoverStatusName(ENUM_StatusRover v) {
+    switch (v) {
+        case NORMAL: return "NORMAL";
+        case ERROR_B1: return "ERROR_B1";
+        case ERROR_B2: return "ERROR_B2";
+        case ERROR_BOTH: return "ERROR_BOTH";
+        case FAULTY_B1_DEGRADED_B2: return "FAULTY_B1_DEGRADED_B2";
+        case FAULTY_B2_DEGRADED_B1: return "FAULTY_B2_DEGRADED_B1";
+        case EMERGENCY: return "EMERGENCY";
+        default: return "UNKNOWN";
+    }
+}
+
+/**
+ * @brief Prints a line with a label and a string value.
+ * @param label Label string.
+ * @param v String value.
+ */
 static void printEnumLineStr(const char *label, const char *v)
 {
     printLabel(label);
@@ -329,6 +517,10 @@ static void printEnumLineStr(const char *label, const char *v)
     printNewLine();
 }
 
+/**
+ * @brief Prints the decision logic state.
+ * @param d Pointer to Decision structure.
+ */
 void printDecision(const BUS_Decision *d)
 {
     if (d == NULL) return;
@@ -336,6 +528,7 @@ void printDecision(const BUS_Decision *d)
     printHeader("Decision");
 
     printEnumLineStr("actuator",    getActuatorName(d->actuator));
+    printEnumLineStr("roverState",  getRoverStatusName(d->roverState));
     printEnumLineStr("userAction",  getUserActionName(d->userAction));
     printEnumLineStr("roverAction", getRoverActionName(d->roverAction));
     printEnumLineStr("safeAction",  getSafeActionName(d->safeAction));

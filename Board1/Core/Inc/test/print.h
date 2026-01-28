@@ -152,6 +152,12 @@ void printTemperature(float t);
  */
 void printBattery(uint8_t b);
 
+/**
+ * @brief Prints sensor readings.
+ * @param readings Sensor readings bitmask.
+ */
+void printSensorReadings(uint8_t readings);
+
 /* Elementary used in LocalStateB2 */
 
 /**
