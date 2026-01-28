@@ -299,7 +299,7 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 			PRINT_DBG("Parity Error	 ");
 		}
 
-		printMsg("\r\n");
+		PRINT_DBG("\r\n");
 
 		// --- recovery minimo indispensabile ---
 		__HAL_UART_CLEAR_OREFLAG(huart);
