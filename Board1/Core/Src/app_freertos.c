@@ -386,8 +386,8 @@ void StartSupervisor(void *argument)
 		osTimerStop(SupervisorKillerHandle);
 
 		// Stampo sempre per peppino
-		printGlobalState(&Board1_B.board1GlobalState);
-		printDecision(&Board1_B.board1Decision);
+		printGlobalState(&Board1_Y.board1GlobalState);
+		printDecision(&Board1_Y.board1Decision);
 
 #if PRINT_TASK
 
@@ -397,8 +397,8 @@ void StartSupervisor(void *argument)
 		cycle_count++;
 		if (cycle_count >= 100) {
 			cycle_count = 0;
-//			printGlobalState(&Board1_B.board1GlobalState);
-//			printDecision(&Board1_B.board1Decision);
+//			printGlobalState(&Board1_Y.board1GlobalState);
+//			printDecision(&Board1_Y.board1Decision);
 //			printMsg("Miss P:");
 //			printInt(MissPID);
 //			printMsg(" S:");
@@ -615,13 +615,13 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 /* DECISION FUNCTIONS */
 
 static inline void actuate_white_leds(void) {
-	A4WD3_White_Set(&led_left, Board1_B.board1Decision.leds.white.left);
-	A4WD3_White_Set(&led_right, Board1_B.board1Decision.leds.white.right);
+	A4WD3_White_Set(&led_left, Board1_Y.board1Decision.leds.white.left);
+	A4WD3_White_Set(&led_right, Board1_Y.board1Decision.leds.white.right);
 }
 
 static inline void change_set_point(void) {
-	const float left = Board1_B.board1Decision.setPoint.leftAxis;
-	const float right = Board1_B.board1Decision.setPoint.rightAxis;
+	const float left = Board1_Y.board1Decision.setPoint.leftAxis;
+	const float right = Board1_Y.board1Decision.setPoint.rightAxis;
 
 	MotorControl_SetReferenceRPM(&motors[MOTOR_FRONT_LEFT], left);
 	MotorControl_SetReferenceRPM(&motors[MOTOR_REAR_LEFT], left);
@@ -631,7 +631,7 @@ static inline void change_set_point(void) {
 }
 
 static inline void change_regulator(void) {
-	const uint8_t action = Board1_B.board1Decision.roverAction;
+	const uint8_t action = Board1_Y.board1Decision.roverAction;
 
 	switch (action) {
 	case RA_BRAKING_SMOOTH:

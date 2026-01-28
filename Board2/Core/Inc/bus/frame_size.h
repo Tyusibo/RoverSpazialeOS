@@ -5,6 +5,7 @@
 
 #define FLOAT_FRAME_SIZE             (4)
 #define ENUM_FRAME_SIZE              (1)
+#define SENSOR_READINGS_FRAME_SIZE   (1)
 
 /* 
    Per gli altri tipi, ci sono solo interi dove è specificato il numero di byte
@@ -31,22 +32,22 @@
 
 #define LOCAL_STATE_B1_FRAME_SIZE ( \
     BUS_SPEED_FRAME_SIZE + TEMPERATURE_FRAME_SIZE + \
-    BATTERY_LEVEL_FRAME_SIZE )                // 21
+    BATTERY_LEVEL_FRAME_SIZE + SENSOR_READINGS_FRAME_SIZE)                // 22
 
 #define LOCAL_STATE_B2_FRAME_SIZE ( \
     BUS_SONAR_FRAME_SIZE + GYROSCOPE_FRAME_SIZE + \
-    REMOTE_CONTROLLER_FRAME_SIZE )            // 14
+    REMOTE_CONTROLLER_FRAME_SIZE +SENSOR_READINGS_FRAME_SIZE )            // 15
 
 #define GLOBAL_STATE_FRAME_SIZE (LOCAL_STATE_B1_FRAME_SIZE + \
-    LOCAL_STATE_B2_FRAME_SIZE)                // 35
+    LOCAL_STATE_B2_FRAME_SIZE)                // 37
 
 /* --- Decisione / Controllo --- */
 
 #define SET_POINT_FRAME_SIZE             (FLOAT_FRAME_SIZE)
 #define BUS_SET_POINT_FRAME_SIZE         (SET_POINT_FRAME_SIZE * 2)  // 8
 
-#define DECISION_FRAME_SIZE              ((4 * ENUM_FRAME_SIZE) + \
-                                         BUS_SET_POINT_FRAME_SIZE + 1) // 13
+#define DECISION_FRAME_SIZE              ((5 * ENUM_FRAME_SIZE) + \
+                                         BUS_SET_POINT_FRAME_SIZE + 1) // 14
 
 #endif /* INC_BUS_FRAME_SIZE_H_ */
     

@@ -8,6 +8,8 @@ typedef struct {
     BUS_Speed        speed;
     Temperature  temperature;
     BatteryLevel batteryLevel;
+
+    uint8_t     sensorReadings;
 } BUS_LocalStateB1;
 
 /* LocalStateB2 */
@@ -15,6 +17,8 @@ typedef struct {
     BUS_Sonar            sonar;
     Gyroscope        gyroscope;
     BUS_RemoteController remoteController;
+
+    uint8_t     sensorReadings;
 } BUS_LocalStateB2;
 
 /* GlobalState */
