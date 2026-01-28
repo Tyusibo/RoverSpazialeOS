@@ -36,6 +36,21 @@ UART_HandleTypeDef* getComunicationHandler() {
 	return current_handler;
 }
 
+void abortReceive() {
+	HAL_UART_AbortReceive(current_handler);
+	HAL_UART_AbortReceive_IT(current_handler);
+}
+
+void abortTransmit() {
+	HAL_UART_AbortTransmit(current_handler);
+	HAL_UART_AbortTransmit_IT(current_handler);
+}
+
+void abortTransmitAndReceive() {
+	HAL_UART_Abort(current_handler);
+	HAL_UART_Abort_IT(current_handler);
+}
+
 /* Trasmissione */
 
 uint8_t checkRTR(void) {
@@ -118,12 +133,12 @@ uint8_t errorReceived(void) {
 
 	count++;
 	// Se ha davvero ricevuto
-	if (receivedFlag == 1){
+	if (receivedFlag == 1) {
 		if (count % 2 == 0) {
-				return 1;
-			} else {
-				return 0;
-			}
+			return 1;
+		} else {
+			return 0;
+		}
 	} else {
 		return 0;
 	}

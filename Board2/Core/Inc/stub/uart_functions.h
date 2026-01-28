@@ -13,6 +13,12 @@ void setComunicationHandler(UART_HandleTypeDef* uart_handler);
 
 UART_HandleTypeDef * getComunicationHandler();
 
+void abortReceive();
+
+void abortTransmit();
+
+void abortTransmitAndReceive();
+
 /* Trasmissione */
 
 uint8_t checkRTR(void);
