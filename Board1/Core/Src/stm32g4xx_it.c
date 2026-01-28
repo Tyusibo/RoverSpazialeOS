@@ -288,16 +288,16 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 		printMsg("UART ERROR: ");
 
 		if (err & HAL_UART_ERROR_ORE) {
-			printMsg("ORE ");
+			printMsg("Overrun Error (buffer pieno) ");
 		}
 		if (err & HAL_UART_ERROR_FE) {
-			printMsg("FE ");
+			printMsg("Framing Error (stop bit errato)	 ");
 		}
 		if (err & HAL_UART_ERROR_NE) {
-			printMsg("NE ");
+			printMsg("Noise Error (rumore sul segnale) ");
 		}
 		if (err & HAL_UART_ERROR_PE) {
-			printMsg("PE ");
+			printMsg("Parity Error	 ");
 		}
 
 		printMsg("\r\n");

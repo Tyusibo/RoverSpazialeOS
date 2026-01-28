@@ -440,19 +440,19 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 		PRINT_DBG("UART ERROR: ");
 
 		if (err & HAL_UART_ERROR_ORE) {
-			PRINT_DBG("ORE ");
+			PRINT_DBG("Overrun Error (buffer pieno) ");
 		}
 		if (err & HAL_UART_ERROR_FE) {
-			PRINT_DBG("FE ");
+			PRINT_DBG("Framing Error (stop bit errato)	 ");
 		}
 		if (err & HAL_UART_ERROR_NE) {
-			PRINT_DBG("NE ");
+			PRINT_DBG("Noise Error (rumore sul segnale) ");
 		}
 		if (err & HAL_UART_ERROR_PE) {
-			PRINT_DBG("PE ");
+			PRINT_DBG("Parity Error	 ");
 		}
 
-		PRINT_DBG("\r\n");
+		printMsg("\r\n");
 
 		// --- recovery minimo indispensabile ---
 		__HAL_UART_CLEAR_OREFLAG(huart);
@@ -464,7 +464,6 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 
 	}
 }
-
 /* I2C */
 
 /* MASTER RX COMPLETE CALLBACK I2C, PadReceiver */
