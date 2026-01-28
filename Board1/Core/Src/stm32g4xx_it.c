@@ -291,8 +291,6 @@ void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
 		__HAL_UART_CLEAR_NEFLAG(huart);
 		__HAL_UART_CLEAR_PEFLAG(huart);
 
-		HAL_UART_AbortReceive_IT(huart);
-
 	}
 }
 
