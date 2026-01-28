@@ -368,6 +368,9 @@ void StartSupervisor(void *argument)
 	/* Infinite loop */
 	for (;;) {
 
+		/* START TIMER FOR MONITORING WCET */
+		osTimerStart(SupervisorKillerHandle, WCET_SUPERVISOR);
+
 		do {
 			Board1_step();
 		} while (Board1_Y.supervision_ended != 1);
@@ -376,6 +379,9 @@ void StartSupervisor(void *argument)
 		actuate_white_leds();
 		change_set_point();
 		change_regulator();
+
+		/* STOP TIMER FOR MONITORING WCET */
+		osTimerStop(SupervisorKillerHandle);
 
 #if PRINT_TASK
 

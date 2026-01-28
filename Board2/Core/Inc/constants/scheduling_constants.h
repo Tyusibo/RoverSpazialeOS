@@ -15,6 +15,7 @@
 
 /* Supervisore / decisione rover (stato globale + safety) */
 #define T_SUPERVISOR             	 50u   /* 50ms (20Hz) */
+#define WCET_SUPERVISOR              20u
 
 /* Sonar Task */
 #define T_SONAR          			 100u   /* 100ms (10Hz) */

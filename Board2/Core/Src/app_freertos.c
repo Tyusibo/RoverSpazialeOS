@@ -458,9 +458,15 @@ void StartSupervisor(void *argument)
 
 		/* END FAKE SONAR */
 
+		/* START TIMER FOR MONITORING WCET */
+		osTimerStart(SupervisorKillerHandle, WCET_SUPERVISOR);
+
 		do {
 			Board2_step();
 		} while (Board2_Y.supervision_ended != 1);
+
+		/* STOP TIMER FOR MONITORING WCET */
+		osTimerStop(SupervisorKillerHandle);
 
 //		static uint32_t counter_print = 0;
 //		counter_print++;

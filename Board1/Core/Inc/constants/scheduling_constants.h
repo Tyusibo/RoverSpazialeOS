@@ -11,6 +11,7 @@
 
 /* Supervisor Task */
 #define T_SUPERVISOR           	50u    /* 50ms (20Hz) */
+#define WCET_SUPERVISOR         20u
 
 /* Battery Task */
 #define T_BATTERY           	200u    /* 200ms (5Hz) */
