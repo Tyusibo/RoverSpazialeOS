@@ -10,23 +10,23 @@
 #define FLAG_ACK                    (1U << 2)
 
 /* Controller / Pad */
-#define FLAG_PAD_OK                 (1U << 3)
-#define FLAG_PAD_ERROR              (1U << 4)
+#define FLAG_PAD_OK                 (1U << 3)  // 2^3 = 8
+#define FLAG_PAD_ERROR              (1U << 4)	// 2^4 = 16
 
 /* Gyroscope */
-#define FLAG_GYRO_OK                (1U << 5)
-#define FLAG_GYRO_ERROR             (1U << 6)
+#define FLAG_GYRO_OK                (1U << 5) // 2^5 = 32
+#define FLAG_GYRO_ERROR             (1U << 6)	// 2^6 = 64
 
 /* Sonar Left */
-#define FLAG_SONAR_LEFT_OK          (1U << 7)
+#define FLAG_SONAR_LEFT_OK          (1U << 7) // 2^7 = 128
 #define FLAG_SONAR_LEFT_TIMEOUT     (1U << 8)
 
 /* Sonar Front */
-#define FLAG_SONAR_FRONT_OK         (1U << 9)
+#define FLAG_SONAR_FRONT_OK         (1U << 9) // 2^9 = 512
 #define FLAG_SONAR_FRONT_TIMEOUT    (1U << 10)
 
 /* Sonar Right */
-#define FLAG_SONAR_RIGHT_OK         (1U << 11)
+#define FLAG_SONAR_RIGHT_OK         (1U << 11) 	// 2^11 = 2048
 #define FLAG_SONAR_RIGHT_TIMEOUT    (1U << 12)
 
 /* Mask for all events the Polling Server waits for (everything except START and SYNC) */

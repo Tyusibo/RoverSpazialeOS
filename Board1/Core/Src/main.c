@@ -1,5 +1,4 @@
 /* USER CODE BEGIN Header */
-/* PROVA COD GEN B1 */
 /**
  ******************************************************************************
  * @file           : main.c
@@ -156,29 +155,32 @@ int main(void)
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
 
+    /* Init DWT for WCET measurement */
+
 	DWT_Init();
+
+	/* Set UART Handlers */
 
 	setComunicationHandler(&hlpuart1);
 
-
 	setPrinterHandler(&huart2);
-	clearScreen();
 
 #if VERBOSE_DEBUG_MAIN
+
+	clearScreen();
 
 	PRINT_DBG("BEGIN B1 INIT...\r\n");
 
 #endif
 
-	// Init Simulink Model
+	/* Init Simulink Model with default values */
 	Board1_initialize();
 	Board1_U.speed = (BUS_Speed ) { 0.0f, 0.0f, 0.0f, 0.0f };
 	Board1_U.batteryLevel = 90.0f;
 	Board1_U.temperature = 30.0f;
-//	Board1_U.batteryLevel = BatteryLevel_UNKNOWN;
-//	Board1_U.temperature = Temperature_UNKNOWN;
 
-	/* DRIVER INITIALIZATIONS */
+	/* Init drivers */
+
 	led_init();
 
 	Encoders_InitAll();
