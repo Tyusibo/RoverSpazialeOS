@@ -92,6 +92,9 @@ uint8_t pad_receiver_read_failed = 0;
 uint8_t gyroscope_read_failed = 0;
 uint8_t sonar_read_failed = 0;
 
+/* DEFAULT VALUES */
+const BUS_RemoteController default_controller = { 0, 0, 0 };
+
 /* USER CODE END Variables */
 /* Definitions for ReadController */
 osThreadId_t ReadControllerHandle;
@@ -205,9 +208,15 @@ const osEventFlagsAttr_t flagsOS_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 
+/* SCHEDULING FUNCTIONS */
 static uint32_t ms_to_ticks(uint32_t ms);
 static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 		volatile uint32_t *miss_counter);
+
+/* ERROR DRIVER FUNCTIONS */
+static inline void error_pad_receiver(void);
+static inline void error_gyroscope(void);
+static inline void error_sonar(void);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -322,6 +331,9 @@ void StartReadController(void *argument)
 
 #if REAL_TASK
 
+		/* Clear previous error flag */
+		pad_receiver_read_failed = 0;
+
 		/* Start an asynchronous I2C read from the remote controller.
 		 * Note: PAD_OK only means the reception was successfully started.
 		 * The final outcome (success/error) is reported later via callbacks
@@ -334,7 +346,9 @@ void StartReadController(void *argument)
 		 * raise an error flag to notify other tasks/components.
 		 */
 		if (result == PAD_ERR) {
-			osEventFlagsSet(flagsOSHandle, FLAG_PAD_ERROR);
+            error_pad_receiver();
+			// osEventFlagsSet(flagsOSHandle, FLAG_PAD_ERROR);
+            // No need to use the Polling Server for error handling
 		}
 
 #else
@@ -380,6 +394,9 @@ void StartReadGyroscope(void *argument)
 
 #if REAL_TASK
 
+		/* Clear previous error flag */
+		gyroscope_read_failed = 0;
+
 		/* Start an asynchronous read of the yaw value from the MPU6050 via I2C interrupt.
 		 * If the request starts correctly, the driver will update MPU6050_Yaw later
 		 * (typically in the Rx complete callback).
@@ -391,7 +408,9 @@ void StartReadGyroscope(void *argument)
 		 * raise an error flag to notify other tasks/components.
 		 */
 		if (result == MPU_ERR) {
-			osEventFlagsSet(flagsOSHandle, FLAG_GYRO_ERROR);
+			error_gyroscope();
+			// osEventFlagsSet(flagsOSHandle, FLAG_GYRO_ERROR);
+			// No need to use the Polling Server for error handling
 		}
 
 #else
@@ -616,7 +635,7 @@ void StartPollingServer(void *argument)
     const uint32_t T = ms_to_ticks(T_POLLING_SERVER);
     uint32_t next = osKernelGetTickCount();
 
-    BUS_RemoteController default_controller = { 0, 0, 0 };
+
 
     /* Infinite loop */
     for (;;) {
@@ -637,7 +656,7 @@ void StartPollingServer(void *argument)
                 osEventFlagsClear(flagsOSHandle, FLAG_PAD_OK | FLAG_PAD_ERROR);
             }
             else if (flags & FLAG_PAD_ERROR) {
-                Board2_U.remoteController = default_controller;
+                error_pad_receiver();
                 osEventFlagsClear(flagsOSHandle, FLAG_PAD_ERROR);
             }
 
@@ -648,7 +667,7 @@ void StartPollingServer(void *argument)
                 osEventFlagsClear(flagsOSHandle, FLAG_GYRO_OK | FLAG_GYRO_ERROR);
             }
             else if (flags & FLAG_GYRO_ERROR) {
-                // Preserve last valid data or handle error logic specifically
+                error_gyroscope();
                 osEventFlagsClear(flagsOSHandle, FLAG_GYRO_ERROR);
             }
 
@@ -727,6 +746,9 @@ void KillSupervisor(void *argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
+
+/* SCHEDULING FUNCTIONS */
+
 static uint32_t ms_to_ticks(uint32_t ms) {
 	uint32_t hz = osKernelGetTickFreq();
 	return (ms * hz + 999u) / 1000u;
@@ -752,6 +774,20 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 	osDelayUntil(*next_release);
 }
 
+
+/* ERROR DRIVER FUNCTIONS */
+static inline void error_pad_receiver(void){
+	Board2_U.remoteController = default_controller;
+	pad_receiver_read_failed = 1;
+}
+
+static inline void error_gyroscope(void){
+	// Board2_U.gyroscope; Preserve last valid data
+	gyroscope_read_failed = 1;
+}
+static inline void error_sonar(void){
+	sonar_read_failed = 1;
+}
 
 /* USER CODE END Application */
 
