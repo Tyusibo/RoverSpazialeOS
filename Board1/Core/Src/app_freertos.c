@@ -46,6 +46,7 @@
 */
 #include "battery_init.h"        // #include "batt_level.h"
 #include "temperature_init.h"    //#include "temperature_adc.h"
+#include "timer.h"
 
 /* Utility */
 #include "DWT.h"
@@ -88,6 +89,9 @@ volatile uint32_t MissReadBattery = 0;
 
 /* STATUS FLAGS */
 // Encoders read can't fail
+
+/* Timer Handler from main.c */
+extern timer_t timerSupervisor;
 
 /* USER CODE END Variables */
 /* Definitions for PID */
@@ -251,7 +255,7 @@ void MX_FREERTOS_Init(void) {
   SupervisorKillerHandle = osTimerNew(KillSupervisor, osTimerOnce, NULL, &SupervisorKiller_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
-	/* start timers, add new ones, ... */
+	timer_set_period(&timerSupervisor, WCET_SUPERVISOR);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -369,8 +373,9 @@ void StartSupervisor(void *argument)
 	for (;;) {
 
 		/* START TIMER FOR MONITORING WCET */
-		osTimerStart(SupervisorKillerHandle, 1);
+		//osTimerStart(SupervisorKillerHandle, 1);
 		//Board1_U.timeoutOccurred++;
+		timer_start(&timerSupervisor);
 
 		do {
 			Board1_step();
@@ -378,6 +383,7 @@ void StartSupervisor(void *argument)
 
 		} while (Board1_Y.supervision_ended != 1);
 
+		timer_reset(&timerSupervisor);
 
 		/* FINALIZING DECISION */
 		actuate_white_leds();

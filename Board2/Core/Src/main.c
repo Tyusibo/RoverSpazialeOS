@@ -181,6 +181,7 @@ int main(void)
 
 	if(timer_init(&timerSupervisor, &htim7, TIM7_IN_FREQUENCY) != TIMER_OK){return -1;}
 
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -265,19 +266,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
-	if (htim->Instance != TIM7) {
-		return;
+	if (htim->Instance == TIM7) {
+		static uint8_t first_time = 0;
+
+		if (first_time == 0) {
+			first_time = 1;
+			return;
+		} else {
+			timer_period_elapsed(&timerSupervisor, htim);
+			Board2_U.timeoutOccurred++;
+			timer_reset(&timerSupervisor);
+		}
 	}
 
-	static uint8_t first_time = 0;
-
-	if (first_time == 0) {
-		first_time = 1;
-		return;
-	} else {
-		Board1_U.timeoutOccurred++;
-		first_time = 0;
-	}
   /* USER CODE END Callback 1 */
 }
 

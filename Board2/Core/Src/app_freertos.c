@@ -45,6 +45,7 @@
 #include "motor_constants.h"
 #include "regulator.h"
 */
+#include "timer.h"
 
 /* Utility */
 #include "DWT.h"
@@ -94,6 +95,9 @@ uint8_t sonar_read_failed = 0;
 
 /* DEFAULT VALUES */
 const BUS_RemoteController default_controller = { 0, 0, 0 };
+
+/* Timer Handler from main.c */
+extern timer_t timerSupervisor;
 
 /* USER CODE END Variables */
 /* Definitions for ReadController */
@@ -258,7 +262,7 @@ void MX_FREERTOS_Init(void) {
   SupervisorKillerHandle = osTimerNew(KillSupervisor, osTimerOnce, NULL, &SupervisorKiller_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
-	/* start timers, add new ones, ... */
+	timer_set_period(&timerSupervisor, WCET_SUPERVISOR);
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
@@ -485,10 +489,13 @@ void StartSupervisor(void *argument)
 
 		HAL_Delay(WCET_SUPERVISOR); // To be sure that the timer starts before the task execution
 
+		timer_start(&timerSupervisor);
+
 		do {
 			Board2_step();
 		} while (Board2_Y.supervision_ended != 1);
 
+		timer_reset(&timerSupervisor);
 
 
 		printMsg("Stop timer\r\n: ");

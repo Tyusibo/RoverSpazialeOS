@@ -59,7 +59,7 @@ int8_t timer_is_elapsed(timer_t* timer);
 int8_t timer_is_myhandler(timer_t* timer, TIM_HandleTypeDef* handler);
 
 /*
- * Setting the period in second of the update event
+ * Setting the period in millisecond of the update event
  */
 int8_t timer_set_period(timer_t* timer, uint16_t period);
 

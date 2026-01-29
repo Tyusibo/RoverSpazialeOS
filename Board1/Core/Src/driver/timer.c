@@ -101,7 +101,7 @@ int8_t timer_set_period(timer_t* timer, uint16_t period)
 	if(timer)
 	{
 		prescaler = timer->htim->Instance->PSC;
-		arr = ((period * timer->in_frequency)/(prescaler+1))-1;
+		arr = ((uint64_t)period * timer->in_frequency) / (1000 * (prescaler + 1)) - 1;
 		__HAL_TIM_SET_AUTORELOAD(timer->htim, arr);
 		res = TIMER_OK;
 	}
