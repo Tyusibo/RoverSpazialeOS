@@ -118,7 +118,7 @@ void MotorsHealth_UpdateMotorsHealth(const BUS_SetPoint *rtu_setPoint, const
     if ((MotorsHealth_DW.LF_resultCheck == ERROR_TARGET_NOT_REACHED) ||
         (MotorsHealth_DW.setPoint_leftAxis_prev !=
          MotorsHealth_DW.setPoint_leftAxis_start)) {
-      /* In caso di disturbo, si da la possibilità al PID  di ritornare a regime */
+      /* In caso di disturbo, si da la possibilitï¿½ al PID  di ritornare a regime */
       MotorsHealth_DW.bitsForTID1.is_LF_Motor = MotorsHealth_IN_Motor_OK;
       MotorsHealth_DW.LF_HealthMotor = MOTOR_OK;
       MotorsHealth_DW.LF_samples = 1U;
@@ -160,7 +160,7 @@ void MotorsHealth_UpdateMotorsHealth(const BUS_SetPoint *rtu_setPoint, const
     if ((MotorsHealth_DW.RF_resultCheck == ERROR_TARGET_NOT_REACHED) ||
         (MotorsHealth_DW.setPoint_rightAxis_prev !=
          MotorsHealth_DW.setPoint_rightAxis_start)) {
-      /* In caso di disturbo, si da la possibilità al PID  di ritornare a regime */
+      /* In caso di disturbo, si da la possibilitï¿½ al PID  di ritornare a regime */
       MotorsHealth_DW.bitsForTID1.is_RF_Motor = MotorsHealth_IN_Motor_OK;
       MotorsHealth_DW.RF_HealthMotor = MOTOR_OK;
       MotorsHealth_DW.RF_samples = 1U;
@@ -202,7 +202,7 @@ void MotorsHealth_UpdateMotorsHealth(const BUS_SetPoint *rtu_setPoint, const
     if ((MotorsHealth_DW.RR_resultCheck == ERROR_TARGET_NOT_REACHED) ||
         (MotorsHealth_DW.setPoint_rightAxis_prev !=
          MotorsHealth_DW.setPoint_rightAxis_start)) {
-      /* In caso di disturbo, si da la possibilità al PID  di ritornare a regime */
+      /* In caso di disturbo, si da la possibilitï¿½ al PID  di ritornare a regime */
       MotorsHealth_DW.bitsForTID1.is_RR_Motor = MotorsHealth_IN_Motor_OK;
       MotorsHealth_DW.RR_HealthMotor = MOTOR_OK;
       MotorsHealth_DW.RR_samples = 1U;
@@ -244,7 +244,7 @@ void MotorsHealth_UpdateMotorsHealth(const BUS_SetPoint *rtu_setPoint, const
     if ((MotorsHealth_DW.LR_resultCheck == ERROR_TARGET_NOT_REACHED) ||
         (MotorsHealth_DW.setPoint_leftAxis_prev !=
          MotorsHealth_DW.setPoint_leftAxis_start)) {
-      /* In caso di disturbo, si da la possibilità al PID  di ritornare a regime */
+      /* In caso di disturbo, si da la possibilitï¿½ al PID  di ritornare a regime */
       MotorsHealth_DW.bitsForTID1.is_LR_Motor = MotorsHealth_IN_Motor_OK;
       MotorsHealth_DW.LR_HealthMotor = MOTOR_OK;
       MotorsHealth_DW.LR_samples = 1U;
