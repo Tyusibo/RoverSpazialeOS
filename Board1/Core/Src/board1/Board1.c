@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 9.1
+ * Model version                  : 9.13
  * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Wed Jan 28 15:39:58 2026
+ * C/C++ source code generated on : Thu Jan 29 12:25:38 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -37,7 +37,6 @@
 /* Named constants for Chart: '<Root>/SupervisorB1' */
 #define B_IN_StateCoherenceVerification ((uint8_T)7U)
 #define Boar_IN_ComputingOwnGlobalState ((uint8_T)1U)
-#define Boar_IN_EndCommunicationCycle_l ((uint8_T)1U)
 #define Board1_IN_ArmingReceive        ((uint8_T)1U)
 #define Board1_IN_CheckBatteryHealth   ((uint8_T)1U)
 #define Board1_IN_CheckCRC             ((uint8_T)2U)
@@ -51,7 +50,6 @@
 #define Board1_IN_DegradedCase         ((uint8_T)1U)
 #define Board1_IN_Emergency            ((uint8_T)3U)
 #define Board1_IN_EmergencyCase        ((uint8_T)2U)
-#define Board1_IN_EndCommunicationCycle ((uint8_T)3U)
 #define Board1_IN_ErrorStateDecision   ((uint8_T)2U)
 #define Board1_IN_ExchangeDecision     ((uint8_T)3U)
 #define Board1_IN_ExchangeGlobalState  ((uint8_T)4U)
@@ -68,32 +66,30 @@
 #define Board1_IN_LightEvaluation      ((uint8_T)5U)
 #define Board1_IN_NO_ACTIVE_CHILD      ((uint8_T)0U)
 #define Board1_IN_NotCommunicating     ((uint8_T)6U)
-#define Board1_IN_R_ArmingReceive      ((uint8_T)4U)
-#define Board1_IN_R_CheckCRC           ((uint8_T)5U)
-#define Board1_IN_R_ReadyToReceive     ((uint8_T)6U)
-#define Board1_IN_R_ReceivingRTR       ((uint8_T)2U)
-#define Board1_IN_R_SendNack           ((uint8_T)7U)
-#define Board1_IN_R_Trasmit            ((uint8_T)3U)
-#define Board1_IN_R_WaitAck            ((uint8_T)4U)
-#define Board1_IN_ReadyToReceive       ((uint8_T)8U)
-#define Board1_IN_ReceivingRTR         ((uint8_T)5U)
+#define Board1_IN_R_ArmingReceive      ((uint8_T)3U)
+#define Board1_IN_R_CheckCRC           ((uint8_T)4U)
+#define Board1_IN_R_ReadyToReceive     ((uint8_T)5U)
+#define Board1_IN_R_ReceivingRTR       ((uint8_T)1U)
+#define Board1_IN_R_SendNack           ((uint8_T)6U)
+#define Board1_IN_R_Trasmit            ((uint8_T)2U)
+#define Board1_IN_R_WaitAck            ((uint8_T)3U)
+#define Board1_IN_ReadyToReceive       ((uint8_T)7U)
+#define Board1_IN_ReceivingRTR         ((uint8_T)4U)
 #define Board1_IN_RedLedsActuation     ((uint8_T)7U)
-#define Board1_IN_SendAck              ((uint8_T)9U)
-#define Board1_IN_SendNack             ((uint8_T)10U)
-#define Board1_IN_SupervisionEnded     ((uint8_T)8U)
-#define Board1_IN_Trasmit              ((uint8_T)6U)
+#define Board1_IN_SendAck              ((uint8_T)8U)
+#define Board1_IN_SendNack             ((uint8_T)9U)
+#define Board1_IN_SupervisionEnded     ((uint8_T)7U)
+#define Board1_IN_Trasmit              ((uint8_T)5U)
 #define Board1_IN_UpdateBoardsHealth   ((uint8_T)8U)
 #define Board1_IN_UpdateDecision       ((uint8_T)3U)
 #define Board1_IN_UpdateRoverState     ((uint8_T)4U)
 #define Board1_IN_UserActionComputation ((uint8_T)9U)
-#define Board1_IN_WaitAck              ((uint8_T)7U)
-#define Board1_TRUE                    ((uint8_T)1U)
+#define Board1_IN_WaitAck              ((uint8_T)6U)
 #define Board_IN_EmergencyStateAnalysis ((uint8_T)4U)
 #define Board_IN_RoverActionComputation ((uint8_T)6U)
 #define IN_CheckRoverTemperatureHealth ((uint8_T)3U)
-#define IN_UpdateCommunicationLinkHea_k ((uint8_T)7U)
-#define IN_UpdateCommunicationLinkHea_n ((uint8_T)9U)
-#define IN_UpdateCommunicationLinkHealt ((uint8_T)6U)
+#define IN_UpdateCommunicationCycleStat ((uint8_T)6U)
+#define IN_UpdateCommunicationLinkHealt ((uint8_T)8U)
 #define IN_ValidateReceivedSensorReadin ((uint8_T)3U)
 
 /* Block signals (default storage) */
@@ -145,6 +141,7 @@ static void Board1_ExchangeGlobalState(void);
 static ENUM_Error Board1_validateSensorReadings(uint8_T sensorReadings, real_T
   errorMask);
 static void Board1_ExchangeLocalState(void);
+static void exit_internal_CommunicationPhas(void);
 
 /* Function for Chart: '<Root>/SupervisorB1' */
 static ENUM_StatusWhiteLed Board1_evaluateLed(uint16_T buttons, uint16_T
@@ -307,11 +304,6 @@ static void Board1_ExchangeDecision(void)
       }
       break;
 
-     case Board1_IN_EndCommunicationCycle:
-      Board1_DW.is_D_Receive = Board1_IN_NO_ACTIVE_CHILD;
-      Board1_DW.exit_port_index_D_Receive = 2U;
-      break;
-
      case Board1_IN_R_ArmingReceive:
       if (Board1_DW.receiveArmed == 1) {
         Board1_DW.is_D_Receive = Board1_IN_R_ReadyToReceive;
@@ -350,8 +342,8 @@ static void Board1_ExchangeDecision(void)
       break;
 
      case Board1_IN_R_SendNack:
-      Board1_DW.is_D_Receive = Board1_IN_EndCommunicationCycle;
-      Board1_DW.commCycleStatus = CYCLE_FAIL;
+      Board1_DW.is_D_Receive = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.exit_port_index_D_Receive = 2U;
       break;
 
      case Board1_IN_ReadyToReceive:
@@ -399,23 +391,17 @@ static void Board1_ExchangeDecision(void)
       /* Inport: '<Root>/rx_buffer' */
       deserializeDecision(&Board1_U.rx_buffer[0], Board1_DW.rxPayload,
                           &Board1_DW.board2Decision);
-      Board1_DW.is_ExchangeDecision = IN_UpdateCommunicationLinkHea_n;
-      Board1_B.cycleResult = Board1_DW.commCycleStatus;
+      Board1_DW.is_ExchangeDecision = Board1_IN_CompareDecision;
 
-      /* ModelReference: '<Root>/Model' */
-      Communicatio_UpdateMotorsHealth(&Board1_B.cycleResult,
-        &Board1_B.communicationLinkHealth);
+      /* Outport: '<Root>/board1Decision' */
+      Board1_DW.result = BUS_Decision_Equals(&Board1_Y.board1Decision,
+        &Board1_DW.board2Decision);
       break;
     }
     break;
 
    case Board1_IN_D_Transmit:
     switch (Board1_DW.is_D_Transmit) {
-     case Boar_IN_EndCommunicationCycle_l:
-      Board1_DW.is_D_Transmit = Board1_IN_NO_ACTIVE_CHILD;
-      Board1_DW.exit_port_index_D_Transmit = 2U;
-      break;
-
      case Board1_IN_R_ReceivingRTR:
       if (checkRTR() != 0) {
         Board1_DW.is_D_Transmit = Board1_IN_R_Trasmit;
@@ -436,8 +422,8 @@ static void Board1_ExchangeDecision(void)
      case Board1_IN_R_WaitAck:
       if (hasReceived() == 1) {
         if (UART_CheckAck() == 0) {
-          Board1_DW.is_D_Transmit = Boar_IN_EndCommunicationCycle_l;
-          Board1_DW.commCycleStatus = CYCLE_FAIL;
+          Board1_DW.is_D_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_D_Transmit = 2U;
         } else if (UART_CheckAck() == 1) {
           Board1_DW.is_D_Transmit = Board1_IN_NO_ACTIVE_CHILD;
           Board1_DW.exit_port_index_D_Transmit = 3U;
@@ -524,49 +510,17 @@ static void Board1_ExchangeDecision(void)
     }
     break;
 
-   case Board1_IN_RedLedsActuation:
-    Board1_DW.is_ExchangeDecision = Board1_IN_SupervisionEnded;
-
-    /* Outport: '<Root>/supervision_ended' */
-    Board1_Y.supervision_ended = 1U;
-
-    /* printGlobalState(board1GlobalState); printGlobalState(board2GlobalState);
-       printDecision(board1Decision); printDecision(board2Decision); */
-    break;
-
-   case Board1_IN_SupervisionEnded:
-    /* Outport: '<Root>/supervision_ended' */
-    Board1_Y.supervision_ended = 1U;
-    Board1_DW.is_ExchangeDecision = Board1_IN_IF_Emergency;
-    break;
-
    default:
-    /* case IN_UpdateCommunicationLinkHealth: */
-    /* Numero massimo di dirty cicli raggiunto */
-    if (Board1_B.communicationLinkHealth == LINK_LOST) {
-      Board1_DW.is_ExchangeDecision = Board1_IN_NO_ACTIVE_CHILD;
-      Board1_DW.exit_port_index_ExchangeDecisio = 2U;
-    } else {
-      /* Il link potrebbe essere degradato oppure ok
-         lo aggiorno in caso succede quallche ritrasmissione */
-      Board1_DW.is_ExchangeDecision = Board1_IN_CompareDecision;
-
-      /* Outport: '<Root>/board1Decision' */
-      Board1_DW.result = BUS_Decision_Equals(&Board1_Y.board1Decision,
-        &Board1_DW.board2Decision);
-    }
+    /* case IN_RedLedsActuation: */
+    Board1_DW.is_ExchangeDecision = Board1_IN_IF_Emergency;
     break;
   }
 
   switch (Board1_DW.exit_port_index_ExchangeDecisio) {
    case 2:
     Board1_DW.exit_port_index_ExchangeDecisio = 0U;
-    Board1_DW.is_CommunicationPhase = IN_UpdateCommunicationLinkHealt;
-    Board1_B.cycleResult = Board1_DW.commCycleStatus;
-
-    /* ModelReference: '<Root>/Model' */
-    Communicatio_UpdateMotorsHealth(&Board1_B.cycleResult,
-      &Board1_B.communicationLinkHealth);
+    Board1_DW.is_CommunicationPhase = IN_UpdateCommunicationCycleStat;
+    Board1_DW.commCycleStatus = CYCLE_FAIL;
     break;
 
    case 3:
@@ -590,7 +544,7 @@ static void Board1_ExchangeDecision(void)
    case 6:
     Board1_DW.exit_port_index_ExchangeDecisio = 0U;
     Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
-    Board1_DW.exit_port_index_CommunicationPh = 6U;
+    Board1_DW.exit_port_index_CommunicationPh = 5U;
     break;
   }
 }
@@ -733,11 +687,6 @@ static void Board1_ExchangeGlobalState(void)
       }
       break;
 
-     case Board1_IN_EndCommunicationCycle:
-      Board1_DW.is_GL_Receive = Board1_IN_NO_ACTIVE_CHILD;
-      Board1_DW.exit_port_index_GL_Receive = 2U;
-      break;
-
      case Board1_IN_R_ArmingReceive:
       if (Board1_DW.receiveArmed == 1) {
         Board1_DW.is_GL_Receive = Board1_IN_R_ReadyToReceive;
@@ -776,8 +725,8 @@ static void Board1_ExchangeGlobalState(void)
       break;
 
      case Board1_IN_R_SendNack:
-      Board1_DW.is_GL_Receive = Board1_IN_EndCommunicationCycle;
-      Board1_DW.commCycleStatus = CYCLE_FAIL;
+      Board1_DW.is_GL_Receive = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.exit_port_index_GL_Receive = 2U;
       break;
 
      case Board1_IN_ReadyToReceive:
@@ -834,11 +783,6 @@ static void Board1_ExchangeGlobalState(void)
    default:
     /* case IN_GL_Transmit: */
     switch (Board1_DW.is_GL_Transmit) {
-     case Boar_IN_EndCommunicationCycle_l:
-      Board1_DW.is_GL_Transmit = Board1_IN_NO_ACTIVE_CHILD;
-      Board1_DW.exit_port_index_GL_Transmit = 2U;
-      break;
-
      case Board1_IN_R_ReceivingRTR:
       if (checkRTR() != 0) {
         Board1_DW.is_GL_Transmit = Board1_IN_R_Trasmit;
@@ -859,8 +803,8 @@ static void Board1_ExchangeGlobalState(void)
      case Board1_IN_R_WaitAck:
       if (hasReceived() == 1) {
         if (UART_CheckAck() == 0) {
-          Board1_DW.is_GL_Transmit = Boar_IN_EndCommunicationCycle_l;
-          Board1_DW.commCycleStatus = CYCLE_FAIL;
+          Board1_DW.is_GL_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_GL_Transmit = 2U;
         } else if (UART_CheckAck() == 1) {
           Board1_DW.is_GL_Transmit = Board1_IN_NO_ACTIVE_CHILD;
           Board1_DW.exit_port_index_GL_Transmit = 3U;
@@ -920,12 +864,8 @@ static void Board1_ExchangeGlobalState(void)
   switch (Board1_DW.exit_port_index_ExchangeGlobalS) {
    case 2:
     Board1_DW.exit_port_index_ExchangeGlobalS = 0U;
-    Board1_DW.is_CommunicationPhase = IN_UpdateCommunicationLinkHealt;
-    Board1_B.cycleResult = Board1_DW.commCycleStatus;
-
-    /* ModelReference: '<Root>/Model' */
-    Communicatio_UpdateMotorsHealth(&Board1_B.cycleResult,
-      &Board1_B.communicationLinkHealth);
+    Board1_DW.is_CommunicationPhase = IN_UpdateCommunicationCycleStat;
+    Board1_DW.commCycleStatus = CYCLE_FAIL;
     break;
 
    case 3:
@@ -999,11 +939,6 @@ static void Board1_ExchangeLocalState(void)
       }
       break;
 
-     case Board1_IN_EndCommunicationCycle:
-      Board1_DW.is_LS_Receive = Board1_IN_NO_ACTIVE_CHILD;
-      Board1_DW.exit_port_index_LS_Receive = 2U;
-      break;
-
      case Board1_IN_R_ArmingReceive:
       if (Board1_DW.receiveArmed == 1) {
         Board1_DW.is_LS_Receive = Board1_IN_R_ReadyToReceive;
@@ -1042,8 +977,8 @@ static void Board1_ExchangeLocalState(void)
       break;
 
      case Board1_IN_R_SendNack:
-      Board1_DW.is_LS_Receive = Board1_IN_EndCommunicationCycle;
-      Board1_DW.commCycleStatus = CYCLE_FAIL;
+      Board1_DW.is_LS_Receive = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.exit_port_index_LS_Receive = 2U;
       break;
 
      case Board1_IN_ReadyToReceive:
@@ -1102,11 +1037,6 @@ static void Board1_ExchangeLocalState(void)
 
    case Board1_IN_LS_Transmit:
     switch (Board1_DW.is_LS_Transmit) {
-     case Boar_IN_EndCommunicationCycle_l:
-      Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
-      Board1_DW.exit_port_index_LS_Transmit = 2U;
-      break;
-
      case Board1_IN_R_ReceivingRTR:
       if (checkRTR() != 0) {
         Board1_DW.is_LS_Transmit = Board1_IN_R_Trasmit;
@@ -1127,8 +1057,8 @@ static void Board1_ExchangeLocalState(void)
      case Board1_IN_R_WaitAck:
       if (hasReceived() == 1) {
         if (UART_CheckAck() == 0) {
-          Board1_DW.is_LS_Transmit = Boar_IN_EndCommunicationCycle_l;
-          Board1_DW.commCycleStatus = CYCLE_FAIL;
+          Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_LS_Transmit = 2U;
         } else if (UART_CheckAck() == 1) {
           Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
           Board1_DW.exit_port_index_LS_Transmit = 3U;
@@ -1209,12 +1139,8 @@ static void Board1_ExchangeLocalState(void)
 
    case 3:
     Board1_DW.exit_port_index_ExchangeLocalSt = 0U;
-    Board1_DW.is_CommunicationPhase = IN_UpdateCommunicationLinkHealt;
-    Board1_B.cycleResult = Board1_DW.commCycleStatus;
-
-    /* ModelReference: '<Root>/Model' */
-    Communicatio_UpdateMotorsHealth(&Board1_B.cycleResult,
-      &Board1_B.communicationLinkHealth);
+    Board1_DW.is_CommunicationPhase = IN_UpdateCommunicationCycleStat;
+    Board1_DW.commCycleStatus = CYCLE_FAIL;
     break;
 
    case 4:
@@ -1233,9 +1159,128 @@ static void Board1_ExchangeLocalState(void)
   }
 }
 
+/* Function for Chart: '<Root>/SupervisorB1' */
+static void exit_internal_CommunicationPhas(void)
+{
+  switch (Board1_DW.is_CommunicationPhase) {
+   case Board1_IN_ComputeDecision:
+    if (Board1_DW.is_ComputeDecision == Board1_IN_UpdateBoardsHealth) {
+      /* Outport: '<Root>/board1Decision' */
+      Board1_Y.board1Decision.roverState = Board1_convertInENUMRoverStatus
+        (Board1_B.Status_Board1, Board1_B.Status_Board2);
+      Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
+    } else {
+      Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
+    }
+
+    Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
+    break;
+
+   case Board1_IN_ErrorStateDecision:
+    if (Board1_DW.is_ErrorStateDecision == Board1_IN_UpdateRoverState) {
+      /* Outport: '<Root>/board1Decision' */
+      Board1_Y.board1Decision.roverState = Board1_convertInENUMRoverStatus
+        (Board1_B.Status_Board1, Board1_B.Status_Board2);
+      Board1_DW.is_ErrorStateDecision = Board1_IN_NO_ACTIVE_CHILD;
+    } else {
+      Board1_DW.is_ErrorStateDecision = Board1_IN_NO_ACTIVE_CHILD;
+    }
+
+    Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
+    break;
+
+   case Board1_IN_ExchangeDecision:
+    if (Board1_DW.is_ExchangeDecision == Board1_IN_D_Receive) {
+      switch (Board1_DW.is_D_Receive) {
+       case Board1_IN_R_ReadyToReceive:
+        resetRTR();
+        Board1_DW.is_D_Receive = Board1_IN_NO_ACTIVE_CHILD;
+        break;
+
+       case Board1_IN_ReadyToReceive:
+        resetRTR();
+        Board1_DW.is_D_Receive = Board1_IN_NO_ACTIVE_CHILD;
+        break;
+
+       default:
+        Board1_DW.is_D_Receive = Board1_IN_NO_ACTIVE_CHILD;
+        break;
+      }
+
+      Board1_DW.is_ExchangeDecision = Board1_IN_NO_ACTIVE_CHILD;
+    } else {
+      Board1_DW.is_D_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.is_ExchangeDecision = Board1_IN_NO_ACTIVE_CHILD;
+    }
+
+    Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
+    break;
+
+   case Board1_IN_ExchangeGlobalState:
+    if (Board1_DW.is_ExchangeGlobalState == Board1_IN_GL_Receive) {
+      switch (Board1_DW.is_GL_Receive) {
+       case Board1_IN_R_ReadyToReceive:
+        resetRTR();
+        Board1_DW.is_GL_Receive = Board1_IN_NO_ACTIVE_CHILD;
+        break;
+
+       case Board1_IN_ReadyToReceive:
+        resetRTR();
+        Board1_DW.is_GL_Receive = Board1_IN_NO_ACTIVE_CHILD;
+        break;
+
+       default:
+        Board1_DW.is_GL_Receive = Board1_IN_NO_ACTIVE_CHILD;
+        break;
+      }
+
+      Board1_DW.is_ExchangeGlobalState = Board1_IN_NO_ACTIVE_CHILD;
+    } else {
+      Board1_DW.is_GL_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.is_ExchangeGlobalState = Board1_IN_NO_ACTIVE_CHILD;
+    }
+
+    Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
+    break;
+
+   case Board1_IN_ExchangeLocalState:
+    if (Board1_DW.is_ExchangeLocalState == Board1_IN_LS_Receive) {
+      switch (Board1_DW.is_LS_Receive) {
+       case Board1_IN_R_ReadyToReceive:
+        resetRTR();
+        Board1_DW.is_LS_Receive = Board1_IN_NO_ACTIVE_CHILD;
+        break;
+
+       case Board1_IN_ReadyToReceive:
+        resetRTR();
+        Board1_DW.is_LS_Receive = Board1_IN_NO_ACTIVE_CHILD;
+        break;
+
+       default:
+        Board1_DW.is_LS_Receive = Board1_IN_NO_ACTIVE_CHILD;
+        break;
+      }
+
+      Board1_DW.is_ExchangeLocalState = Board1_IN_NO_ACTIVE_CHILD;
+    } else {
+      Board1_DW.is_LS_Transmit = Board1_IN_NO_ACTIVE_CHILD;
+      Board1_DW.is_ExchangeLocalState = Board1_IN_NO_ACTIVE_CHILD;
+    }
+
+    Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
+    break;
+
+   default:
+    Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
+    break;
+  }
+}
+
 /* Model step function */
 void Board1_step(void)
 {
+  uint8_T timeoutOccurred_prev;
+
   /* Chart: '<Root>/SupervisorB1' incorporates:
    *  Inport: '<Root>/areSensorsValid'
    *  Inport: '<Root>/batteryLevel'
@@ -1246,6 +1291,8 @@ void Board1_step(void)
    *  Outport: '<Root>/board1GlobalState'
    *  Outport: '<Root>/tx_buffer'
    */
+  timeoutOccurred_prev = Board1_DW.timeoutOccurred_start;
+  Board1_DW.timeoutOccurred_start = Board1_U.timeoutOccurred;
   if (Board1_DW.is_active_c15_Board1 == 0) {
     Board1_DW.is_active_c15_Board1 = 1U;
     Board1_Y.board1Decision.actuator = BOARD1;
@@ -1262,328 +1309,319 @@ void Board1_step(void)
   } else {
     switch (Board1_DW.is_RoverState) {
      case Board1_IN_CommunicationPhase:
-      switch (Board1_DW.is_CommunicationPhase) {
-       case Board1_IN_ComputeDecision:
-        switch (Board1_DW.is_ComputeDecision) {
-         case Board1_IN_CheckBatteryHealth:
-          if (Board1_Y.board1GlobalState.localStateB1.batteryLevel <= 23) {
-            Board1_B.errorB1 = ERROR_PRESENT;
-            Board1_B.errorB2 = ERROR_PRESENT;
+      /* Timeout, aggiorno come è andato il ciclo
+         e vedo se si è rotto il link */
+      if (timeoutOccurred_prev != Board1_DW.timeoutOccurred_start) {
+        Board1_DW.commCycleStatus = CYCLE_FAIL;
+
+        /* Il link potrebbe essere degradato oppure ok */
+        exit_internal_CommunicationPhas();
+        Board1_DW.is_RoverState = IN_UpdateCommunicationLinkHealt;
+        Board1_B.cycleResult = Board1_DW.commCycleStatus;
+
+        /* ModelReference: '<Root>/Model' */
+        Communicatio_UpdateMotorsHealth(&Board1_B.cycleResult,
+          &Board1_B.communicationLinkHealth);
+      } else {
+        switch (Board1_DW.is_CommunicationPhase) {
+         case Board1_IN_ComputeDecision:
+          switch (Board1_DW.is_ComputeDecision) {
+           case Board1_IN_CheckBatteryHealth:
+            if (Board1_Y.board1GlobalState.localStateB1.batteryLevel <= 23) {
+              Board1_B.errorB1 = ERROR_PRESENT;
+              Board1_B.errorB2 = ERROR_PRESENT;
+              Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
+              Board1_DW.exit_port_index_ComputeDecision = 2U;
+            } else {
+              Board1_DW.is_ComputeDecision = Board1_IN_CheckMotorsHealth;
+
+              /* ModelReference: '<Root>/MotorsHealth' incorporates:
+               *  Outport: '<Root>/board1Decision'
+               */
+              MotorsHealth_UpdateMotorsHealth(&Board1_Y.board1Decision.setPoint,
+                &Board1_Y.board1GlobalState.localStateB1.speed,
+                &Board1_B.motorsHealth);
+            }
+            break;
+
+           case Board1_IN_CheckMotorsHealth:
+            if (Board1_B.motorsHealth == MOTORS_NOT_OK) {
+              Board1_B.errorB1 = ERROR_PRESENT;
+              Board1_B.errorB2 = ERROR_PRESENT;
+
+              /* Caso in cui i motori non seguono il setpoint */
+              Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
+              Board1_DW.exit_port_index_ComputeDecision = 2U;
+            } else {
+              Board1_DW.is_ComputeDecision = IN_CheckRoverTemperatureHealth;
+
+              /* ModelReference: '<Root>/RoverTemperatureHealth' incorporates:
+               *  Outport: '<Root>/board1GlobalState'
+               */
+              Ro_UpdateRoverTemperatureHealth
+                (&Board1_Y.board1GlobalState.localStateB1.temperature,
+                 &Board1_B.roverTemperatureHealth);
+            }
+            break;
+
+           case IN_CheckRoverTemperatureHealth:
+            if (Board1_B.roverTemperatureHealth == TEMPERATURE_NOT_OK) {
+              Board1_B.errorB1 = ERROR_PRESENT;
+              Board1_B.errorB2 = ERROR_PRESENT;
+
+              /* Caso in cui la temperatura interna del rover supera la soglia per x tempo */
+              Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
+              Board1_DW.exit_port_index_ComputeDecision = 2U;
+            } else {
+              /* Non ci sono stati errori
+                 Lettura sensori e coerenza dei valori OK
+                 Motori OK
+                 Temperatura OK */
+              Board1_DW.is_ComputeDecision = Board1_IN_UpdateBoardsHealth;
+
+              /* ModelReference: '<Root>/BoardsHealth' */
+              BoardsHealth_UpdateBoardsStatus(&Board1_B.errorB1,
+                &Board1_B.errorB2, &Board1_B.Status_Board1,
+                &Board1_B.Status_Board2);
+            }
+            break;
+
+           case Board_IN_EmergencyStateAnalysis:
+            if ((Board1_B.errorB1 == NO_ERROR) && (Board1_B.errorB2 == NO_ERROR))
+            {
+              Board1_DW.is_ComputeDecision = Board1_IN_CheckBatteryHealth;
+            } else {
+              Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
+              Board1_DW.exit_port_index_ComputeDecision = 2U;
+            }
+            break;
+
+           case Board1_IN_LightEvaluation:
             Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
-            Board1_DW.exit_port_index_ComputeDecision = 2U;
-          } else {
-            Board1_DW.is_ComputeDecision = Board1_IN_CheckMotorsHealth;
+            Board1_DW.exit_port_index_ComputeDecision = 3U;
+            break;
 
-            /* ModelReference: '<Root>/MotorsHealth' incorporates:
-             *  Outport: '<Root>/board1Decision'
-             */
-            MotorsHealth_UpdateMotorsHealth(&Board1_Y.board1Decision.setPoint,
-              &Board1_Y.board1GlobalState.localStateB1.speed,
-              &Board1_B.motorsHealth);
-          }
-          break;
+           case Board_IN_RoverActionComputation:
+            Board1_DW.is_ComputeDecision = Board1_IN_LightEvaluation;
+            Board1_Y.board1Decision.leds.white.left = Board1_evaluateLed
+              (Board1_Y.board1GlobalState.localStateB2.remoteController.buttons,
+               Board1_DW.previousButtons, Board1_DW.previousWhiteLeftLed,
+               ((uint16_T)WHITE_LEFT_LED_MASK));
+            Board1_Y.board1Decision.leds.white.right = Board1_evaluateLed
+              (Board1_Y.board1GlobalState.localStateB2.remoteController.buttons,
+               Board1_DW.previousButtons, Board1_DW.previousWhiteRightLed,
+               ((uint16_T)WHITE_RIGHT_LED_MASK));
 
-         case Board1_IN_CheckMotorsHealth:
-          if (Board1_B.motorsHealth == MOTORS_NOT_OK) {
-            Board1_B.errorB1 = ERROR_PRESENT;
-            Board1_B.errorB2 = ERROR_PRESENT;
+            /*  Aggiornamento variabili di stato */
+            Board1_DW.previousButtons =
+              Board1_Y.board1GlobalState.localStateB2.remoteController.buttons;
+            Board1_DW.previousWhiteLeftLed =
+              Board1_Y.board1Decision.leds.white.left;
+            Board1_DW.previousWhiteRightLed =
+              Board1_Y.board1Decision.leds.white.right;
+            break;
 
-            /* Caso in cui i motori non seguono il setpoint */
-            Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
-            Board1_DW.exit_port_index_ComputeDecision = 2U;
-          } else {
-            Board1_DW.is_ComputeDecision = IN_CheckRoverTemperatureHealth;
+           case B_IN_StateCoherenceVerification:
+            if ((Board1_B.errorB1 == NO_ERROR) && (Board1_B.errorB2 == NO_ERROR))
+            {
+              Board1_DW.is_ComputeDecision = Board_IN_EmergencyStateAnalysis;
+              Board1_emergencyCheck
+                (Board1_Y.board1GlobalState.localStateB1.speed.motor1,
+                 Board1_Y.board1GlobalState.localStateB1.speed.motor2,
+                 Board1_Y.board1GlobalState.localStateB1.speed.motor3,
+                 Board1_Y.board1GlobalState.localStateB1.speed.motor4,
+                 Board1_Y.board1GlobalState.localStateB1.temperature,
+                 Board1_Y.board1GlobalState.localStateB1.batteryLevel,
+                 Board1_Y.board1GlobalState.localStateB2.sonar.left,
+                 Board1_Y.board1GlobalState.localStateB2.sonar.front,
+                 Board1_Y.board1GlobalState.localStateB2.sonar.right,
+                 Board1_Y.board1GlobalState.localStateB2.gyroscope,
+                 Board1_Y.board1GlobalState.localStateB2.remoteController.y_lever,
+                 Board1_Y.board1GlobalState.localStateB2.remoteController.x_lever,
+                 &Board1_B.errorB1, &Board1_B.errorB2);
+            } else {
+              Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
+              Board1_DW.exit_port_index_ComputeDecision = 2U;
+            }
+            break;
 
-            /* ModelReference: '<Root>/RoverTemperatureHealth' incorporates:
+           case Board1_IN_UpdateBoardsHealth:
+            Board1_Y.board1Decision.roverState = Board1_convertInENUMRoverStatus
+              (Board1_B.Status_Board1, Board1_B.Status_Board2);
+            Board1_DW.is_ComputeDecision = Board1_IN_UserActionComputation;
+            Board1_Y.board1Decision.userAction = Board1_computeUserAction
+              (Board1_Y.board1GlobalState.localStateB2.remoteController.x_lever,
+               Board1_Y.board1GlobalState.localStateB2.remoteController.y_lever,
+               Board1_Y.board1GlobalState.localStateB2.remoteController.buttons,
+               ((uint16_T)BRAKING_HARD_MASK), ((uint16_T)BRAKING_SMOOTH_MASK));
+            Board1_B.previousUserAction = Board1_Y.board1Decision.userAction;
+            break;
+
+           default:
+            /* case IN_UserActionComputation: */
+            Board1_DW.is_ComputeDecision = Board_IN_RoverActionComputation;
+
+            /* ModelReference: '<Root>/ActionsModel' incorporates:
              *  Outport: '<Root>/board1GlobalState'
              */
-            Ro_UpdateRoverTemperatureHealth
-              (&Board1_Y.board1GlobalState.localStateB1.temperature,
-               &Board1_B.roverTemperatureHealth);
+            ActionsModel_ComputeRoverAction(&Board1_B.previousUserAction,
+              &Board1_Y.board1GlobalState.localStateB1.speed,
+              &Board1_Y.board1GlobalState.localStateB2.remoteController.x_lever,
+              &Board1_Y.board1GlobalState.localStateB2.remoteController.y_lever,
+              &Board1_Y.board1GlobalState.localStateB2.gyroscope,
+              &Board1_Y.board1GlobalState.localStateB2.sonar, &Board1_B.setPoint,
+              &Board1_B.roverAction, &Board1_B.safeAction, &Board1_B.redLeds);
+            Board1_Y.board1Decision.roverAction = Board1_B.roverAction;
+            Board1_Y.board1Decision.safeAction = Board1_B.safeAction;
+            Board1_Y.board1Decision.setPoint = Board1_B.setPoint;
+
+            /*  Light update */
+            Board1_Y.board1Decision.leds.red = Board1_B.redLeds;
+            break;
           }
-          break;
 
-         case IN_CheckRoverTemperatureHealth:
-          if (Board1_B.roverTemperatureHealth == TEMPERATURE_NOT_OK) {
-            Board1_B.errorB1 = ERROR_PRESENT;
-            Board1_B.errorB2 = ERROR_PRESENT;
-
-            /* Caso in cui la temperatura interna del rover supera la soglia per x tempo */
-            Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
-            Board1_DW.exit_port_index_ComputeDecision = 2U;
-          } else {
-            /* Non ci sono stati errori
-               Lettura sensori e coerenza dei valori OK
-               Motori OK
-               Temperatura OK */
-            Board1_DW.is_ComputeDecision = Board1_IN_UpdateBoardsHealth;
+          switch (Board1_DW.exit_port_index_ComputeDecision) {
+           case 2:
+            Board1_DW.exit_port_index_ComputeDecision = 0U;
+            Board1_DW.is_CommunicationPhase = Board1_IN_ErrorStateDecision;
+            Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateRoverState;
 
             /* ModelReference: '<Root>/BoardsHealth' */
             BoardsHealth_UpdateBoardsStatus(&Board1_B.errorB1, &Board1_B.errorB2,
               &Board1_B.Status_Board1, &Board1_B.Status_Board2);
-          }
-          break;
-
-         case Board_IN_EmergencyStateAnalysis:
-          if ((Board1_B.errorB1 == NO_ERROR) && (Board1_B.errorB2 == NO_ERROR))
-          {
-            Board1_DW.is_ComputeDecision = Board1_IN_CheckBatteryHealth;
-          } else {
-            Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
-            Board1_DW.exit_port_index_ComputeDecision = 2U;
-          }
-          break;
-
-         case Board1_IN_LightEvaluation:
-          Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
-          Board1_DW.exit_port_index_ComputeDecision = 3U;
-          break;
-
-         case Board_IN_RoverActionComputation:
-          Board1_DW.is_ComputeDecision = Board1_IN_LightEvaluation;
-          Board1_Y.board1Decision.leds.white.left = Board1_evaluateLed
-            (Board1_Y.board1GlobalState.localStateB2.remoteController.buttons,
-             Board1_DW.previousButtons, Board1_DW.previousWhiteLeftLed,
-             ((uint16_T)WHITE_LEFT_LED_MASK));
-          Board1_Y.board1Decision.leds.white.right = Board1_evaluateLed
-            (Board1_Y.board1GlobalState.localStateB2.remoteController.buttons,
-             Board1_DW.previousButtons, Board1_DW.previousWhiteRightLed,
-             ((uint16_T)WHITE_RIGHT_LED_MASK));
-
-          /*  Aggiornamento variabili di stato */
-          Board1_DW.previousButtons =
-            Board1_Y.board1GlobalState.localStateB2.remoteController.buttons;
-          Board1_DW.previousWhiteLeftLed =
-            Board1_Y.board1Decision.leds.white.left;
-          Board1_DW.previousWhiteRightLed =
-            Board1_Y.board1Decision.leds.white.right;
-          break;
-
-         case B_IN_StateCoherenceVerification:
-          if ((Board1_B.errorB1 == NO_ERROR) && (Board1_B.errorB2 == NO_ERROR))
-          {
-            Board1_DW.is_ComputeDecision = Board_IN_EmergencyStateAnalysis;
-            Board1_emergencyCheck
-              (Board1_Y.board1GlobalState.localStateB1.speed.motor1,
-               Board1_Y.board1GlobalState.localStateB1.speed.motor2,
-               Board1_Y.board1GlobalState.localStateB1.speed.motor3,
-               Board1_Y.board1GlobalState.localStateB1.speed.motor4,
-               Board1_Y.board1GlobalState.localStateB1.temperature,
-               Board1_Y.board1GlobalState.localStateB1.batteryLevel,
-               Board1_Y.board1GlobalState.localStateB2.sonar.left,
-               Board1_Y.board1GlobalState.localStateB2.sonar.front,
-               Board1_Y.board1GlobalState.localStateB2.sonar.right,
-               Board1_Y.board1GlobalState.localStateB2.gyroscope,
-               Board1_Y.board1GlobalState.localStateB2.remoteController.y_lever,
-               Board1_Y.board1GlobalState.localStateB2.remoteController.x_lever,
-               &Board1_B.errorB1, &Board1_B.errorB2);
-          } else {
-            Board1_DW.is_ComputeDecision = Board1_IN_NO_ACTIVE_CHILD;
-            Board1_DW.exit_port_index_ComputeDecision = 2U;
-          }
-          break;
-
-         case Board1_IN_UpdateBoardsHealth:
-          Board1_Y.board1Decision.roverState = Board1_convertInENUMRoverStatus
-            (Board1_B.Status_Board1, Board1_B.Status_Board2);
-          Board1_DW.is_ComputeDecision = Board1_IN_UserActionComputation;
-          Board1_Y.board1Decision.userAction = Board1_computeUserAction
-            (Board1_Y.board1GlobalState.localStateB2.remoteController.x_lever,
-             Board1_Y.board1GlobalState.localStateB2.remoteController.y_lever,
-             Board1_Y.board1GlobalState.localStateB2.remoteController.buttons,
-             ((uint16_T)BRAKING_HARD_MASK), ((uint16_T)BRAKING_SMOOTH_MASK));
-          Board1_B.previousUserAction = Board1_Y.board1Decision.userAction;
-          break;
-
-         default:
-          /* case IN_UserActionComputation: */
-          Board1_DW.is_ComputeDecision = Board_IN_RoverActionComputation;
-
-          /* ModelReference: '<Root>/ActionsModel' incorporates:
-           *  Outport: '<Root>/board1GlobalState'
-           */
-          ActionsModel_ComputeRoverAction(&Board1_B.previousUserAction,
-            &Board1_Y.board1GlobalState.localStateB1.speed,
-            &Board1_Y.board1GlobalState.localStateB2.remoteController.x_lever,
-            &Board1_Y.board1GlobalState.localStateB2.remoteController.y_lever,
-            &Board1_Y.board1GlobalState.localStateB2.gyroscope,
-            &Board1_Y.board1GlobalState.localStateB2.sonar, &Board1_B.setPoint,
-            &Board1_B.roverAction, &Board1_B.safeAction, &Board1_B.redLeds);
-          Board1_Y.board1Decision.roverAction = Board1_B.roverAction;
-          Board1_Y.board1Decision.safeAction = Board1_B.safeAction;
-          Board1_Y.board1Decision.setPoint = Board1_B.setPoint;
-
-          /*  Light update */
-          Board1_Y.board1Decision.leds.red = Board1_B.redLeds;
-          break;
-        }
-
-        switch (Board1_DW.exit_port_index_ComputeDecision) {
-         case 2:
-          Board1_DW.exit_port_index_ComputeDecision = 0U;
-          Board1_DW.is_CommunicationPhase = Board1_IN_ErrorStateDecision;
-          Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateRoverState;
-
-          /* ModelReference: '<Root>/BoardsHealth' */
-          BoardsHealth_UpdateBoardsStatus(&Board1_B.errorB1, &Board1_B.errorB2,
-            &Board1_B.Status_Board1, &Board1_B.Status_Board2);
-          break;
-
-         case 3:
-          Board1_DW.exit_port_index_ComputeDecision = 0U;
-          Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeDecision;
-
-          /*  Entry exchange decision */
-          Board1_DW.txPayload = ((uint8_T)DECISION_FRAME_SIZE);
-          Board1_DW.rxPayload = ((uint8_T)DECISION_FRAME_SIZE);
-          serializeDecision(&Board1_Y.tx_buffer[0], &Board1_Y.board1Decision);
-          computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
-          Board1_DW.is_ExchangeDecision = Board1_IN_D_Transmit;
-          Board1_DW.is_D_Transmit = Board1_IN_ReceivingRTR;
-          break;
-        }
-        break;
-
-       case Board1_IN_ErrorStateDecision:
-        switch (Board1_DW.is_ErrorStateDecision) {
-         case Board1_IN_DegradedCase:
-          Board1_DW.is_ErrorStateDecision = Board1_IN_NO_ACTIVE_CHILD;
-          Board1_DW.exit_port_index_ErrorStateDecis = 2U;
-          break;
-
-         case Board1_IN_EmergencyCase:
-          Board1_DW.is_ErrorStateDecision = Board1_IN_NO_ACTIVE_CHILD;
-          Board1_DW.exit_port_index_ErrorStateDecis = 2U;
-          break;
-
-         case Board1_IN_UpdateDecision:
-          switch (Board1_Y.board1Decision.roverState) {
-           case FAULTY_B1_DEGRADED_B2:
-            Board1_DW.is_ErrorStateDecision = Board1_IN_DegradedCase;
-            Board1_Y.board1Decision.actuator = BOARD2;
             break;
 
-           case EMERGENCY:
-            Board1_DW.is_ErrorStateDecision = Board1_IN_EmergencyCase;
+           case 3:
+            Board1_DW.exit_port_index_ComputeDecision = 0U;
+            Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeDecision;
 
-            /* CHI DEVE ATTUARE? */
-            Board1_Y.board1Decision.safeAction = SA_BRAKING_HARD;
-            Board1_Y.board1Decision.roverAction = RA_BRAKING_HARD;
-            Board1_Y.board1Decision.userAction = UA_BRAKING_HARD;
-            Board1_Y.board1Decision.setPoint.leftAxis = 0.0F;
-            Board1_Y.board1Decision.setPoint.rightAxis = 0.0F;
+            /*  Entry exchange decision */
+            Board1_DW.txPayload = ((uint8_T)DECISION_FRAME_SIZE);
+            Board1_DW.rxPayload = ((uint8_T)DECISION_FRAME_SIZE);
+            serializeDecision(&Board1_Y.tx_buffer[0], &Board1_Y.board1Decision);
+            computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
+            Board1_DW.is_ExchangeDecision = Board1_IN_D_Transmit;
+            Board1_DW.is_D_Transmit = Board1_IN_ReceivingRTR;
             break;
+          }
+          break;
 
-           default:
+         case Board1_IN_ErrorStateDecision:
+          switch (Board1_DW.is_ErrorStateDecision) {
+           case Board1_IN_DegradedCase:
             Board1_DW.is_ErrorStateDecision = Board1_IN_NO_ACTIVE_CHILD;
             Board1_DW.exit_port_index_ErrorStateDecis = 2U;
             break;
+
+           case Board1_IN_EmergencyCase:
+            Board1_DW.is_ErrorStateDecision = Board1_IN_NO_ACTIVE_CHILD;
+            Board1_DW.exit_port_index_ErrorStateDecis = 2U;
+            break;
+
+           case Board1_IN_UpdateDecision:
+            switch (Board1_Y.board1Decision.roverState) {
+             case FAULTY_B1_DEGRADED_B2:
+              Board1_DW.is_ErrorStateDecision = Board1_IN_DegradedCase;
+              Board1_Y.board1Decision.actuator = BOARD2;
+              break;
+
+             case EMERGENCY:
+              Board1_DW.is_ErrorStateDecision = Board1_IN_EmergencyCase;
+
+              /* CHI DEVE ATTUARE? */
+              Board1_Y.board1Decision.safeAction = SA_BRAKING_HARD;
+              Board1_Y.board1Decision.roverAction = RA_BRAKING_HARD;
+              Board1_Y.board1Decision.userAction = UA_BRAKING_HARD;
+              Board1_Y.board1Decision.setPoint.leftAxis = 0.0F;
+              Board1_Y.board1Decision.setPoint.rightAxis = 0.0F;
+              break;
+
+             default:
+              Board1_DW.is_ErrorStateDecision = Board1_IN_NO_ACTIVE_CHILD;
+              Board1_DW.exit_port_index_ErrorStateDecis = 2U;
+              break;
+            }
+            break;
+
+           default:
+            /* case IN_UpdateRoverState: */
+            Board1_Y.board1Decision.roverState = Board1_convertInENUMRoverStatus
+              (Board1_B.Status_Board1, Board1_B.Status_Board2);
+            Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateDecision;
+
+            /*  printRoverState(board1Decision); */
+            Board1_Y.board1Decision.leds.red.left = RED_BLINKING;
+            Board1_Y.board1Decision.leds.red.right =
+              Board1_Y.board1Decision.leds.red.left;
+            break;
+          }
+
+          if (Board1_DW.exit_port_index_ErrorStateDecis == 2U) {
+            Board1_DW.exit_port_index_ErrorStateDecis = 0U;
+            Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeDecision;
+
+            /*  Entry exchange decision */
+            Board1_DW.txPayload = ((uint8_T)DECISION_FRAME_SIZE);
+            Board1_DW.rxPayload = ((uint8_T)DECISION_FRAME_SIZE);
+            serializeDecision(&Board1_Y.tx_buffer[0], &Board1_Y.board1Decision);
+            computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
+            Board1_DW.is_ExchangeDecision = Board1_IN_D_Transmit;
+            Board1_DW.is_D_Transmit = Board1_IN_ReceivingRTR;
           }
           break;
 
-         default:
-          /* case IN_UpdateRoverState: */
-          Board1_Y.board1Decision.roverState = Board1_convertInENUMRoverStatus
-            (Board1_B.Status_Board1, Board1_B.Status_Board2);
-          Board1_DW.is_ErrorStateDecision = Board1_IN_UpdateDecision;
+         case Board1_IN_ExchangeDecision:
+          Board1_ExchangeDecision();
+          break;
 
-          /*  printRoverState(board1Decision); */
-          Board1_Y.board1Decision.leds.red.left = RED_BLINKING;
-          Board1_Y.board1Decision.leds.red.right =
-            Board1_Y.board1Decision.leds.red.left;
+         case Board1_IN_ExchangeGlobalState:
+          Board1_ExchangeGlobalState();
+          break;
+
+         case Board1_IN_ExchangeLocalState:
+          Board1_ExchangeLocalState();
+          break;
+
+         default:
+          /* case IN_UpdateCommunicationCycleStatus: */
+          Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
+          Board1_DW.exit_port_index_CommunicationPh = 5U;
           break;
         }
 
-        if (Board1_DW.exit_port_index_ErrorStateDecis == 2U) {
-          Board1_DW.exit_port_index_ErrorStateDecis = 0U;
-          Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeDecision;
+        switch (Board1_DW.exit_port_index_CommunicationPh) {
+         case 2:
+          Board1_DW.exit_port_index_CommunicationPh = 0U;
+          Board1_DW.is_RoverState = Board1_IN_Degraded;
+          enterDegraded();
+          break;
 
-          /*  Entry exchange decision */
-          Board1_DW.txPayload = ((uint8_T)DECISION_FRAME_SIZE);
-          Board1_DW.rxPayload = ((uint8_T)DECISION_FRAME_SIZE);
-          serializeDecision(&Board1_Y.tx_buffer[0], &Board1_Y.board1Decision);
-          computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
-          Board1_DW.is_ExchangeDecision = Board1_IN_D_Transmit;
-          Board1_DW.is_D_Transmit = Board1_IN_ReceivingRTR;
+         case 3:
+          Board1_DW.exit_port_index_CommunicationPh = 0U;
+          Board1_DW.is_RoverState = Board1_IN_Emergency;
+
+          /* enterEmergency(); */
+          break;
+
+         case 4:
+          Board1_DW.exit_port_index_CommunicationPh = 0U;
+          Board1_DW.is_RoverState = Board1_IN_Faulty;
+
+          /* enterFaulty(); */
+          break;
+
+         case 5:
+          Board1_DW.exit_port_index_CommunicationPh = 0U;
+
+          /* Il link potrebbe essere degradato oppure ok */
+          Board1_DW.is_RoverState = IN_UpdateCommunicationLinkHealt;
+          Board1_B.cycleResult = Board1_DW.commCycleStatus;
+
+          /* ModelReference: '<Root>/Model' */
+          Communicatio_UpdateMotorsHealth(&Board1_B.cycleResult,
+            &Board1_B.communicationLinkHealth);
+          break;
         }
-        break;
-
-       case Board1_IN_ExchangeDecision:
-        Board1_ExchangeDecision();
-        break;
-
-       case Board1_IN_ExchangeGlobalState:
-        Board1_ExchangeGlobalState();
-        break;
-
-       case Board1_IN_ExchangeLocalState:
-        Board1_ExchangeLocalState();
-        break;
-
-       case IN_UpdateCommunicationLinkHealt:
-        if (Board1_B.communicationLinkHealth == LINK_LOST) {
-          Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
-          Board1_DW.exit_port_index_CommunicationPh = 5U;
-        } else {
-          Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
-          Board1_DW.exit_port_index_CommunicationPh = 6U;
-        }
-        break;
-
-       default:
-        /* case IN_UpdateCommunicationLinkHealthBeforeCommunicating: */
-        if (Board1_B.communicationLinkHealth == LINK_LOST) {
-          Board1_DW.is_CommunicationPhase = Board1_IN_NO_ACTIVE_CHILD;
-          Board1_DW.exit_port_index_CommunicationPh = 5U;
-        } else {
-          Board1_DW.commCycleStatus = CYCLE_OK_CLEAN;
-          Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeLocalState;
-
-          /*  Entry exchange local state */
-          Board1_DW.txPayload = ((uint8_T)LOCAL_STATE_B1_FRAME_SIZE);
-          Board1_DW.rxPayload = ((uint8_T)LOCAL_STATE_B2_FRAME_SIZE);
-          serializeLocalStateB1(&Board1_Y.tx_buffer[0],
-                                &Board1_DW.board1LocalState);
-          computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
-          Board1_DW.is_ExchangeLocalState = Board1_IN_LS_Transmit;
-          Board1_DW.is_LS_Transmit = Board1_IN_ReceivingRTR;
-        }
-        break;
-      }
-
-      switch (Board1_DW.exit_port_index_CommunicationPh) {
-       case 2:
-        Board1_DW.exit_port_index_CommunicationPh = 0U;
-        Board1_DW.is_RoverState = Board1_IN_Degraded;
-        enterDegraded();
-        break;
-
-       case 3:
-        Board1_DW.exit_port_index_CommunicationPh = 0U;
-        Board1_DW.is_RoverState = Board1_IN_Emergency;
-
-        /* enterEmergency(); */
-        break;
-
-       case 4:
-        Board1_DW.exit_port_index_CommunicationPh = 0U;
-        Board1_DW.is_RoverState = Board1_IN_Faulty;
-
-        /* enterFaulty(); */
-        break;
-
-       case 5:
-        Board1_DW.exit_port_index_CommunicationPh = 0U;
-        Board1_DW.is_RoverState = Board1_IN_Idle;
-        break;
-
-       case 6:
-        Board1_DW.exit_port_index_CommunicationPh = 0U;
-        Board1_DW.is_RoverState = Board1_IN_NotCommunicating;
-
-        /* Outport: '<Root>/supervision_ended' */
-        Board1_Y.supervision_ended = 0U;
-        break;
       }
       break;
 
@@ -1593,38 +1631,45 @@ void Board1_step(void)
      case Board1_IN_Idle:
       break;
 
-     default:
+     case Board1_IN_NotCommunicating:
       /* Outport: '<Root>/supervision_ended' */
-      /* case IN_NotCommunicating: */
       Board1_Y.supervision_ended = 0U;
       Board1_DW.board1LocalState.speed = Board1_U.speed;
       Board1_DW.board1LocalState.temperature = Board1_U.temperature;
       Board1_DW.board1LocalState.batteryLevel = Board1_U.batteryLevel;
       Board1_DW.board1LocalState.sensorReadings = Board1_U.areSensorsValid;
       Board1_DW.is_RoverState = Board1_IN_CommunicationPhase;
+      Board1_DW.commCycleStatus = CYCLE_OK_CLEAN;
+      Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeLocalState;
 
-      /*  indica che c'è stato un timeout impartito dai task
-         durante la comunicazione passata */
-      if (Board1_U.timeoutOccurred == Board1_TRUE) {
-        Board1_DW.commCycleStatus = CYCLE_FAIL;
-        Board1_DW.is_CommunicationPhase = IN_UpdateCommunicationLinkHea_k;
-        Board1_B.cycleResult = Board1_DW.commCycleStatus;
+      /*  Entry exchange local state */
+      Board1_DW.txPayload = ((uint8_T)LOCAL_STATE_B1_FRAME_SIZE);
+      Board1_DW.rxPayload = ((uint8_T)LOCAL_STATE_B2_FRAME_SIZE);
+      serializeLocalStateB1(&Board1_Y.tx_buffer[0], &Board1_DW.board1LocalState);
+      computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
+      Board1_DW.is_ExchangeLocalState = Board1_IN_LS_Transmit;
+      Board1_DW.is_LS_Transmit = Board1_IN_ReceivingRTR;
+      break;
 
-        /* ModelReference: '<Root>/Model' */
-        Communicatio_UpdateMotorsHealth(&Board1_B.cycleResult,
-          &Board1_B.communicationLinkHealth);
+     case Board1_IN_SupervisionEnded:
+      Board1_DW.is_RoverState = Board1_IN_NotCommunicating;
+
+      /* Outport: '<Root>/supervision_ended' */
+      Board1_Y.supervision_ended = 0U;
+      break;
+
+     default:
+      /* case IN_UpdateCommunicationLinkHealth: */
+      if (Board1_B.communicationLinkHealth == LINK_LOST) {
+        Board1_DW.is_RoverState = Board1_IN_Idle;
       } else {
-        Board1_DW.commCycleStatus = CYCLE_OK_CLEAN;
-        Board1_DW.is_CommunicationPhase = Board1_IN_ExchangeLocalState;
+        Board1_DW.is_RoverState = Board1_IN_SupervisionEnded;
 
-        /*  Entry exchange local state */
-        Board1_DW.txPayload = ((uint8_T)LOCAL_STATE_B1_FRAME_SIZE);
-        Board1_DW.rxPayload = ((uint8_T)LOCAL_STATE_B2_FRAME_SIZE);
-        serializeLocalStateB1(&Board1_Y.tx_buffer[0],
-                              &Board1_DW.board1LocalState);
-        computeCRC(&Board1_Y.tx_buffer[0], Board1_DW.txPayload);
-        Board1_DW.is_ExchangeLocalState = Board1_IN_LS_Transmit;
-        Board1_DW.is_LS_Transmit = Board1_IN_ReceivingRTR;
+        /* Outport: '<Root>/supervision_ended' */
+        Board1_Y.supervision_ended = 1U;
+
+        /* printGlobalState(board1GlobalState); printGlobalState(board2GlobalState);
+           printDecision(board1Decision); printDecision(board2Decision); */
       }
       break;
     }

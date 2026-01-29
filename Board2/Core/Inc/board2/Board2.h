@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 8.19
+ * Model version                  : 8.31
  * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Wed Jan 28 15:50:27 2026
+ * C/C++ source code generated on : Thu Jan 29 12:28:01 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -116,6 +116,7 @@ typedef struct {
   uint8_T is_ExchangeLocalState;       /* '<Root>/SupervisorB2' */
   uint8_T is_LS_Receive;               /* '<Root>/SupervisorB2' */
   uint8_T is_LS_Transmit;              /* '<Root>/SupervisorB2' */
+  uint8_T timeoutOccurred_start;       /* '<Root>/SupervisorB2' */
 } DW_Board2_T;
 
 /* External inputs (root inport signals with default storage) */
