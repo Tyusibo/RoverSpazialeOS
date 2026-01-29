@@ -437,6 +437,7 @@ void StartSupervisor(void *argument)
 {
   /* USER CODE BEGIN StartSupervisor */
 
+
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
@@ -481,13 +482,14 @@ void StartSupervisor(void *argument)
 		/* START TIMER FOR MONITORING WCET */
 		osTimerStart(SupervisorKillerHandle, WCET_SUPERVISOR);
 
+
 		do {
 			Board2_step();
 		} while (Board2_Y.supervision_ended != 1);
 
 
 
-
+		printMsg("Stop timer\r\n: ");
 		/* STOP TIMER FOR MONITORING WCET */
 		osTimerStop(SupervisorKillerHandle);
 
@@ -745,6 +747,7 @@ void SonarTimeout(void *argument)
 void KillSupervisor(void *argument)
 {
   /* USER CODE BEGIN KillSupervisor */
+	printMsg("Supervisor WCET exceeded!\n");
 	Board2_U.timeoutOccurred++;
   /* USER CODE END KillSupervisor */
 }
