@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'MotorsHealth'.
  *
- * Model version                  : 20.1
+ * Model version                  : 20.5
  * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Wed Jan 28 15:38:55 2026
+ * C/C++ source code generated on : Thu Jan 29 17:58:31 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M

@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'MotorsHealth'.
  *
- * Model version                  : 20.1
+ * Model version                  : 20.5
  * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Wed Jan 28 15:38:55 2026
+ * C/C++ source code generated on : Thu Jan 29 17:58:31 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -29,8 +29,8 @@
 #define MotorsHealth_IN_KeepMonitoring ((uint8_T)1U)
 #define MotorsHealth_IN_Motor_NOT_OK   ((uint8_T)2U)
 #define MotorsHealth_IN_Motor_OK       ((uint8_T)3U)
-#define MotorsHealth_SETTLINGS_SAMPLES ((uint8_T)3U)
-#define MotorsHealth_TOLERANCE         (10.0F)
+#define MotorsHealth_SETTLINGS_SAMPLES ((uint8_T)60U)
+#define MotorsHealth_TOLERANCE         (20.0F)
 
 /* Macros for accessing real-time model data structure */
 #ifndef rtmGetErrorStatus

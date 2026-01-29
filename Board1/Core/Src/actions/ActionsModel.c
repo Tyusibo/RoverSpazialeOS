@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'ActionsModel'.
  *
- * Model version                  : 8.0
+ * Model version                  : 8.4
  * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Thu Jan 29 12:25:03 2026
+ * C/C++ source code generated on : Thu Jan 29 17:58:09 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -37,7 +37,7 @@
 #define ActionsModel_IN_NotTracking    ((uint8_T)1U)
 #define ActionsModel_IN_RightSideClear ((uint8_T)3U)
 #define ActionsModel_IN_Tracking       ((uint8_T)2U)
-#define ActionsModel_OBSTACLE_DETECTED ((uint16_T)250U)
+#define ActionsModel_OBSTACLE_DETECTED ((uint16_T)300U)
 #define ActionsModel_OFF               ((uint8_T)0U)
 #define ActionsModel_ON                ((uint8_T)1U)
 
@@ -45,7 +45,7 @@
 #define Action_IN_BW_FW_EndedSafeAction ((uint8_T)1U)
 #define Action_IN_BW_RL_EndedSafeAction ((uint8_T)1U)
 #define Action_IN_BW_RR_EndedSafeAction ((uint8_T)1U)
-#define ActionsM_MIN_DISTANCE_TO_ROTATE ((uint16_T)20U)
+#define ActionsM_MIN_DISTANCE_TO_ROTATE ((uint16_T)30U)
 #define ActionsMo_IN_FW_EndedSafeAction ((uint8_T)1U)
 #define ActionsMo_IN_RL_EndedSafeAction ((uint8_T)1U)
 #define ActionsMo_IN_RR_EndedSafeAction ((uint8_T)1U)
@@ -68,7 +68,7 @@
 #define ActionsMode_OBSTACLE_DETECTED_e ((uint16_T)300U)
 #define ActionsModel_BACKWARD_DEGREE   ((uint16_T)180U)
 #define ActionsModel_BRAKE_DISTANCE    ((uint16_T)150U)
-#define ActionsModel_CRITICAL_DISTANCE ((uint16_T)75U)
+#define ActionsModel_CRITICAL_DISTANCE ((uint16_T)70U)
 #define ActionsModel_IN_BW_Forward     ((uint8_T)1U)
 #define ActionsModel_IN_BW_RotateLeft  ((uint8_T)3U)
 #define ActionsModel_IN_BW_StopMotors1 ((uint8_T)4U)
@@ -385,20 +385,15 @@ static ENUM_SafeAction ActionsM_checkSafetyFromForward(ENUM_TrackingObstacles
 {
   ENUM_SafeAction emergencyAction;
   emergencyAction = SA_NONE;
-  if (sonarFront <= ActionsModel_CRITICAL_DISTANCE) {
-    emergencyAction = SA_BRAKING_HARD;
-  } else if (sonarFront <= ActionsMode_OBSTACLE_DETECTED_e) {
-    if (trackingRight == OBSTACLE_MOVING) {
-      if ((trackingLeft == OBSTACLE_MOVING) && (sonarFront <=
-           ActionsModel_BRAKE_DISTANCE)) {
-        emergencyAction = SA_BRAKING_SMOOTH;
-      } else {
-        emergencyAction = SA_SWERVE_RIGHT;
-      }
-    } else if (trackingLeft == OBSTACLE_MOVING) {
-      emergencyAction = SA_SWERVE_LEFT;
+  if (sonarFront < ActionsMode_OBSTACLE_DETECTED_e) {
+    if (sonarFront <= ActionsModel_CRITICAL_DISTANCE) {
+      emergencyAction = SA_BRAKING_HARD;
     } else if (sonarFront <= ActionsModel_BRAKE_DISTANCE) {
       emergencyAction = SA_BRAKING_SMOOTH;
+    } else if (trackingRight == OBSTACLE_MOVING) {
+      emergencyAction = SA_SWERVE_RIGHT;
+    } else if (trackingLeft == OBSTACLE_MOVING) {
+      emergencyAction = SA_SWERVE_LEFT;
     }
   }
 
@@ -410,7 +405,7 @@ static ENUM_SafeAction ActionsMod_checkSafetyToForward(uint16_T sonarFront)
 {
   ENUM_SafeAction emergencyAction;
   emergencyAction = SA_BRAKING_HARD;
-  if (sonarFront > ActionsMode_OBSTACLE_DETECTED_e) {
+  if (sonarFront > ActionsModel_BRAKE_DISTANCE) {
     emergencyAction = SA_NONE;
   }
 
@@ -583,6 +578,15 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
       }
       break;
 
+     case ActionsMode_IN_FW_BrakingHard_l:
+      if (ActionsModel_areAllSpeedsZero(rtu_speed->motor1, rtu_speed->motor2,
+           rtu_speed->motor3, rtu_speed->motor4, ActionsModel_NO_SPEED) != 0) {
+        *rty_safeAction = ActionsMod_checkSafetyToForward(rtu_sonar->front);
+        ActionsModel_DW.is_BW_FW_SafeAction = ActionsMod_IN_NO_ACTIVE_CHILD_k;
+        ActionsModel_DW.exit_port_index_BW_FW_SafeActio = 2U;
+      }
+      break;
+
      case ActionsModel_IN_FW_BrakingHard:
       if (ActionsModel_areAllSpeedsZero(rtu_speed->motor1, rtu_speed->motor2,
            rtu_speed->motor3, rtu_speed->motor4, ActionsModel_NO_SPEED) != 0) {
@@ -613,15 +617,6 @@ static void ActionsModel_BW_Forward(const ENUM_UserAction *rtu_currentUserAction
           ActionsModel_DW.is_BW_FW_SafeAction = ActionsMod_IN_NO_ACTIVE_CHILD_k;
           ActionsModel_DW.exit_port_index_BW_FW_SafeActio = 2U;
         }
-      }
-      break;
-
-     case ActionsMode_IN_FW_BrakingHard_l:
-      if (ActionsModel_areAllSpeedsZero(rtu_speed->motor1, rtu_speed->motor2,
-           rtu_speed->motor3, rtu_speed->motor4, ActionsModel_NO_SPEED) != 0) {
-        *rty_safeAction = ActionsMod_checkSafetyToForward(rtu_sonar->front);
-        ActionsModel_DW.is_BW_FW_SafeAction = ActionsMod_IN_NO_ACTIVE_CHILD_k;
-        ActionsModel_DW.exit_port_index_BW_FW_SafeActio = 2U;
       }
       break;
 

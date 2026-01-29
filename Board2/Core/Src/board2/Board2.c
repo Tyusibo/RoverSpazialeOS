@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board2'.
  *
- * Model version                  : 8.31
+ * Model version                  : 8.32
  * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Thu Jan 29 12:28:01 2026
+ * C/C++ source code generated on : Thu Jan 29 18:00:25 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -269,6 +269,9 @@ static void Board2_ExchangeDecision(void)
     /* [result == 1 || result == 0] */
     if (Board2_DW.result == 1) {
       Board2_DW.is_ExchangeDecision = Board2_IN_IF_Emergency;
+    } else {
+      Board2_DW.is_ExchangeDecision = Board2_IN_NO_ACTIVE_CHILD;
+      Board2_DW.exit_port_index_ExchangeDecisio = 2U;
     }
     break;
 
@@ -1588,15 +1591,13 @@ void Board2_step(void)
          case 3:
           Board2_DW.exit_port_index_CommunicationPh = 0U;
           Board2_DW.is_RoverState = Board2_IN_Emergency;
-
-          /* enterEmergency(); */
+          enterEmergency();
           break;
 
          case 4:
           Board2_DW.exit_port_index_CommunicationPh = 0U;
           Board2_DW.is_RoverState = Board2_IN_Faulty;
-
-          /* enterFaulty(); */
+          enterFaulty();
           break;
 
          case 5:

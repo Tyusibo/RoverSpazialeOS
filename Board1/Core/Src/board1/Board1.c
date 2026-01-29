@@ -7,9 +7,9 @@
  *
  * Code generated for Simulink model 'Board1'.
  *
- * Model version                  : 9.13
+ * Model version                  : 9.15
  * Simulink Coder version         : 24.2 (R2024b) 21-Jun-2024
- * C/C++ source code generated on : Thu Jan 29 12:25:38 2026
+ * C/C++ source code generated on : Thu Jan 29 17:58:46 2026
  *
  * Target selection: ert.tlc
  * Embedded hardware selection: ARM Compatible->ARM Cortex-M
@@ -1599,15 +1599,13 @@ void Board1_step(void)
          case 3:
           Board1_DW.exit_port_index_CommunicationPh = 0U;
           Board1_DW.is_RoverState = Board1_IN_Emergency;
-
-          /* enterEmergency(); */
+          enterEmergency();
           break;
 
          case 4:
           Board1_DW.exit_port_index_CommunicationPh = 0U;
           Board1_DW.is_RoverState = Board1_IN_Faulty;
-
-          /* enterFaulty(); */
+          enterFaulty();
           break;
 
          case 5:

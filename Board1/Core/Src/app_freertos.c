@@ -365,6 +365,10 @@ void StartSupervisor(void *argument)
 	for (;;) {
 
 		/* START TIMER FOR MONITORING WCET */
+		if (Board1_U.batteryLevel <= 23) {
+			Board1_U.batteryLevel = 40;
+		}
+
 		timer_start(&timerSupervisor);
 
 		do {
@@ -390,14 +394,14 @@ void StartSupervisor(void *argument)
 		// Stampa ogni TOT cicli
 		static uint32_t cycle_count = 0;
 		cycle_count++;
-		printMsg("Cycle Count B1: ");
-		printInt((int32_t)cycle_count);
-		printNewLine();
+		//printMsg("Cycle Count B1: ");
+		//printInt((int32_t)cycle_count);
+		//printNewLine();
 
 		if (cycle_count >= 100) {
 			cycle_count = 0;
-//			printGlobalState(&Board1_Y.board1GlobalState);
-//			printDecision(&Board1_Y.board1Decision);
+			printGlobalState(&Board1_Y.board1GlobalState);
+			printDecision(&Board1_Y.board1Decision);
 //			printMsg("Miss P:");
 //			printInt(MissPID);
 //			printMsg(" S:");
