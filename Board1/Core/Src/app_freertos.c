@@ -182,14 +182,6 @@ const osTimerAttr_t toggleRightRedLed_attributes = {
   .cb_mem = &toggleRightRedLedControlBlock,
   .cb_size = sizeof(toggleRightRedLedControlBlock),
 };
-/* Definitions for SupervisorKiller */
-osTimerId_t SupervisorKillerHandle;
-osStaticTimerDef_t SupervisorKillerControlBlock;
-const osTimerAttr_t SupervisorKiller_attributes = {
-  .name = "SupervisorKiller",
-  .cb_mem = &SupervisorKillerControlBlock,
-  .cb_size = sizeof(SupervisorKillerControlBlock),
-};
 /* Definitions for flagsOS */
 osEventFlagsId_t flagsOSHandle;
 osStaticEventGroupDef_t flagsOSControlBlock;
@@ -223,7 +215,6 @@ void StartSeggerTask(void *argument);
 void StartSynchronization(void *argument);
 void callbackToggleLeftRedLed(void *argument);
 void callbackToggleRightRedLed(void *argument);
-void KillSupervisor(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -250,9 +241,6 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of toggleRightRedLed */
   toggleRightRedLedHandle = osTimerNew(callbackToggleRightRedLed, osTimerPeriodic, NULL, &toggleRightRedLed_attributes);
-
-  /* creation of SupervisorKiller */
-  SupervisorKillerHandle = osTimerNew(KillSupervisor, osTimerOnce, NULL, &SupervisorKiller_attributes);
 
   /* USER CODE BEGIN RTOS_TIMERS */
 	timer_set_period(&timerSupervisor, WCET_SUPERVISOR);
@@ -373,8 +361,6 @@ void StartSupervisor(void *argument)
 	for (;;) {
 
 		/* START TIMER FOR MONITORING WCET */
-		//osTimerStart(SupervisorKillerHandle, 1);
-		//Board1_U.timeoutOccurred++;
 		timer_start(&timerSupervisor);
 
 		do {
@@ -383,6 +369,7 @@ void StartSupervisor(void *argument)
 
 		} while (Board1_Y.supervision_ended != 1);
 
+		/* STOP TIMER FOR MONITORING WCET */
 		timer_reset(&timerSupervisor);
 
 		/* FINALIZING DECISION */
@@ -390,8 +377,7 @@ void StartSupervisor(void *argument)
 		change_set_point();
 		change_regulator();
 
-		/* STOP TIMER FOR MONITORING WCET */
-		osTimerStop(SupervisorKillerHandle);
+
 
 
 #if PRINT_TASK
@@ -597,15 +583,6 @@ void callbackToggleRightRedLed(void *argument)
   /* USER CODE BEGIN callbackToggleRightRedLed */
 	A4WD3_Red_Toggle(&led_right);
   /* USER CODE END callbackToggleRightRedLed */
-}
-
-/* KillSupervisor function */
-void KillSupervisor(void *argument)
-{
-  /* USER CODE BEGIN KillSupervisor */
-	printMsg("Supervisor WCET exceeded!\n");
-	Board1_U.timeoutOccurred++;
-  /* USER CODE END KillSupervisor */
 }
 
 /* Private application code --------------------------------------------------*/

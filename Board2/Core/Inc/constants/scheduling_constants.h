@@ -15,7 +15,8 @@
 
 /* Supervisore / decisione rover (stato globale + safety) */
 #define T_SUPERVISOR             	 50u   /* 50ms (20Hz) */
-#define WCET_SUPERVISOR              20u
+#define WCET_SUPERVISOR              30u
+#define WCET_SUPERVISOR              2220u
 
 /* Sonar Task */
 #define T_SONAR          			 100u   /* 100ms (10Hz) */
@@ -23,6 +24,6 @@
 
 /* Comunicazione inter-board (UART) */
 #define T_POLLING_SERVER 	  		 10u   /* 10ms (100Hz) */
-#define WCET_POLLING_SERVER  		  3u
+#define WCET_POLLING_SERVER  		  1u
 
 #endif /* INC_CONSTANTS_SCHEDULING_CONSTANTS_H_ */

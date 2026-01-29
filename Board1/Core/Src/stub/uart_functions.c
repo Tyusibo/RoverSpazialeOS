@@ -129,12 +129,14 @@ uint8_t hasReceived(void) {
 
 // Ritorna se c'è stato un errore di ricezione, abilitato nella callback di errore
 uint8_t errorReceived(void) {
+	// Test function
+
+//	// Upon receiving data, alternate between ack and nack
 //	static uint32_t count = 0;
-//	// se count ack è pari manda l'ack altirmenti manda il nack
 //
-//	count++;
-//	// Se ha davvero ricevuto
 //	if (receivedFlag == 1) {
+//		count++; // Increase count on each successful reception
+//
 //		if (count % 2 == 0) {
 //			return 1;
 //		} else {
@@ -143,7 +145,8 @@ uint8_t errorReceived(void) {
 //	} else {
 //		return 0;
 //	}
-	// Vero funzionamento
+
+	// Real function
 	return errorReceiveFlag;
 }
 

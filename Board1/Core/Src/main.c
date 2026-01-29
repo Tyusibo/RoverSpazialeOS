@@ -280,6 +280,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 			timer_period_elapsed(&timerSupervisor, htim);
 			Board1_U.timeoutOccurred++;
 			timer_reset(&timerSupervisor);
+#if VERBOSE_DEBUG_IT == 1
+			printMsg("SupervisorB1 WCET exceeded!\n\n");
+#endif
 		}
 	}
   /* USER CODE END Callback 1 */
