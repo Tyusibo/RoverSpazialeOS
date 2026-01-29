@@ -17,6 +17,7 @@ volatile uint8_t flagRTR = 0; 					    // Flag RTR
 
 volatile uint8_t receivedFlag = 0;  				// Avvenuta ricezione frame
 volatile uint8_t errorReceiveFlag = 0; 			 // Avvenuto errore di ricezione
+volatile uint8_t trasmissionStatus;
 
 static const uint8_t ack = 1;					// Ack
 static const uint8_t nack = 0; 					// Nack

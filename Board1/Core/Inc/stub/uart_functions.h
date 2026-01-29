@@ -7,6 +7,8 @@
 
 extern volatile uint8_t receivedFlag;
 extern volatile uint8_t errorReceiveFlag;
+extern volatile uint8_t trasmissionStatus;
+
 
 /* Handler */
 void setComunicationHandler(UART_HandleTypeDef* uart_handler);
