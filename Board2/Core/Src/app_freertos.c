@@ -468,36 +468,29 @@ void StartSupervisor(void *argument)
 		timer_reset(&timerSupervisor);
 
 
-		static uint32_t counter_print = 0;
-		counter_print++;
+		/* BEGIN PRINT SECTION */
+
+		static uint32_t cycle_count = 0;
+		cycle_count++;
 
 
-		/* STAMPA CICLO */
-//		printMsg("Cycle Count B2: ");
-//		printInt((int32_t)counter_print);
-//		printNewLine();
+		printMsg("Cycle Count B2: ");
+		printInt((int32_t)cycle_count);
+		printNewLine();
 
-		if (counter_print >= 100) { // Approx 2 seconds (50ms * 40)
-//			printMsg("Miss C:");
-//			printInt(MissReadController);
-//			printMsg(" G:");
-//			printInt(MissReadGyroscope);
-//			printMsg(" S:");
-//			printInt(MissSupervisor);
-//			printMsg(" Sn:");
-//			printInt(MissReadSonars);
-//			printNewLine();
-			counter_print = 0;
+		if (cycle_count >= 100) { // Approx 2 seconds (50ms * 40)
+			printGlobalState(&Board2_Y.board1GlobalState);
+			printDecision(&Board2_Y.board1Decision);
+			cycle_count = 0;
 		}
 
+		/* END PRINT SECTION */
 
-//		printLocalStateB1(&Board2_DW.board1LocalState);
-//		printGlobalState(&Board2_Y.board1GlobalState);
-//		printDecision(&Board2_Y.board1Decision);
+		if(Board2_Y.board1Decision.roverState == EMERGENCY ||
+				Board2_Y.board1Decision.roverState == FAULTY_B1_DEGRADED_B2){
+			break;
+		}
 
-#if PRINT_TASK
-
-#endif
 
 #if LED_DEBUG
 

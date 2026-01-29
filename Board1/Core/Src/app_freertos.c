@@ -404,14 +404,10 @@ void StartSupervisor(void *argument)
 		change_regulator();
 
 
-
-
-#if PRINT_TASK
-
-#endif
-		// Stampa ogni TOT cicli
+		/* BEGIN PRINT SECTION */
 		static uint32_t cycle_count = 0;
 		cycle_count++;
+
 		//printMsg("Cycle Count B1: ");
 		//printInt((int32_t)cycle_count);
 		//printNewLine();
@@ -420,23 +416,9 @@ void StartSupervisor(void *argument)
 			cycle_count = 0;
 			printGlobalState(&Board1_Y.board1GlobalState);
 			printDecision(&Board1_Y.board1Decision);
-//			printMsg("Miss P:");
-//			printInt(MissPID);
-//			printMsg(" S:");
-//			printInt(MissSupervisor);
-//			printMsg(" T:");
-//			printInt(MissReadTemperature);
-//			printMsg(" B:");
-//			printInt(MissReadBattery);
-//			printNewLine();
-			// stampo con libreria print cycle_count
 		}
 
-		// Stampo sempre per peppino
-//		printLocalStateB1(&Board1_DW.board1LocalState);
-////		printGlobalState(&Board1_Y.board1GlobalState);
-//		printDecision(&Board1_Y.board1Decision);
-
+		/* END PRINT SECTION */
 
 		if(Board1_Y.board1Decision.roverState == EMERGENCY ||
 				Board1_Y.board1Decision.roverState == FAULTY_B1_DEGRADED_B2){
