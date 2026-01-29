@@ -45,6 +45,49 @@
  */
 #define PRINT_TASK 0
 
+/**
+ * @brief Enable ReadController Task
+ * 1: ReadController Task is scheduled
+ * 0: ReadController Task is not scheduled
+ */
+#define RUN_READ_CONTROLLER 1
+
+/**
+ * @brief Enable ReadGyroscope Task
+ * 1: ReadGyroscope Task is scheduled
+ * 0: ReadGyroscope Task is not scheduled
+ */
+#define RUN_READ_GYROSCOPE 1
+
+/**
+ * @brief Enable Supervisor Task
+ * 1: Supervisor Task is scheduled
+ * 0: Supervisor Task is not scheduled
+ */
+#define RUN_SUPERVISOR 1
+
+/**
+ * @brief Enable ReadSonars Task
+ * 1: ReadSonars Task is scheduled
+ * 0: ReadSonars Task is not scheduled
+ */
+#define RUN_READ_SONARS 1
+
+
+/**
+ * @brief Enable Synchronization Task
+ * 1: Synchronization Task is scheduled
+ * 0: Synchronization Task is not scheduled
+ */
+#define RUN_SYNCHRONIZATION 1
+
+/**
+ * @brief Enable PollingServer Task
+ * 1: PollingServer Task is scheduled
+ * 0: PollingServer Task is not scheduled
+ */
+#define RUN_POLLING_SERVER 1
+
 /** 
  * @brief Main Debug Verbosity
  * 1 to enable prints, 0 to disable them 

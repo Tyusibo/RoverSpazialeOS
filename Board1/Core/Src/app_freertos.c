@@ -296,6 +296,7 @@ void MX_FREERTOS_Init(void) {
 void StartPID(void *argument)
 {
   /* USER CODE BEGIN StartPID */
+#if RUN_PID
 
 	Sync_WaitStart();
 
@@ -337,6 +338,7 @@ void StartPID(void *argument)
 
 		periodic_wait(&next, T, &MissPID);
 	}
+#endif
 
 	osThreadTerminate(osThreadGetId());
 
@@ -354,6 +356,8 @@ void StartPID(void *argument)
 void StartSupervisor(void *argument)
 {
   /* USER CODE BEGIN StartSupervisor */
+#if RUN_SUPERVISOR
+
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
@@ -433,6 +437,9 @@ void StartSupervisor(void *argument)
 #endif
 
 		periodic_wait(&next, T, &MissSupervisor);
+
+#endif
+
 	}
 
 	osThreadTerminate(osThreadGetId());
@@ -450,6 +457,7 @@ void StartSupervisor(void *argument)
 void StartReadTemperature(void *argument)
 {
   /* USER CODE BEGIN StartReadTemperature */
+#if RUN_READ_TEMPERATURE
 
 	Sync_WaitStart();
 
@@ -469,7 +477,7 @@ void StartReadTemperature(void *argument)
 		}
 
 #if PRINT_TASK
-        printTemperature((float)Board1_U.temperature);
+        printTemperature(Board1_U.temperature);
 #endif
 
 #else
@@ -479,6 +487,8 @@ void StartReadTemperature(void *argument)
 
 		periodic_wait(&next, T, &MissReadTemperature);
 	}
+
+#endif
 
 	osThreadTerminate(osThreadGetId());
 
@@ -495,6 +505,7 @@ void StartReadTemperature(void *argument)
 void StartReadBattery(void *argument)
 {
   /* USER CODE BEGIN StartReadBattery */
+#if RUN_READ_BATTERY
 
 	Sync_WaitStart();
 
@@ -520,8 +531,11 @@ void StartReadBattery(void *argument)
         HAL_Delay(WCET_BATTERY);
 #endif
 
+
 		periodic_wait(&next, T, &MissReadBattery);
 	}
+
+#endif
 
 	osThreadTerminate(osThreadGetId());
 
@@ -541,7 +555,7 @@ void StartSeggerTask(void *argument)
 #if SEGGER_BUILD
 	  SEGGER_SYSVIEW_Conf();
 	  SEGGER_SYSVIEW_Start();
-  #endif
+#endif
 	/* Infinite loop */
 	for (;;) {
 		break;
@@ -563,6 +577,7 @@ extern volatile system_phase_t system_phase;
 void StartSynchronization(void *argument)
 {
   /* USER CODE BEGIN StartSynchronization */
+#if RUN_SYNCHRONIZATION
 
 	system_phase = SYNCHRONIZATION_PHASE;
 
@@ -571,6 +586,8 @@ void StartSynchronization(void *argument)
 	system_phase = WORKING_PHASE;
 
 	HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
+
+#endif
 
 	// Termination, if clock drift is not critical
 	osThreadTerminate(osThreadGetId());

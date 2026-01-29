@@ -45,6 +45,42 @@
  */
 #define PRINT_TASK 0
 
+/**
+ * @brief Enable PID Task
+ * 1: PID Task is scheduled
+ * 0: PID Task is not scheduled
+ */
+#define RUN_PID 1
+
+/**
+ * @brief Enable Supervisor Task
+ * 1: Supervisor Task is scheduled
+ * 0: Supervisor Task is not scheduled
+ */
+#define RUN_SUPERVISOR 1
+
+/**
+ * @brief Enable ReadTemperature Task
+ * 1: ReadTemperature Task is scheduled
+ * 0: ReadTemperature Task is not scheduled
+ */
+#define RUN_READ_TEMPERATURE 1
+
+/**
+ * @brief Enable ReadBattery Task
+ * 1: ReadBattery Task is scheduled
+ * 0: ReadBattery Task is not scheduled
+ */
+#define RUN_READ_BATTERY 1
+
+
+/**
+ * @brief Enable Synchronization Task
+ * 1: Synchronization Task is scheduled
+ * 0: Synchronization Task is not scheduled
+ */
+#define RUN_SYNCHRONIZATION 1
+
 /** 
  * @brief Main Debug Verbosity
  * 1 to enable prints, 0 to disable them 

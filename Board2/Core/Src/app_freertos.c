@@ -306,6 +306,7 @@ void MX_FREERTOS_Init(void) {
 void StartReadController(void *argument)
 {
   /* USER CODE BEGIN StartReadController */
+#if RUN_READ_CONTROLLER
 
 	Sync_WaitStart();
 
@@ -350,6 +351,7 @@ void StartReadController(void *argument)
 		/* Wait until next period and track deadline miss if any */
 		periodic_wait(&next, T, &MissReadController);
 	}
+#endif
 
 	osThreadTerminate(osThreadGetId());
 
@@ -366,6 +368,7 @@ void StartReadController(void *argument)
 void StartReadGyroscope(void *argument)
 {
   /* USER CODE BEGIN StartReadGyroscope */
+#if RUN_READ_GYROSCOPE
 
 	Sync_WaitStart();
 
@@ -412,7 +415,7 @@ void StartReadGyroscope(void *argument)
 		/* Wait until next period and track deadline miss if any */
 		periodic_wait(&next, T, &MissReadGyroscope);
 	}
-
+#endif
 	osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartReadGyroscope */
@@ -427,6 +430,7 @@ void StartReadGyroscope(void *argument)
 /* USER CODE END Header_StartSupervisor */
 void StartSupervisor(void *argument)
 {
+#if RUN_SUPERVISOR
   /* USER CODE BEGIN StartSupervisor */
 
 	Sync_WaitStart();
@@ -515,9 +519,12 @@ void StartSupervisor(void *argument)
 #endif
 
 #if LED_DEBUG
+
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+
 #endif
 		periodic_wait(&next, T, &MissSupervisor);
+#endif
 
 	}
 
@@ -536,6 +543,7 @@ void StartSupervisor(void *argument)
 void StartReadSonars(void *argument)
 {
   /* USER CODE BEGIN StartReadSonars */
+#if RUN_READ_SONARS
 
 	Sync_WaitStart();
 
@@ -562,6 +570,8 @@ void StartReadSonars(void *argument)
 		/* Wait until next period and track deadline miss if any */
 		periodic_wait(&next, T, &MissReadSonars);
 	}
+
+#endif
 
 	osThreadTerminate(osThreadGetId());
   /* USER CODE END StartReadSonars */
@@ -602,6 +612,7 @@ extern volatile system_phase_t system_phase;
  */
 /* USER CODE END Header_StartSynchronization */
 void StartSynchronization(void *argument)
+#if RUN_SYNCHRONIZATION
 {
   /* USER CODE BEGIN StartSynchronization */
 
@@ -612,6 +623,7 @@ void StartSynchronization(void *argument)
 	system_phase = WORKING_PHASE;
 
 	HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
+#endif
 
 
 	// Termination, if clock drift is not critical
@@ -627,6 +639,7 @@ void StartSynchronization(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartPollingServer */
+#if RUN_POLLING_SERVER
 void StartPollingServer(void *argument)
 {
   /* USER CODE BEGIN StartPollingServer */
@@ -713,6 +726,7 @@ void StartPollingServer(void *argument)
         Board2_U.sonar = (BUS_Sonar){ 100, 400, 200 };
 
         HAL_Delay(WCET_POLLING_SERVER);
+#endif
 #endif
 
         periodic_wait(&next, T, &MissPollingServer);
