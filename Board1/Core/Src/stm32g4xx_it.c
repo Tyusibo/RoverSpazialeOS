@@ -22,6 +22,7 @@
 #include "stm32g4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+
 #include "uart_functions.h"
 
 #include "print.h"
@@ -71,6 +72,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern UART_HandleTypeDef hlpuart1;
+extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
@@ -203,6 +205,20 @@ void TIM6_DAC_IRQHandler(void)
 }
 
 /**
+  * @brief This function handles TIM7 global interrupt, DAC2 and DAC4 channel underrun error interrupts.
+  */
+void TIM7_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM7_DAC_IRQn 0 */
+
+  /* USER CODE END TIM7_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim7);
+  /* USER CODE BEGIN TIM7_DAC_IRQn 1 */
+
+  /* USER CODE END TIM7_DAC_IRQn 1 */
+}
+
+/**
   * @brief This function handles LPUART1 global interrupt.
   */
 void LPUART1_IRQHandler(void)
@@ -222,6 +238,7 @@ extern volatile uint8_t flagRTR;
 
 extern volatile system_phase_t system_phase;
 
+/* EXTI */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == RTR_IN_Pin)
@@ -244,7 +261,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     }
 }
 
-
+/* UART */
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	UART_HandleTypeDef *h = getComunicationHandler();
 	if (h != NULL && huart->Instance == h->Instance) {

@@ -369,12 +369,12 @@ void StartSupervisor(void *argument)
 	for (;;) {
 
 		/* START TIMER FOR MONITORING WCET */
-		osTimerStart(SupervisorKillerHandle, WCET_SUPERVISOR);
-		Board1_U.timeoutOccurred++;
+		osTimerStart(SupervisorKillerHandle, 1);
+		//Board1_U.timeoutOccurred++;
 
 		do {
 			Board1_step();
-			Board1_U.timeoutOccurred++;
+			//Board1_U.timeoutOccurred++;
 
 		} while (Board1_Y.supervision_ended != 1);
 

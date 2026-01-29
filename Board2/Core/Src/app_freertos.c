@@ -437,6 +437,7 @@ void StartSupervisor(void *argument)
 {
   /* USER CODE BEGIN StartSupervisor */
 
+	osTimerStart(SupervisorKillerHandle, WCET_SUPERVISOR);
 
 	Sync_WaitStart();
 
@@ -482,6 +483,7 @@ void StartSupervisor(void *argument)
 		/* START TIMER FOR MONITORING WCET */
 		osTimerStart(SupervisorKillerHandle, WCET_SUPERVISOR);
 
+		HAL_Delay(WCET_SUPERVISOR); // To be sure that the timer starts before the task execution
 
 		do {
 			Board2_step();
