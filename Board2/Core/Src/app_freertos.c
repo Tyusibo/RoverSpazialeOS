@@ -214,6 +214,9 @@ static inline void error_pad_receiver(void);
 static inline void error_gyroscope(void);
 static inline void error_sonar(void);
 
+/* PRODUCTION FUNCTIONS */
+static inline void manage_fake_sonar_toggle(void);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartReadController(void *argument);
@@ -443,38 +446,7 @@ void StartSupervisor(void *argument)
 	/* Infinite loop */
 	for (;;) {
 
-		/* FAKE SONAR */
-		#include "controller_masks.h"
-
-		// 0 = enabled, 1 = disabled
-		static uint8_t disable_left = 0;
-		static uint8_t disable_front = 0;
-		static uint8_t disable_right = 0;
-
-		uint32_t current = Board2_U.remoteController.buttons;
-		uint32_t risingEdges = (~Board2_DW.previousButtons) & current;
-
-		/* Toggle su fronte di salita */
-		if (risingEdges & DISABLE_LEFT_SONAR)
-			disable_left = !disable_left;
-
-		if (risingEdges & DISABLE_FRONT_SONAR)
-			disable_front = !disable_front;
-
-		if (risingEdges & DISABLE_RIGHT_SONAR)
-			disable_right = !disable_right;
-
-		/* Applica disabilitazione */
-		if (disable_left)
-			Board2_U.sonar.left = 380;
-
-		if (disable_front)
-			Board2_U.sonar.front = 380;
-
-		if (disable_right)
-			Board2_U.sonar.right = 380;
-
-		/* END FAKE SONAR */
+		manage_fake_sonar_toggle();
 
 		/* START TIMER FOR MONITORING WCET */
 		timer_start(&timerSupervisor);
@@ -728,6 +700,7 @@ void StartPollingServer(void *argument)
 
         HAL_Delay(WCET_POLLING_SERVER);
 #endif
+
 #endif
 
         periodic_wait(&next, T, &MissPollingServer);
@@ -799,6 +772,41 @@ static inline void error_gyroscope(void){
 }
 static inline void error_sonar(void){
 	sonar_read_failed = 1;
+}
+
+static inline void manage_fake_sonar_toggle(void) {
+	/* FAKE SONAR */
+	#include "controller_masks.h"
+
+	// 0 = enabled, 1 = disabled
+	static uint8_t disable_left = 0;
+	static uint8_t disable_front = 0;
+	static uint8_t disable_right = 0;
+
+	uint32_t current = Board2_U.remoteController.buttons;
+	uint32_t risingEdges = (~Board2_DW.previousButtons) & current;
+
+	/* Toggle su fronte di salita */
+	if (risingEdges & DISABLE_LEFT_SONAR)
+		disable_left = !disable_left;
+
+	if (risingEdges & DISABLE_FRONT_SONAR)
+		disable_front = !disable_front;
+
+	if (risingEdges & DISABLE_RIGHT_SONAR)
+		disable_right = !disable_right;
+
+	/* Applica disabilitazione */
+	if (disable_left)
+		Board2_U.sonar.left = 380;
+
+	if (disable_front)
+		Board2_U.sonar.front = 380;
+
+	if (disable_right)
+		Board2_U.sonar.right = 380;
+
+	/* END FAKE SONAR */
 }
 
 /* USER CODE END Application */
