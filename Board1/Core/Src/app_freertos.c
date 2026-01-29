@@ -360,7 +360,6 @@ void StartPID(void *argument)
 void StartSupervisor(void *argument)
 {
   /* USER CODE BEGIN StartSupervisor */
-
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
@@ -370,12 +369,12 @@ void StartSupervisor(void *argument)
 	for (;;) {
 
 		/* START TIMER FOR MONITORING WCET */
-		//osTimerStart(SupervisorKillerHandle, 1);
-		Board1_U.timeoutOccurred++;
+		osTimerStart(SupervisorKillerHandle, 1);
+		//Board1_U.timeoutOccurred++;
 
 		do {
 			Board1_step();
-			Board1_U.timeoutOccurred++;
+			//Board1_U.timeoutOccurred++;
 
 		} while (Board1_Y.supervision_ended != 1);
 

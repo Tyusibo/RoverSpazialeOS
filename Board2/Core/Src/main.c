@@ -44,6 +44,7 @@
 #include "motor_constants.h"
 #include "regulator.h"
 */
+#include "timer.h"
 
 /* Utility */
 #include "DWT.h"
@@ -60,6 +61,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define TIM7_IN_FREQUENCY (16000000) /* 16 MHz */
 
 /* --- DEBUG CONFIGURATIONS --- */
 
@@ -81,6 +84,8 @@
 /* USER CODE BEGIN PV */
 
 volatile system_phase_t system_phase = SYNCHRONIZATION_PHASE;
+
+timer_t timerSupervisor;
 
 /* USER CODE END PV */
 
@@ -130,6 +135,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM1_Init();
   MX_I2C3_Init();
+  MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
 
     /* Init DWT for WCET measurement */
@@ -172,6 +178,8 @@ int main(void)
 	Motors_InitAll();
 	Motors_StartAllPwm();
 	Motors_SetDefaultCcr(720);
+
+	if(timer_init(&timerSupervisor, &htim7, TIM7_IN_FREQUENCY) != TIMER_OK){return -1;}
 
   /* USER CODE END 2 */
 
@@ -257,7 +265,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     HAL_IncTick();
   }
   /* USER CODE BEGIN Callback 1 */
+	if (htim->Instance != TIM7) {
+		return;
+	}
 
+	static uint8_t first_time = 0;
+
+	if (first_time == 0) {
+		first_time = 1;
+		return;
+	} else {
+		Board1_U.timeoutOccurred++;
+		first_time = 0;
+	}
   /* USER CODE END Callback 1 */
 }
 
