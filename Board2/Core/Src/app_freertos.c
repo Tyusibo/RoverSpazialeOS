@@ -486,9 +486,11 @@ void StartSupervisor(void *argument)
 		static uint32_t counter_print = 0;
 		counter_print++;
 
-		printMsg("Cycle Count B2: ");
-		printInt((int32_t)counter_print);
-		printNewLine();
+
+		/* STAMPA CICLO */
+//		printMsg("Cycle Count B2: ");
+//		printInt((int32_t)counter_print);
+//		printNewLine();
 
 		if (counter_print >= 100) { // Approx 2 seconds (50ms * 40)
 //			printMsg("Miss C:");
@@ -503,9 +505,11 @@ void StartSupervisor(void *argument)
 			counter_print = 0;
 		}
 
-		//printLocalStateB1(&Board2_DW.board1LocalState);
-		printGlobalState(&Board2_Y.board1GlobalState);
-		printDecision(&Board2_Y.board1Decision);
+
+//		printLocalStateB1(&Board2_DW.board1LocalState);
+//		printGlobalState(&Board2_Y.board1GlobalState);
+//		printDecision(&Board2_Y.board1Decision);
+
 #if PRINT_TASK
 
 #endif
@@ -704,12 +708,13 @@ void StartPollingServer(void *argument)
         }
 
 #else
-        HAL_Delay(WCET_POLLING_SERVER);
-#endif
-
         Board2_U.remoteController = (BUS_RemoteController){ 512, 0, 0 };
         Board2_U.gyroscope = 32;
         Board2_U.sonar = (BUS_Sonar){ 100, 400, 200 };
+
+        HAL_Delay(WCET_POLLING_SERVER);
+#endif
+
         periodic_wait(&next, T, &MissPollingServer);
 
     }
