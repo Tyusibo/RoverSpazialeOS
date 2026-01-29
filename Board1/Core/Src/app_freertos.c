@@ -370,12 +370,14 @@ void StartSupervisor(void *argument)
 	for (;;) {
 
 		/* START TIMER FOR MONITORING WCET */
-		osTimerStart(SupervisorKillerHandle, WCET_SUPERVISOR);
+		//osTimerStart(SupervisorKillerHandle, 1);
+		Board1_U.timeoutOccurred++;
 
 		do {
 			Board1_step();
-		} while (Board1_Y.supervision_ended != 1);
+			Board1_U.timeoutOccurred++;
 
+		} while (Board1_Y.supervision_ended != 1);
 
 
 		/* FINALIZING DECISION */
@@ -414,9 +416,9 @@ void StartSupervisor(void *argument)
 		}
 
 		// Stampo sempre per peppino
-		printLocalStateB1(&Board1_DW.board1LocalState);
-//		printGlobalState(&Board1_Y.board1GlobalState);
-		printDecision(&Board1_Y.board1Decision);
+//		printLocalStateB1(&Board1_DW.board1LocalState);
+////		printGlobalState(&Board1_Y.board1GlobalState);
+//		printDecision(&Board1_Y.board1Decision);
 
 
 		if(Board1_Y.board1Decision.roverState == EMERGENCY ||
@@ -424,14 +426,14 @@ void StartSupervisor(void *argument)
 			break;
 		}
 
-		while(Board1_Y.supervision_ended == 1){
-			 Board1_step();
-		}
 
 
 #if LED_DEBUG
+
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+
 #endif
+
 		periodic_wait(&next, T, &MissSupervisor);
 	}
 
@@ -596,7 +598,8 @@ void callbackToggleRightRedLed(void *argument)
 void KillSupervisor(void *argument)
 {
   /* USER CODE BEGIN KillSupervisor */
-	//Board1_U.supervisor_timeout++;
+	printMsg("Supervisor WCET exceeded!\n");
+	Board1_U.timeoutOccurred++;
   /* USER CODE END KillSupervisor */
 }
 

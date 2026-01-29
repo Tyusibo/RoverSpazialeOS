@@ -36,7 +36,7 @@
  * 1: Executes real code
  * 0: Simulates load with HAL_Delay
  */
-#define REAL_TASK 1
+#define REAL_TASK 0
 
 /**
  * @brief Global Debug Print Enable

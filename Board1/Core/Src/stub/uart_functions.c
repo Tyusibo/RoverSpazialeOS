@@ -129,22 +129,22 @@ uint8_t hasReceived(void) {
 
 // Ritorna se c'è stato un errore di ricezione, abilitato nella callback di errore
 uint8_t errorReceived(void) {
-	static uint32_t count = 0;
-	// se count ack è pari manda l'ack altirmenti manda il nack
-
-	count++;
-	// Se ha davvero ricevuto
-	if (receivedFlag == 1) {
-		if (count % 2 == 0) {
-			return 1;
-		} else {
-			return 0;
-		}
-	} else {
-		return 0;
-	}
+//	static uint32_t count = 0;
+//	// se count ack è pari manda l'ack altirmenti manda il nack
+//
+//	count++;
+//	// Se ha davvero ricevuto
+//	if (receivedFlag == 1) {
+//		if (count % 2 == 0) {
+//			return 1;
+//		} else {
+//			return 0;
+//		}
+//	} else {
+//		return 0;
+//	}
 	// Vero funzionamento
-	//return errorReceiveFlag;
+	return errorReceiveFlag;
 }
 
 void UART_ReceiveAckIT(void) {

@@ -486,17 +486,19 @@ void StartSupervisor(void *argument)
 		} while (Board2_Y.supervision_ended != 1);
 
 
-		while(Board2_Y.supervision_ended == 1){
-			Board2_step();
-		}
 
 
 		/* STOP TIMER FOR MONITORING WCET */
 		osTimerStop(SupervisorKillerHandle);
 
-//		static uint32_t counter_print = 0;
-//		counter_print++;
-//		if (counter_print >= 100) { // Approx 2 seconds (50ms * 40)
+		static uint32_t counter_print = 0;
+		counter_print++;
+
+		printMsg("Cycle Count B2: ");
+		printInt((int32_t)counter_print);
+		printNewLine();
+
+		if (counter_print >= 100) { // Approx 2 seconds (50ms * 40)
 //			printMsg("Miss C:");
 //			printInt(MissReadController);
 //			printMsg(" G:");
@@ -506,9 +508,12 @@ void StartSupervisor(void *argument)
 //			printMsg(" Sn:");
 //			printInt(MissReadSonars);
 //			printNewLine();
-//			counter_print = 0;
-//		}
+			counter_print = 0;
+		}
 
+		printLocalStateB1(&Board2_DW.board1LocalState);
+//	printGlobalState(&Board2_Y.board1GlobalState);
+		printDecision(&Board2_Y.board1Decision);
 #if PRINT_TASK
 
 #endif
@@ -740,7 +745,7 @@ void SonarTimeout(void *argument)
 void KillSupervisor(void *argument)
 {
   /* USER CODE BEGIN KillSupervisor */
-
+	Board2_U.timeoutOccurred++;
   /* USER CODE END KillSupervisor */
 }
 
