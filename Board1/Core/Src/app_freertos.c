@@ -128,7 +128,7 @@ const osThreadAttr_t ReadTemperature_attributes = {
   .stack_size = sizeof(ReadTemperatureBuffer),
   .cb_mem = &ReadTemperatureControlBlock,
   .cb_size = sizeof(ReadTemperatureControlBlock),
-  .priority = (osPriority_t) osPriorityAboveNormal1,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for ReadBattery */
 osThreadId_t ReadBatteryHandle;
@@ -140,7 +140,7 @@ const osThreadAttr_t ReadBattery_attributes = {
   .stack_size = sizeof(ReadBatteryBuffer),
   .cb_mem = &ReadBatteryControlBlock,
   .cb_size = sizeof(ReadBatteryControlBlock),
-  .priority = (osPriority_t) osPriorityAboveNormal2,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* Definitions for StartSegger */
 osThreadId_t StartSeggerHandle;
