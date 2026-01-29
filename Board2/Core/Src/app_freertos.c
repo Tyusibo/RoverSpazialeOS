@@ -67,6 +67,8 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#define MAX_WAIT_SONAR (40)
+
 #if SEGGER_BUILD
 #include "SEGGER_SYSVIEW_FreeRTOS.h"
 #endif
@@ -327,8 +329,6 @@ void StartReadController(void *argument)
 
 #if REAL_TASK
 
-		/* Clear previous error flag */
-		pad_receiver_read_failed = 0;
 
 		/* Start an asynchronous I2C read from the remote controller.
 		 * Note: PAD_OK only means the reception was successfully started.
@@ -392,9 +392,6 @@ void StartReadGyroscope(void *argument)
 
 #if REAL_TASK
 
-		/* Clear previous error flag */
-		gyroscope_read_failed = 0;
-
 		/* Start an asynchronous read of the yaw value from the MPU6050 via I2C interrupt.
 		 * If the request starts correctly, the driver will update MPU6050_Yaw later
 		 * (typically in the Rx complete callback).
@@ -445,6 +442,18 @@ void StartSupervisor(void *argument)
 
 	/* Infinite loop */
 	for (;;) {
+
+		/* Convert singular errors into global flags for the Simulink model */
+		uint8_t temp = 0;
+		temp |= (pad_receiver_read_failed & 0x01) << 0;
+		temp |= (gyroscope_read_failed     & 0x01) << 1;
+		temp |= (sonar_read_failed        & 0x01) << 2;
+		//Board2_U.areSensorsValid = temp;
+
+		/* Clear previous error flags */
+		pad_receiver_read_failed = 0;
+		gyroscope_read_failed = 0;
+		sonar_read_failed = 0;
 
 		manage_fake_sonar_toggle();
 
@@ -522,7 +531,7 @@ void StartReadSonars(void *argument)
 	const uint32_t T = ms_to_ticks(T_SONAR);
 	uint32_t next = osKernelGetTickCount();
 
-	const uint32_t TIMEOUT_TICKS = ms_to_ticks(40); // 40ms safety timeout
+	const uint32_t TIMEOUT_TICKS = ms_to_ticks(MAX_WAIT_SONAR);
 	/* Infinite loop */
 	for (;;) {
 
@@ -532,8 +541,9 @@ void StartReadSonars(void *argument)
 		hcsr04_trigger(&sonarFront);
 		hcsr04_trigger(&sonarRight);
 
-		// Eventualmente start timer, il cui handler vede chi ha finito e chi no
-		osTimerStart(SonarMonitoringHandle, ms_to_ticks(TIMEOUT_TICKS));
+		/* Safe stop and start timer */
+		osTimerStop(SonarMonitoringHandle);
+		osTimerStart(SonarMonitoringHandle, TIMEOUT_TICKS);
 
 #else
 		HAL_Delay(WCET_SONAR);
@@ -622,8 +632,6 @@ void StartPollingServer(void *argument)
     const uint32_t T = ms_to_ticks(T_POLLING_SERVER);
     uint32_t next = osKernelGetTickCount();
 
-
-
     /* Infinite loop */
     for (;;) {
 
@@ -639,6 +647,7 @@ void StartPollingServer(void *argument)
             /* ---------------- REMOTE CONTROLLER ---------------- */
             if (flags & FLAG_PAD_OK) {
                 PadReceiver_Read(&Board2_U.remoteController);
+                pad_receiver_read_failed = 0;
                 // Clear both to prioritize OK and prevent double handling
                 osEventFlagsClear(flagsOSHandle, FLAG_PAD_OK | FLAG_PAD_ERROR);
             }
@@ -651,6 +660,7 @@ void StartPollingServer(void *argument)
             if (flags & FLAG_GYRO_OK) {
                 MPU6050_Process_Yaw_IT_Data();
                 Board2_U.gyroscope = MPU6050_Yaw.KalmanAngleZ;
+                gyroscope_read_failed = 0;
                 osEventFlagsClear(flagsOSHandle, FLAG_GYRO_OK | FLAG_GYRO_ERROR);
             }
             else if (flags & FLAG_GYRO_ERROR) {

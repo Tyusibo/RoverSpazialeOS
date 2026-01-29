@@ -88,7 +88,9 @@ volatile uint32_t MissReadTemperature = 0;
 volatile uint32_t MissReadBattery = 0;
 
 /* STATUS FLAGS */
-// Encoders read can't fail
+uint8_t encoder_read_failed = 0;
+uint8_t temperature_read_failed = 0;
+uint8_t battery_read_failed = 0;
 
 /* Timer Handler from main.c */
 extern timer_t timerSupervisor;
@@ -368,6 +370,18 @@ void StartSupervisor(void *argument)
 	/* Infinite loop */
 	for (;;) {
 
+		/* Convert singular errors into global flags for the Simulink model */
+		uint8_t temp = 0;
+		temp |= (encoder_read_failed & 0x01) << 0;
+		temp |= (temperature_read_failed     & 0x01) << 1;
+		temp |= (battery_read_failed        & 0x01) << 2;
+		//Board1_U.areSensorsValid = temp;
+
+		/* Clear previous error flags */
+		encoder_read_failed = 0;
+		temperature_read_failed = 0;
+		battery_read_failed = 0;
+
 		/* START TIMER FOR MONITORING WCET */
 		if (Board1_U.batteryLevel <= 23) {
 			Board1_U.batteryLevel = 40;
@@ -472,8 +486,10 @@ void StartReadTemperature(void *argument)
 		float temp_val = 0.0f;
 		if (temp_ky028_read_temperature(&temp_sensor, &temp_val) == 0) {
 			Board1_U.temperature = (Temperature) temp_val;
+			temperature_read_failed = 0;
 		} else {
 			Board1_U.temperature = -255.0f;
+			temperature_read_failed = 1;
 		}
 
 #if PRINT_TASK
@@ -517,9 +533,13 @@ void StartReadBattery(void *argument)
 
 #if REAL_TASK
 
-		if (battery_get_percentage_linear(
-				battery_read_voltage(&battery), MIN_VOLTAGE, MAX_VOLTAGE, (uint8_t*)&Board1_U.batteryLevel) != 0) {
+		if (battery_get_percentage_linear(battery_read_voltage(&battery),
+				MIN_VOLTAGE, MAX_VOLTAGE, &Board1_U.batteryLevel) == 0) {
+			battery_read_failed = 0;
+			// Board1_U.batteryLevel updated
+		} else {
 			Board1_U.batteryLevel = 255;
+			battery_read_failed = 1;
 		}
 
 #if PRINT_TASK
