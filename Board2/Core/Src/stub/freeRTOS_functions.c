@@ -81,3 +81,13 @@ void enterDegraded(){
 	osThreadTerminate(osThreadGetId());
 
 }
+
+#include "Board2.h"
+
+void enterEmergency(){
+	Board2_Y.supervision_ended = 1;
+}
+
+void enterFaulty(){
+	Board2_Y.supervision_ended = 1;
+}
