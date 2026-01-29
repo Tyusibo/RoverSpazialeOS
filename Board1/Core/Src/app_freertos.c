@@ -330,6 +330,8 @@ void StartPID(void *argument)
 #endif
 
 #else
+		Board1_U.speed = (BUS_Speed ) { current_speed[0], current_speed[1],
+						current_speed[2], current_speed[3] };
         HAL_Delay(WCET_PID);
 #endif
 
@@ -356,6 +358,8 @@ void StartSupervisor(void *argument)
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
+
+	periodic_wait(&next, T, &MissSupervisor);  // Skip first communication
 
 	/* Infinite loop */
 	for (;;) {
@@ -418,7 +422,6 @@ void StartSupervisor(void *argument)
 		}
 
 
-
 #if LED_DEBUG
 
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
@@ -466,6 +469,7 @@ void StartReadTemperature(void *argument)
 #endif
 
 #else
+        Board1_U.temperature = 32.3f;
         HAL_Delay(WCET_TEMPERATURE);
 #endif
 
@@ -508,6 +512,7 @@ void StartReadBattery(void *argument)
 #endif
 
 #else
+        Board1_U.batteryLevel = 32;
         HAL_Delay(WCET_BATTERY);
 #endif
 

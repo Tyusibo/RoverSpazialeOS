@@ -160,7 +160,7 @@ int main(void)
 	/* Init Simulink Model with default values */
 	Board2_initialize();
 	Board2_U.remoteController = (BUS_RemoteController ) { 0, 0, 0 };
-	Board2_U.gyroscope = 0.0f;
+	Board2_U.gyroscope = 0;
 	Board2_U.sonar = (BUS_Sonar ) { 0, 0, 0 };
 	Board2_U.areSensorsValid = 0;
 	Board2_U.timeoutOccurred = 0;

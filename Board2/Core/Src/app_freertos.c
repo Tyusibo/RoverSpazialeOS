@@ -434,6 +434,8 @@ void StartSupervisor(void *argument)
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
 	uint32_t next = osKernelGetTickCount();
 
+	periodic_wait(&next, T, &MissSupervisor);  // Skip first communication
+
 	/* Infinite loop */
 	for (;;) {
 
@@ -501,8 +503,8 @@ void StartSupervisor(void *argument)
 			counter_print = 0;
 		}
 
-		printLocalStateB1(&Board2_DW.board1LocalState);
-//	printGlobalState(&Board2_Y.board1GlobalState);
+		//printLocalStateB1(&Board2_DW.board1LocalState);
+		printGlobalState(&Board2_Y.board1GlobalState);
 		printDecision(&Board2_Y.board1Decision);
 #if PRINT_TASK
 
@@ -705,6 +707,9 @@ void StartPollingServer(void *argument)
         HAL_Delay(WCET_POLLING_SERVER);
 #endif
 
+        Board2_U.remoteController = (BUS_RemoteController){ 512, 0, 0 };
+        Board2_U.gyroscope = 32;
+        Board2_U.sonar = (BUS_Sonar){ 100, 400, 200 };
         periodic_wait(&next, T, &MissPollingServer);
 
     }

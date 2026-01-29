@@ -163,8 +163,8 @@ int main(void)
 	/* Init Simulink Model with default values */
 	Board1_initialize();
 	Board1_U.speed = (BUS_Speed ) { 0.0f, 0.0f, 0.0f, 0.0f };
-	Board1_U.batteryLevel = 90.0f;
-	Board1_U.temperature = 30.0f;
+	Board1_U.batteryLevel = 0;
+	Board1_U.temperature = 0.0f;
 	Board1_U.areSensorsValid = 0;
 	Board1_U.timeoutOccurred = 0;
 
