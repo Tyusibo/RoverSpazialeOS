@@ -182,7 +182,7 @@ const osThreadAttr_t PollingServer_attributes = {
   .stack_size = sizeof(PollingServerBuffer),
   .cb_mem = &PollingServerControlBlock,
   .cb_size = sizeof(PollingServerControlBlock),
-  .priority = (osPriority_t) osPriorityHigh,
+  .priority = (osPriority_t) osPriorityHigh5,
 };
 /* Definitions for SonarMonitoring */
 osTimerId_t SonarMonitoringHandle;
@@ -430,8 +430,8 @@ void StartReadGyroscope(void *argument)
 /* USER CODE END Header_StartSupervisor */
 void StartSupervisor(void *argument)
 {
-#if RUN_SUPERVISOR
   /* USER CODE BEGIN StartSupervisor */
+#if RUN_SUPERVISOR
 
 	Sync_WaitStart();
 
@@ -612,9 +612,9 @@ extern volatile system_phase_t system_phase;
  */
 /* USER CODE END Header_StartSynchronization */
 void StartSynchronization(void *argument)
-#if RUN_SYNCHRONIZATION
 {
   /* USER CODE BEGIN StartSynchronization */
+#if RUN_SYNCHRONIZATION
 
 	system_phase = SYNCHRONIZATION_PHASE;
 
@@ -623,6 +623,7 @@ void StartSynchronization(void *argument)
 	system_phase = WORKING_PHASE;
 
 	HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
+
 #endif
 
 
@@ -639,10 +640,10 @@ void StartSynchronization(void *argument)
  * @retval None
  */
 /* USER CODE END Header_StartPollingServer */
-#if RUN_POLLING_SERVER
 void StartPollingServer(void *argument)
 {
   /* USER CODE BEGIN StartPollingServer */
+#if RUN_POLLING_SERVER
 
     Sync_WaitStart();
 
