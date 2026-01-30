@@ -458,18 +458,18 @@ void StartSupervisor(void *argument)
 		manage_fake_sonar_toggle();
 
 		/* START TIMER FOR MONITORING WCET */
-		timer_start(&timerSupervisor);
+		//timer_start(&timerSupervisor);
 
 		do {
 			Board2_step();
 		} while (Board2_Y.supervision_ended != 1);
 
 		/* STOP TIMER FOR MONITORING WCET */
-		timer_reset(&timerSupervisor);
+		//timer_reset(&timerSupervisor);
 
 
 		/* BEGIN PRINT SECTION */
-
+/*
 		static uint32_t cycle_count = 0;
 		cycle_count++;
 
@@ -483,7 +483,7 @@ void StartSupervisor(void *argument)
 			printDecision(&Board2_Y.board1Decision);
 			cycle_count = 0;
 		}
-
+*/
 		/* END PRINT SECTION */
 
 		if(Board2_Y.board1Decision.roverState == EMERGENCY ||
