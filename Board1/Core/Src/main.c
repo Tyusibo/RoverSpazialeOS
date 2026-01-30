@@ -186,6 +186,11 @@ int main(void)
 		return -1;
 	}
 
+	for(int i=0; i<4; i++) {
+		MotorControl_SetReferenceRPM(&motors[i], 0.0f);
+		MotorControl_OpenLoopActuate(&motors[i]);
+	}
+
   /* USER CODE END 2 */
 
   /* Init scheduler */

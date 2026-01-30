@@ -387,7 +387,7 @@ void StartSupervisor(void *argument)
 			Board1_U.batteryLevel = 40;
 		}
 
-		timer_start(&timerSupervisor);
+		//timer_start(&timerSupervisor);
 
 		do {
 			Board1_step();
@@ -396,7 +396,7 @@ void StartSupervisor(void *argument)
 		} while (Board1_Y.supervision_ended != 1);
 
 		/* STOP TIMER FOR MONITORING WCET */
-		timer_reset(&timerSupervisor);
+		//timer_reset(&timerSupervisor);
 
 		/* FINALIZING DECISION */
 		actuate_white_leds();
@@ -412,11 +412,14 @@ void StartSupervisor(void *argument)
 		//printInt((int32_t)cycle_count);
 		//printNewLine();
 
+		//printMotorSpeeds(&Board1_U.speed);
+
 		if (cycle_count >= 100) {
 			cycle_count = 0;
-			printGlobalState(&Board1_Y.board1GlobalState);
-			printDecision(&Board1_Y.board1Decision);
+//			printGlobalState(&Board1_Y.board1GlobalState);
+//			printDecision(&Board1_Y.board1Decision);
 		}
+
 
 		/* END PRINT SECTION */
 
@@ -434,9 +437,10 @@ void StartSupervisor(void *argument)
 
 		periodic_wait(&next, T, &MissSupervisor);
 
-#endif
 
 	}
+
+#endif
 
 	osThreadTerminate(osThreadGetId());
 
