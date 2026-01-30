@@ -195,11 +195,15 @@ void DebugMon_Handler(void)
 void TIM2_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM2_IRQn 0 */
-
+	#if SEGGER_BUILD
+	SEGGER_SYSVIEW_RecordEnterISR();
+	#endif
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
-
+	#if SEGGER_BUILD
+	SEGGER_SYSVIEW_RecordExitISR();
+	#endif
   /* USER CODE END TIM2_IRQn 1 */
 }
 
@@ -209,11 +213,15 @@ void TIM2_IRQHandler(void)
 void I2C1_EV_IRQHandler(void)
 {
   /* USER CODE BEGIN I2C1_EV_IRQn 0 */
-
+	#if SEGGER_BUILD
+	SEGGER_SYSVIEW_RecordEnterISR();
+	#endif
   /* USER CODE END I2C1_EV_IRQn 0 */
   HAL_I2C_EV_IRQHandler(&hi2c1);
   /* USER CODE BEGIN I2C1_EV_IRQn 1 */
-
+	#if SEGGER_BUILD
+	SEGGER_SYSVIEW_RecordExitISR();
+	#endif
   /* USER CODE END I2C1_EV_IRQn 1 */
 }
 
@@ -223,11 +231,15 @@ void I2C1_EV_IRQHandler(void)
 void I2C1_ER_IRQHandler(void)
 {
   /* USER CODE BEGIN I2C1_ER_IRQn 0 */
-
+	#if SEGGER_BUILD
+	SEGGER_SYSVIEW_RecordEnterISR();
+	#endif
   /* USER CODE END I2C1_ER_IRQn 0 */
   HAL_I2C_ER_IRQHandler(&hi2c1);
   /* USER CODE BEGIN I2C1_ER_IRQn 1 */
-
+	#if SEGGER_BUILD
+	SEGGER_SYSVIEW_RecordExitISR();
+	#endif
   /* USER CODE END I2C1_ER_IRQn 1 */
 }
 
@@ -307,11 +319,15 @@ void LPUART1_IRQHandler(void)
 void I2C3_EV_IRQHandler(void)
 {
   /* USER CODE BEGIN I2C3_EV_IRQn 0 */
-
+	#if SEGGER_BUILD
+	SEGGER_SYSVIEW_RecordEnterISR();
+	#endif
   /* USER CODE END I2C3_EV_IRQn 0 */
   HAL_I2C_EV_IRQHandler(&hi2c3);
   /* USER CODE BEGIN I2C3_EV_IRQn 1 */
-
+	#if SEGGER_BUILD
+	SEGGER_SYSVIEW_RecordExitISR();
+	#endif
   /* USER CODE END I2C3_EV_IRQn 1 */
 }
 
@@ -321,11 +337,15 @@ void I2C3_EV_IRQHandler(void)
 void I2C3_ER_IRQHandler(void)
 {
   /* USER CODE BEGIN I2C3_ER_IRQn 0 */
-
+	#if SEGGER_BUILD
+	SEGGER_SYSVIEW_RecordEnterISR();
+	#endif
   /* USER CODE END I2C3_ER_IRQn 0 */
   HAL_I2C_ER_IRQHandler(&hi2c3);
   /* USER CODE BEGIN I2C3_ER_IRQn 1 */
-
+	#if SEGGER_BUILD
+	SEGGER_SYSVIEW_RecordExitISR();
+	#endif
   /* USER CODE END I2C3_ER_IRQn 1 */
 }
 
