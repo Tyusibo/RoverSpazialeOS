@@ -229,7 +229,8 @@ for t_last_tick, name in finish_caps:
 ax.set_xlim(0, H)
 ax.set_xlabel("Time [ms]")
 ax.set_title(
-    f"Rate Monotonic Scheduling for Board1",
+    f"Rate Monotonic Scheduling for Board1\n"
+    f"U={U*100:.1f}% | U_LL={U_ll*100:.1f}%",
     pad=14,
 )
 

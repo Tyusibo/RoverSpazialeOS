@@ -33,6 +33,7 @@ import random
 import argparse
 from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
+from matplotlib.ticker import FuncFormatter
 
 # ============================================================
 # CONFIGURAZIONE (Board2)
@@ -49,10 +50,10 @@ DEFAULT_TIME_QUANTUM_US = 100
 
 # Task periodici (nome, C, T) in microsecondi
 tasks = [
-    ("Controller", 200, 20_000),
-    ("Gyro",       200, 40_000),
-    ("Comm",      12_000, 50_000),
-    ("Sonar",      2_000, 100_000),
+    ("ReadController", 200, 20_000),
+    ("ReadGyroscope",  200, 40_000),
+    ("Supervisor",    12_000, 50_000),
+    ("ReadSonar",      2_000, 100_000),
 ]
 
 # Polling Server (nome, Cs, Ts) in microsecondi
@@ -65,16 +66,16 @@ SONAR_TRIPLE_CALLBACKS = True   # False => una sola callback "Sonar"
 
 # Callback singole (delay_min, delay_max, C_callback)
 SENSOR_CALLBACKS_SINGLE = {
-    "Controller": (2_000, 2_000, 200),
-    "Gyro":       (4_000, 4_000, 200),
-    "Sonar":      (2_000, 25_000, 600),
+    "ReadController": (2_000, 2_000, 200),
+    "ReadGyroscope":  (4_000, 4_000, 200),
+    "ReadSonar":      (2_000, 25_000, 600),
 }
 
 # Sonar triplo (delay diversi per generare arrivi distinti)
 SONAR_CALLBACKS_TRIPLE = {
-    "SonarLeft":  (10_000, 10_000, 200),
-    "SonarFront": (18_000, 18_000, 200),
-    "SonarRight": (25_000, 25_000, 200),
+    "ReadSonarLeft":  (10_000, 10_000, 200),
+    "ReadSonarFront": (18_000, 18_000, 200),
+    "ReadSonarRight": (25_000, 25_000, 200),
 }
 
 # Delay worst-case (max) oppure random nel range (ripetibile con seed)
@@ -191,11 +192,11 @@ validate_timebase_configuration()
 # ============================================================
 
 def callback_sources():
-    src = ["Controller", "Gyro"]
+    src = ["ReadController", "ReadGyroscope"]
     if SONAR_TRIPLE_CALLBACKS:
-        src += ["SonarLeft", "SonarFront", "SonarRight"]
+        src += ["ReadSonarLeft", "ReadSonarFront", "ReadSonarRight"]
     else:
-        src += ["Sonar"]
+        src += ["ReadSonar"]
     return src
 
 CALLBACK_SOURCES = callback_sources()
@@ -295,37 +296,37 @@ def enqueue_future_event(Ta_tick: int, src_cb: str, Ccb_tick: int, task_src: str
 
 def schedule_callbacks_from_task(task_name: str, start_time_tick: int):
     """Genera callback quando il task periodico inizia a eseguire."""
-    if task_name == "Controller":
-        dmin_us, dmax_us, Ccb_us = SENSOR_CALLBACKS_SINGLE["Controller"]
+    if task_name == "ReadController":
+        dmin_us, dmax_us, Ccb_us = SENSOR_CALLBACKS_SINGLE["ReadController"]
         dmin = us_to_ticks(dmin_us)
         dmax = us_to_ticks(dmax_us)
         Ccb = us_to_ticks(Ccb_us)
         Ta = start_time_tick + choose_delay(dmin, dmax)
-        enqueue_future_event(Ta, "Controller", Ccb, "Controller", start_time_tick)
+        enqueue_future_event(Ta, "ReadController", Ccb, "ReadController", start_time_tick)
 
-    elif task_name == "Gyro":
-        dmin_us, dmax_us, Ccb_us = SENSOR_CALLBACKS_SINGLE["Gyro"]
+    elif task_name == "ReadGyroscope":
+        dmin_us, dmax_us, Ccb_us = SENSOR_CALLBACKS_SINGLE["ReadGyroscope"]
         dmin = us_to_ticks(dmin_us)
         dmax = us_to_ticks(dmax_us)
         Ccb = us_to_ticks(Ccb_us)
         Ta = start_time_tick + choose_delay(dmin, dmax)
-        enqueue_future_event(Ta, "Gyro", Ccb, "Gyro", start_time_tick)
+        enqueue_future_event(Ta, "ReadGyroscope", Ccb, "ReadGyroscope", start_time_tick)
 
-    elif task_name == "Sonar":
+    elif task_name == "ReadSonar":
         if SONAR_TRIPLE_CALLBACKS:
             for cb_name, (dmin_us, dmax_us, Ccb_us) in SONAR_CALLBACKS_TRIPLE.items():
                 dmin = us_to_ticks(dmin_us)
                 dmax = us_to_ticks(dmax_us)
                 Ccb = us_to_ticks(Ccb_us)
                 Ta = start_time_tick + choose_delay(dmin, dmax)
-                enqueue_future_event(Ta, cb_name, Ccb, "Sonar", start_time_tick)
+                enqueue_future_event(Ta, cb_name, Ccb, "ReadSonar", start_time_tick)
         else:
-            dmin_us, dmax_us, Ccb_us = SENSOR_CALLBACKS_SINGLE["Sonar"]
+            dmin_us, dmax_us, Ccb_us = SENSOR_CALLBACKS_SINGLE["ReadSonar"]
             dmin = us_to_ticks(dmin_us)
             dmax = us_to_ticks(dmax_us)
             Ccb = us_to_ticks(Ccb_us)
             Ta = start_time_tick + choose_delay(dmin, dmax)
-            enqueue_future_event(Ta, "Sonar", Ccb, "Sonar", start_time_tick)
+            enqueue_future_event(Ta, "ReadSonar", Ccb, "ReadSonar", start_time_tick)
 
 def pop_due_events(now_tick: int):
     """Enqueue di tutti gli eventi con Ta==now."""
@@ -434,228 +435,254 @@ while time < H_tick:
 # PLOT
 # ============================================================
 
-fig, ax = plt.subplots(figsize=(18, 6))
-
-# ordine RM (PS incluso): periodo crescente, PS sotto a parità
-period_of_us = {name: T_us for (name, _, T_us) in tasks}
-period_of_us[ps_name] = Ts
-
-present = sorted({task for _, task in schedule if task != "IDLE"})
-known = [t for t in present if t in period_of_us]
-unknown = [t for t in present if t not in period_of_us]
-
-known_sorted = sorted(known, key=lambda n: (period_of_us[n], 1 if n == ps_name else 0))
-task_names = known_sorted + unknown
-
-# layout
-lane = 1.35
-bar_h = 0.65
-bar_offset = 0.0
-N = len(task_names)
-
-y_line = {name: (N - 1 - i) * lane for i, name in enumerate(task_names)}
-
-# Headroom verticale per evitare che le frecce (callback) si sovrappongano al titolo
-Y_BOTTOM_MARGIN = 0.30 * lane
-Y_TOP_HEADROOM = 0.95 * lane
-y_min_plot = -Y_BOTTOM_MARGIN
-y_max_plot = max(y_line.values()) + bar_h + Y_TOP_HEADROOM
-
-# ============================================================
-# PALETTE COLORI COERENTE (catena funzionale)
-# ============================================================
-
-# Colori principali (task periodici)
-COLOR_CONTROLLER = "tab:blue"
-COLOR_GYRO       = "tab:green"
-COLOR_SONAR      = "tab:purple"
-COLOR_COMM       = "tab:red"
-COLOR_PS_FALLBACK = "tab:gray"
-
-# Colori sonar distinti (aperiodici)
-COLOR_SONAR_LEFT  = "#00C853"   # verde acceso (emerald)
-COLOR_SONAR_FRONT = "#FF6D00"   # arancione acceso
-COLOR_SONAR_RIGHT = "#D500F9"   # magenta acceso
-
-COLOR_SONAR_LEFT  = "#00FF00"   # verde puro
-COLOR_SONAR_FRONT = "#FF0000"   # rosso puro
-COLOR_SONAR_RIGHT = "#0000FF"   # blu puro
-
-COLOR_SONAR_LEFT  = "#E69F00"   # orange
-COLOR_SONAR_FRONT = "#56B4E9"   # sky blue
-COLOR_SONAR_RIGHT = "#CC79A7"   # reddish purple
+def _us_to_ms_formatter(x, _pos):
+    v = x / 1000.0
+    if abs(v - round(v)) < 1e-9:
+        return str(int(round(v)))
+    return f"{v:.3f}".rstrip("0").rstrip(".")
 
 
-# --- task periodici ---
-task_color_map = {
-    "Controller": COLOR_CONTROLLER,
-    "Gyro":       COLOR_GYRO,
-    "Sonar":      COLOR_SONAR,
-    "Comm":       COLOR_COMM,
-    "PS":         COLOR_PS_FALLBACK,  # usato solo se serve fallback
-}
+def plot_window(start_us: int, end_us: int):
+    fig, ax = plt.subplots(figsize=(18, 6))
 
-# --- callback / PS (stesso colore della sorgente logica) ---
-src_color = {
-    "Controller": COLOR_CONTROLLER,
-    "Gyro":       COLOR_GYRO,
+    # ordine RM (PS incluso): periodo crescente, PS sotto a parità
+    period_of_us = {name: T_us for (name, _, T_us) in tasks}
+    period_of_us[ps_name] = Ts
 
-    # sonar triplo
-    "SonarLeft":  COLOR_SONAR_LEFT,
-    "SonarFront": COLOR_SONAR_FRONT,
-    "SonarRight": COLOR_SONAR_RIGHT,
+    present = sorted({task for _, task in schedule if task != "IDLE"})
+    known = [t for t in present if t in period_of_us]
+    unknown = [t for t in present if t not in period_of_us]
 
-    # sonar singolo (se SONAR_TRIPLE_CALLBACKS = False)
-    "Sonar":      COLOR_SONAR,
-}
+    known_sorted = sorted(known, key=lambda n: (period_of_us[n], 1 if n == ps_name else 0))
+    task_names = known_sorted + unknown
 
-ps_fallback_color = COLOR_PS_FALLBACK
+    # layout
+    lane = 1.35
+    bar_h = 0.65
+    bar_offset = 0.0
+    N = len(task_names)
 
-# 1) baseline
-for name in task_names:
-    ax.hlines(y_line[name], 0, H, colors="0.65", linewidth=1.0)
+    y_line = {name: (N - 1 - i) * lane for i, name in enumerate(task_names)}
 
-# 2) barre esecuzione
-for t_tick, task in schedule:
-    if task == "IDLE":
-        continue
-    if task not in y_line:
-        continue
-    y = y_line[task]
+    # Headroom verticale per evitare che le frecce (callback) si sovrappongano al titolo
+    Y_BOTTOM_MARGIN = 0.30 * lane
+    Y_TOP_HEADROOM = 0.95 * lane
+    y_min_plot = -Y_BOTTOM_MARGIN
+    y_max_plot = max(y_line.values()) + bar_h + Y_TOP_HEADROOM
 
-    t = ticks_to_us(t_tick)
-    w = DT_US
+    # ============================================================
+    # PALETTE COLORI COERENTE (catena funzionale)
+    # ============================================================
 
-    if task == ps_name:
-        src = ps_exec_src.get(t_tick, None)
-        c = src_color.get(src, ps_fallback_color)
-        ax.broken_barh([(t, w)], (y + bar_offset, bar_h), facecolors=c, edgecolors="none")
-    else:
-        ax.broken_barh([(t, w)], (y + bar_offset, bar_h), facecolors=task_color_map[task], edgecolors="none")
+    # Colori principali (task periodici)
+    COLOR_CONTROLLER = "tab:blue"
+    COLOR_GYRO       = "tab:green"
+    COLOR_SONAR      = "tab:purple"
+    COLOR_COMM       = "tab:red"
+    COLOR_PS_FALLBACK = "tab:gray"
 
-# 3) release
-for name in task_names:
-    xs = release_times.get(name, [])
-    if xs:
+    # Colori sonar distinti (aperiodici)
+    COLOR_SONAR_LEFT  = "#00C853"   # verde acceso (emerald)
+    COLOR_SONAR_FRONT = "#FF6D00"   # arancione acceso
+    COLOR_SONAR_RIGHT = "#D500F9"   # magenta acceso
+
+    COLOR_SONAR_LEFT  = "#00FF00"   # verde puro
+    COLOR_SONAR_FRONT = "#FF0000"   # rosso puro
+    COLOR_SONAR_RIGHT = "#0000FF"   # blu puro
+
+    COLOR_SONAR_LEFT  = "#E69F00"   # orange
+    COLOR_SONAR_FRONT = "#56B4E9"   # sky blue
+    COLOR_SONAR_RIGHT = "#CC79A7"   # reddish purple
+
+
+    # --- task periodici ---
+    task_color_map = {
+        "ReadController": COLOR_CONTROLLER,
+        "ReadGyroscope":  COLOR_GYRO,
+        "ReadSonar":      COLOR_SONAR,
+        "Supervisor":     COLOR_COMM,
+        "PS":         COLOR_PS_FALLBACK,  # usato solo se serve fallback
+    }
+
+    # --- callback / PS (stesso colore della sorgente logica) ---
+    src_color = {
+        "ReadController": COLOR_CONTROLLER,
+        "ReadGyroscope":  COLOR_GYRO,
+
+        # sonar triplo
+        "ReadSonarLeft":  COLOR_SONAR_LEFT,
+        "ReadSonarFront": COLOR_SONAR_FRONT,
+        "ReadSonarRight": COLOR_SONAR_RIGHT,
+
+        # sonar singolo (se SONAR_TRIPLE_CALLBACKS = False)
+        "ReadSonar":      COLOR_SONAR,
+    }
+
+    ps_fallback_color = COLOR_PS_FALLBACK
+
+    # 1) baseline
+    for name in task_names:
+        ax.hlines(y_line[name], start_us, end_us, colors="0.65", linewidth=1.0)
+
+    # 2) barre esecuzione (clippate nella finestra)
+    for t_tick, task in schedule:
+        if task == "IDLE":
+            continue
+        if task not in y_line:
+            continue
+        y = y_line[task]
+
+        t = ticks_to_us(t_tick)
+        w = DT_US
+        t0 = max(t, start_us)
+        t1 = min(t + w, end_us)
+        if t1 <= t0:
+            continue
+        w_clip = t1 - t0
+
+        if task == ps_name:
+            src = ps_exec_src.get(t_tick, None)
+            c = src_color.get(src, ps_fallback_color)
+            ax.broken_barh([(t0, w_clip)], (y + bar_offset, bar_h), facecolors=c, edgecolors="none")
+        else:
+            ax.broken_barh([(t0, w_clip)], (y + bar_offset, bar_h), facecolors=task_color_map[task], edgecolors="none")
+
+    # 3) release
+    for name in task_names:
+        xs = release_times.get(name, [])
+        if xs:
+            y = y_line[name]
+            xs_us = [ticks_to_us(x) for x in xs]
+            xs_us = [x for x in xs_us if start_us <= x < end_us]
+            if xs_us:
+                ax.vlines(xs_us, y, y + bar_h + 0.20, colors="black", linewidth=1.3)
+
+    # 4) end-cap fine job periodici (overlay)
+    for t_last_tick, name in finish_caps:
+        if name not in y_line:
+            continue
         y = y_line[name]
-        xs_us = [ticks_to_us(x) for x in xs]
-        ax.vlines(xs_us, y, y + bar_h + 0.20, colors="black", linewidth=1.3)
 
-# 4) end-cap fine job periodici (overlay)
-for t_last_tick, name in finish_caps:
-    if name not in y_line:
-        continue
-    y = y_line[name]
+        cap_h = bar_h
+        cap_color = task_color_map.get(name, "black")
 
-    cap_h = bar_h
-    cap_color = task_color_map.get(name, "black")
+        t_last = ticks_to_us(t_last_tick)
+        if not (start_us <= t_last < end_us):
+            continue
+        ax.broken_barh([(t_last, DT_US)], (y + bar_offset, cap_h), facecolors=cap_color, edgecolors="none", zorder=10)
 
-    t_last = ticks_to_us(t_last_tick)
-    ax.broken_barh([(t_last, DT_US)], (y + bar_offset, cap_h), facecolors=cap_color, edgecolors="none", zorder=10)
+    # 5) notifiche callback: frecce verso la corsia del PS (a Ta)
+    #    cb_links: (src_cb, task_src, t_start_tick, Ta_tick, C_ticks, cb_id)
+    ps_y = y_line.get(ps_name, 0.0)
+    ARROW_GAP = 0.16                           # distanza dalla cima delle barre PS
+    ARROW_LEN = 0.55                           # lunghezza desiderata freccia
+    ARROW_LW = 2.2
 
-# 5) notifiche callback: frecce verso la corsia del PS (a Ta)
-#    cb_links: (src_cb, task_src, t_start_tick, Ta_tick, C_ticks, cb_id)
-ps_y = y_line.get(ps_name, 0.0)
-ARROW_GAP = 0.16                           # distanza dalla cima delle barre PS
-ARROW_LEN = 0.55                           # lunghezza desiderata freccia
-ARROW_LW = 2.2
+    arrow_tip_y = ps_y + bar_h + ARROW_GAP
+    # Limita la coda dentro al grafico (evita overlap con titolo/tight_layout)
+    arrow_tail_y = min(arrow_tip_y + ARROW_LEN, y_max_plot - 0.08)
 
-arrow_tip_y = ps_y + bar_h + ARROW_GAP
-# Limita la coda dentro al grafico (evita overlap con titolo/tight_layout)
-arrow_tail_y = min(arrow_tip_y + ARROW_LEN, y_max_plot - 0.08)
-
-for src_cb, _task_src, _t_start_tick, Ta_tick, _Ccb_tick, _cb_id in cb_links:
-    Ta = ticks_to_us(Ta_tick)
-    cb_color = src_color.get(src_cb, "black")
-    ax.annotate(
-        "",
-        xy=(Ta, arrow_tip_y),
-        xytext=(Ta, arrow_tail_y),
-        arrowprops=dict(arrowstyle="->", color=cb_color, lw=ARROW_LW),
-        zorder=11,
-    )
-
-# assi
-ax.set_xlim(0, H)
-ax.set_xlabel("Time [us]")
-
-mode = "worst-case" if USE_WORST_CASE_DELAY else f"random(seed={RANDOM_SEED})"
-sonar_mode = "triplo" if SONAR_TRIPLE_CALLBACKS else "singolo"
-ax.set_title(
-    f"Rate Monotonic + Polling Server Scheduling for Board 2) | "
-    f"DT={DT_US}us | "
-    "PS colorato per callback | callback: freccia a Ta",
-    pad=14,
-)
-
-ax.set_yticks([y_line[n] for n in task_names])
-ax.set_yticklabels(task_names)
-
-# limita asse Y per avere spazio extra sopra
-ax.set_ylim(y_min_plot, y_max_plot)
-
-# ticks (in microsecondi)
-H_us = H
-if H_us <= 200_000:
-    tick_step_us = 10_000
-elif H_us <= 1_000_000:
-    tick_step_us = 50_000
-elif H_us <= 5_000_000:
-    tick_step_us = 250_000
-else:
-    tick_step_us = 500_000
-
-ax.set_xticks(range(0, H_us + 1, tick_step_us))
-
-# minor ticks: usa DT_US se non esplode il numero di tick
-minor_every_us = DT_US
-if H_us // max(minor_every_us, 1) <= 5000:
-    ax.set_xticks(range(0, H_us + 1, minor_every_us), minor=True)
-    ax.tick_params(axis="x", which="minor", bottom=False, labelbottom=False)
-
-# griglie
-ax.grid(True, which="minor", axis="x", linestyle="-", linewidth=0.10, color="0.90")
-ax.grid(True, which="major", axis="x", linestyle="-", linewidth=0.55, color="0.78")
-ax.grid(True, which="major", axis="y", linestyle="--", linewidth=0.35, color="0.82")
-
-# ============================================================
-# LEGENDA (basso a destra)
-# ============================================================
-
-legend_handles = []
-
-# periodici: patch
-for name in task_names:
-    if name == ps_name:
-        continue
-    legend_handles.append(Patch(facecolor=task_color_map[name], edgecolor="none", label=f"{name} (periodico)"))
-
-# PS: patch per callback servita
-for src in CALLBACK_SOURCES:
-    legend_handles.append(Patch(facecolor=src_color[src], edgecolor="none", label=f"PS serve {src}"))
-
-# frecce callback
-for src in CALLBACK_SOURCES:
-    legend_handles.append(
-        Line2D(
-            [0],
-            [0],
-            color=src_color[src],
-            marker=r"$\downarrow$",
-            markersize=10,
-            linestyle="None",
-            label=f"Callback {src}: freccia a Ta",
+    for src_cb, _task_src, _t_start_tick, Ta_tick, _Ccb_tick, _cb_id in cb_links:
+        Ta = ticks_to_us(Ta_tick)
+        if not (start_us <= Ta < end_us):
+            continue
+        cb_color = src_color.get(src_cb, "black")
+        ax.annotate(
+            "",
+            xy=(Ta, arrow_tip_y),
+            xytext=(Ta, arrow_tail_y),
+            arrowprops=dict(arrowstyle="->", color=cb_color, lw=ARROW_LW),
+            zorder=11,
         )
+
+    # assi
+    ax.set_xlim(start_us, end_us)
+    ax.set_xlabel("Time [ms]")
+
+    mode = "worst-case" if USE_WORST_CASE_DELAY else f"random(seed={RANDOM_SEED})"
+    sonar_mode = "triplo" if SONAR_TRIPLE_CALLBACKS else "singolo"
+    ax.set_title(
+        f"Rate Monotonic (+ Polling Server) Scheduling for Board2\n"
+        f"View {start_us/1000:.0f}-{end_us/1000:.0f} ms\n"
+        f"U={U_tot*100:.1f}% | U_LL={U_ll*100:.1f}%",
+        pad=14,
     )
 
-# release
-legend_handles.append(Line2D([0], [0], color="black", lw=1.3, label="Release (|)"))
+    ax.set_yticks([y_line[n] for n in task_names])
+    ax.set_yticklabels(task_names)
+    ax.tick_params(axis="y", labelsize=9)
 
-# end-cap
-#legend_handles.append(Patch(facecolor=FINISH_CAP_COLOR if FINISH_CAP_MODE in ("color", "both") else "black",
-#                            edgecolor="none", label="Fine job (end-cap)"))
+    # limita asse Y per avere spazio extra sopra
+    ax.set_ylim(y_min_plot, y_max_plot)
 
-ax.legend(handles=legend_handles, loc="lower right", fontsize=8, framealpha=0.95)
+    # ticks (in microsecondi) dentro finestra
+    window_us = end_us - start_us
+    if window_us <= 200_000:
+        tick_step_us = 10_000
+    elif window_us <= 1_000_000:
+        tick_step_us = 50_000
+    elif window_us <= 5_000_000:
+        tick_step_us = 250_000
+    else:
+        tick_step_us = 500_000
 
-plt.tight_layout(rect=(0, 0, 1, 0.92))
-plt.show()
+    ax.set_xticks(range(start_us, end_us + 1, tick_step_us))
+    ax.xaxis.set_major_formatter(FuncFormatter(_us_to_ms_formatter))
+
+    # minor ticks: usa DT_US se non esplode il numero di tick
+    minor_every_us = DT_US
+    if window_us // max(minor_every_us, 1) <= 5000:
+        ax.set_xticks(range(start_us, end_us + 1, minor_every_us), minor=True)
+        ax.tick_params(axis="x", which="minor", bottom=False, labelbottom=False)
+
+    # griglie
+    ax.grid(True, which="minor", axis="x", linestyle="-", linewidth=0.10, color="0.90")
+    ax.grid(True, which="major", axis="x", linestyle="-", linewidth=0.55, color="0.78")
+    ax.grid(True, which="major", axis="y", linestyle="--", linewidth=0.35, color="0.82")
+
+    # ============================================================
+    # LEGENDA (basso a destra)
+    # ============================================================
+
+    legend_handles = []
+
+    # periodici: patch
+    for name in task_names:
+        if name == ps_name:
+            continue
+        legend_handles.append(Patch(facecolor=task_color_map[name], edgecolor="none", label=f"{name} (periodic)"))
+
+    # PS: patch per callback servita
+    for src in CALLBACK_SOURCES:
+        legend_handles.append(Patch(facecolor=src_color[src], edgecolor="none", label=f"PS serves {src}"))
+
+    # frecce callback
+    for src in CALLBACK_SOURCES:
+        legend_handles.append(
+            Line2D(
+                [0],
+                [0],
+                color=src_color[src],
+                marker=r"$\downarrow$",
+                markersize=10,
+                linestyle="None",
+                label=f"Callback {src}",
+            )
+        )
+
+    # release
+    legend_handles.append(Line2D([0], [0], color="black", lw=1.3, label="Release (|)"))
+
+    ax.legend(handles=legend_handles, loc="lower right", fontsize=8, framealpha=0.95)
+    plt.tight_layout(rect=(0.06, 0, 1, 0.92))
+    return fig
+
+
+# 4 finestre sequenziali sull'iperperiodo
+window_us = H // 4
+for i in range(4):
+    start_us = i * window_us
+    end_us = (i + 1) * window_us if i < 3 else H
+    fig = plot_window(start_us, end_us)
+    plt.show()
+    plt.close(fig)
