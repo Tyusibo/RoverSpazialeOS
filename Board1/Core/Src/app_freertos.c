@@ -329,7 +329,7 @@ void StartPID(void *argument)
 		}
 
 #if PRINT_TASK
-        printMotorSpeeds(&Board1_U.speed);
+        //printMotorSpeeds(&Board1_U.speed);
 #endif
 
 #else
@@ -434,9 +434,10 @@ void StartSupervisor(void *argument)
 
 		periodic_wait(&next, T, &MissSupervisor);
 
-#endif
 
 	}
+
+#endif
 
 	osThreadTerminate(osThreadGetId());
 
@@ -632,11 +633,9 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 
 	/* Controlla se il task ha sforato */
 	if ((int32_t) (now - *next_release) > 0) {
-		*next_release = now + period_ticks;
 		if (miss_counter != NULL) {
 			(*miss_counter)++;
 		}
-		return;
 	}
 
 	/* Sleep assoluta fino al prossimo periodo */

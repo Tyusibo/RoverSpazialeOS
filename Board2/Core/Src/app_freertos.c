@@ -751,11 +751,9 @@ static void periodic_wait(uint32_t *next_release, uint32_t period_ticks,
 
 	/* Controllo deadline miss (safe con wrap-around) */
 	if ((int32_t) (now - *next_release) > 0) {
-		*next_release = now + period_ticks;
 		if (miss_counter != NULL) {
 			(*miss_counter)++;
 		}
-		return;
 	}
 
 	/* Sleep assoluta fino al prossimo periodo */

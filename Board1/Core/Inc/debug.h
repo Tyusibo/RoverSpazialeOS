@@ -43,7 +43,7 @@
  * 1: Enables debug prints
  * 0: Disables debug prints
  */
-#define PRINT_TASK 0
+#define PRINT_TASK 1
 
 /**
  * @brief Enable PID Task
@@ -57,14 +57,14 @@
  * 1: Supervisor Task is scheduled
  * 0: Supervisor Task is not scheduled
  */
-#define RUN_SUPERVISOR 1
+#define RUN_SUPERVISOR 0
 
 /**
  * @brief Enable ReadTemperature Task
  * 1: ReadTemperature Task is scheduled
  * 0: ReadTemperature Task is not scheduled
  */
-#define RUN_READ_TEMPERATURE 1
+#define RUN_READ_TEMPERATURE 0
 
 /**
  * @brief Enable ReadBattery Task
