@@ -83,7 +83,6 @@ static inline void Sonar_SetEventFlag(const hcsr04_t *sensor);
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c3;
 extern UART_HandleTypeDef hlpuart1;
-extern UART_HandleTypeDef huart2;
 extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim7;
 extern TIM_HandleTypeDef htim6;
@@ -241,20 +240,6 @@ void I2C1_ER_IRQHandler(void)
 	SEGGER_SYSVIEW_RecordExitISR();
 	#endif
   /* USER CODE END I2C1_ER_IRQn 1 */
-}
-
-/**
-  * @brief This function handles USART2 global interrupt / USART2 wake-up interrupt through EXTI line 26.
-  */
-void USART2_IRQHandler(void)
-{
-  /* USER CODE BEGIN USART2_IRQn 0 */
-
-  /* USER CODE END USART2_IRQn 0 */
-  HAL_UART_IRQHandler(&huart2);
-  /* USER CODE BEGIN USART2_IRQn 1 */
-
-  /* USER CODE END USART2_IRQn 1 */
 }
 
 /**
