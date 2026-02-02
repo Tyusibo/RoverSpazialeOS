@@ -141,7 +141,7 @@ int MotorControl_Actuate(MotorControl *mc, float u_volt);
  * @param speed_rpm Current measured speed in RPM.
  * @return int The pulse value written to the CCR register.
  */
-int MotorControl_Update(MotorControl *mc, float speed_rpm);
+int MotorControl_ClosedLoop(MotorControl *mc, float speed_rpm);
 
 /**
  * @brief Drive the motor in Open Loop configurations using the DC gain.

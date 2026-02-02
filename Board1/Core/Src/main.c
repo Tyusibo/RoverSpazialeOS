@@ -191,7 +191,7 @@ int main(void)
 		MotorControl_OpenLoopActuate(&motors[i]);
 	}
 //	/* TESTING OPEN LOOP CONTROL */
-//	float set_point = 0.0f;
+//	float set_point = -30.0f;
 //
 //	while(1){
 //		// for sui motori

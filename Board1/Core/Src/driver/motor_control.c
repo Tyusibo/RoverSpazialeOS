@@ -216,7 +216,7 @@ int MotorControl_Actuate(MotorControl *mc, float u_volt)
  * @param speed_rpm Current speed in RPM.
  * @return The PWM pulse value applied.
  */
-int MotorControl_Update(MotorControl *mc, float speed_rpm)
+int MotorControl_ClosedLoop(MotorControl *mc, float speed_rpm)
 {
   float u = MotorControl_ComputeU(mc, speed_rpm);
   return MotorControl_Actuate(mc, u);
@@ -230,7 +230,14 @@ void MotorControl_OpenLoopActuate(MotorControl *mc){
     // Usa il guadagno specifico del motore salvato nella struct
     // u_volt = ref_rpm / k_gain
     if (mc->dc_gain > 0.001f) { // Evita divisione per zero
-        float u_volt = mc->reference_rpm / mc->dc_gain;
+        float ref_adj = mc->reference_rpm;
+        if (ref_adj >= 0.0f) {
+            ref_adj -= 30.0f;
+        } else {
+            ref_adj += 30.0f;
+        }
+
+        float u_volt = ref_adj / mc->dc_gain;
         MotorControl_Actuate(mc, u_volt);
     } else {
         MotorControl_Actuate(mc, 0.0f);
