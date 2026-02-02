@@ -98,7 +98,7 @@
  * @brief Interrupt Debug Verbosity
  * 1 to enable prints, 0 to disable them 
  */
-#define VERBOSE_DEBUG_IT 0
+#define VERBOSE_DEBUG_IT 1
 
 /** 
  * @brief CRC Debug Verbosity
