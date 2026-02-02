@@ -324,8 +324,8 @@ void StartPID(void *argument)
 
 		/* EXECUTE MOTOR CONTROL */
 		for (int i = 0; i < 4; i++) {
-			//MotorControl_ClosedLoop(&motors[i], current_speed[i]);
-			MotorControl_OpenLoopActuate(&motors[i]);
+			MotorControl_ClosedLoop(&motors[i], current_speed[i]);
+			//MotorControl_OpenLoopActuate(&motors[i]);
 		}
 
 #if PRINT_TASK
