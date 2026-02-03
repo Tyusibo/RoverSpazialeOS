@@ -232,9 +232,9 @@ void MotorControl_OpenLoopActuate(MotorControl *mc){
     if (mc->dc_gain > 0.001f) { // Evita divisione per zero
         float ref_adj = mc->reference_rpm;
         if (ref_adj >= 0.0f) {
-            ref_adj -= 30.0f;
+            ref_adj -= 0.0f;
         } else {
-            ref_adj += 30.0f;
+            ref_adj += 0.0f;
         }
 
         float u_volt = ref_adj / mc->dc_gain;

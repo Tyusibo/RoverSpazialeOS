@@ -177,7 +177,7 @@ int main(void)
 
 	Motors_InitAll();
 	Motors_StartAllPwm();
-	Motors_SetDefaultCcr(727);
+	Motors_SetDefaultCcr(757);
 
 	temperature_sensor_init();
 	battery_sensor_init();
