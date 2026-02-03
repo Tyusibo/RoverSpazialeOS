@@ -498,9 +498,8 @@ void StartSupervisor(void *argument)
 
 #endif
 		periodic_wait(&next, T, &MissSupervisor);
-#endif
-
 	}
+#endif
 
 	osThreadTerminate(osThreadGetId());
 
@@ -695,6 +694,16 @@ void StartPollingServer(void *argument)
             }
 
         }
+#if PRINT_TASK
+		static uint32_t cycle_count = 0;
+		cycle_count++;
+
+		if (cycle_count >= 100) {
+
+		printSonar(&Board2_U.sonar);
+		cycle_count = 0;
+		}
+#endif
 
 #else
         Board2_U.remoteController = (BUS_RemoteController){ 512, 0, 0 };
