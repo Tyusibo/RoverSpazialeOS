@@ -48,12 +48,6 @@ typedef struct {
   /* --- Parametri Open Loop --- */
   float dc_gain;                /**< Motor static gain (RPM/V) for open loop control */
 
-  /* --- Parametri Calibrazione Pulse (Hardware Specific) --- */
-  float pulse_theo_min;         /**< Theoretical minimum pulse width */
-  float pulse_theo_max;         /**< Theoretical maximum pulse width */
-  float pulse_real_min;         /**< Calibrated minimum pulse width */
-  float pulse_real_max;         /**< Calibrated maximum pulse width */
-
   /* --- Regolatore --- */
   PIDController *current_regulator; /**< Pointer to the active PID controller instance */
 
@@ -79,10 +73,6 @@ typedef struct {
  * @param out_min Output mapping minimum.
  * @param out_max Output mapping maximum.
  * @param dc_gain Motor static gain (DC gain).
- * @param pulse_theo_min Theoretical min pulse.
- * @param pulse_theo_max Theoretical max pulse.
- * @param pulse_real_min Real/Calibrated min pulse.
- * @param pulse_real_max Real/Calibrated max pulse.
  * @param default_regulator Pointer to the initial PID regulator.
  */
 void MotorControl_Init(
@@ -93,8 +83,6 @@ void MotorControl_Init(
   float min_volt, float max_volt,
   float in_min, float in_max, float out_min, float out_max,
   float dc_gain, 
-  float pulse_theo_min, float pulse_theo_max, 
-  float pulse_real_min, float pulse_real_max,
   PIDController *default_regulator
 );
 

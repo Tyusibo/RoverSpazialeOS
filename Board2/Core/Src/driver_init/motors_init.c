@@ -103,8 +103,6 @@ void Motors_InitAll(void)
                           TS, MIN_VOLT, MAX_VOLT,
                           IN_MIN, IN_MAX, OUT_MIN, OUT_MAX,
                           dc_gains[i],
-						  PULSE_THEO_MIN, PULSE_THEO_MAX,
-						  PULSE_REAL_MIN, PULSE_REAL_MAX,
                           &pid_fast[i]);
     }
 }

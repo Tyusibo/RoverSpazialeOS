@@ -81,10 +81,6 @@ static inline int duty_percent_to_pulse(const MotorControl *m, float duty_percen
  * @param out_min Output range minimum (for map).
  * @param out_max Output range maximum (for map).
  * @param dc_gain Motor DC gain.
- * @param pulse_theo_min Theoretical min pulse.
- * @param pulse_theo_max Theoretical max pulse.
- * @param pulse_real_min Real min pulse.
- * @param pulse_real_max Real max pulse.
  * @param default_regulator Default PID regulator.
  */
 void MotorControl_Init(
@@ -95,8 +91,6 @@ void MotorControl_Init(
   float min_volt, float max_volt,
   float in_min, float in_max, float out_min, float out_max,
   float dc_gain, 
-  float pulse_theo_min, float pulse_theo_max, 
-  float pulse_real_min, float pulse_real_max,
   PIDController *default_regulator
 )
 {
@@ -113,11 +107,6 @@ void MotorControl_Init(
   
   mc->dc_gain = dc_gain; 
   
-  mc->pulse_theo_min = pulse_theo_min;
-  mc->pulse_theo_max = pulse_theo_max;
-  mc->pulse_real_min = pulse_real_min;
-  mc->pulse_real_max = pulse_real_max;
-
   mc->current_regulator = default_regulator;
 
   mc->reference_rpm = 0.0f;
@@ -167,23 +156,6 @@ float MotorControl_ComputeU(MotorControl *mc, float speed_rpm)
   mc->last_u = u_sat;
 
   return u_sat;
-}
-
-/* Funzione di ricalibrazione empirica statica basata sui dati dell'istanza */
-/**
- * @brief Empirically recalibrates the pulse width based on instance data.
- * @param mc Pointer to the MotorControl structure.
- * @param pulse_theoretical Theoretical pulse width.
- * @return Corrected pulse width.
- */
-static int recalibrate_pulse(const MotorControl *mc, int pulse_theoretical)
-{
-    // Utilizza la funzione generica map_linear con i parametri della struct
-    float pulse_corrected = map_linear((float)pulse_theoretical, 
-                                       mc->pulse_theo_min, mc->pulse_theo_max, 
-                                       mc->pulse_real_min, mc->pulse_real_max);
-
-    return (int)roundf(pulse_corrected);
 }
 
 /**

@@ -90,8 +90,6 @@ static const float PULSE_REAL_MIN = 545.0f;
 /** Pulse Teorico Massimo (corrispondente a 3.140V) */
 static const float PULSE_THEO_MAX = 946.0f;
 
-/** Pulse Reale Massimo (misurato col multimetro) */
-static const float PULSE_REAL_MAX = 920.0f;
 
 
 /* -------------------------------------------------------------------------- */

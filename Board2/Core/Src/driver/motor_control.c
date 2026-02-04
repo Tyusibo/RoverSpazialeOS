@@ -61,18 +61,6 @@ static inline float volt_to_duty_percent(const MotorControl *m, float volt)
   return map_linear(duty_raw, m->in_min, m->in_max, m->out_min, m->out_max);
 }
 
-/**
- * @brief Converts duty cycle percentage to PWM pulse value.
- * 
- * @param m Pointer to the MotorControl structure.
- * @param duty_percent Duty cycle percentage.
- * @return int PWM pulse value.
- */
-static inline int duty_percent_to_pulse(const MotorControl *m, float duty_percent)
-{
-  float pulse_f = (duty_percent / 100.0f) * (float)m->arr_pwm_plus_one;
-  return (int)roundf(pulse_f);
-}
 
 /**
  * @brief Initializes the MotorControl structure with the given parameters.
@@ -88,10 +76,6 @@ static inline int duty_percent_to_pulse(const MotorControl *m, float duty_percen
  * @param out_min Output range minimum for mapping.
  * @param out_max Output range maximum for mapping.
  * @param dc_gain DC gain for open loop control.
- * @param pulse_theo_min Theoretical minimum pulse width.
- * @param pulse_theo_max Theoretical maximum pulse width.
- * @param pulse_real_min Real minimum pulse width (for calibration).
- * @param pulse_real_max Real maximum pulse width (for calibration).
  * @param default_regulator Pointer to the default PID regulator.
  */
 void MotorControl_Init(
@@ -102,8 +86,6 @@ void MotorControl_Init(
   float min_volt, float max_volt,
   float in_min, float in_max, float out_min, float out_max,
   float dc_gain, 
-  float pulse_theo_min, float pulse_theo_max, 
-  float pulse_real_min, float pulse_real_max,
   PIDController *default_regulator
 )
 {
@@ -119,11 +101,6 @@ void MotorControl_Init(
   mc->out_max = out_max;
   
   mc->dc_gain = dc_gain; 
-  
-  mc->pulse_theo_min = pulse_theo_min;
-  mc->pulse_theo_max = pulse_theo_max;
-  mc->pulse_real_min = pulse_real_min;
-  mc->pulse_real_max = pulse_real_max;
 
   mc->current_regulator = default_regulator;
 
@@ -179,31 +156,13 @@ float MotorControl_ComputeU(MotorControl *mc, float speed_rpm)
 }
 
 /**
- * @brief Static empirical recalibration function based on instance data.
- * 
- * @param mc Pointer to the MotorControl structure.
- * @param pulse_theoretical Theoretical pulse value.
- * @return int Corrected pulse value.
- */
-static int recalibrate_pulse(const MotorControl *mc, int pulse_theoretical)
-{
-    // Use the generic map_linear function with the struct parameters
-    float pulse_corrected = map_linear((float)pulse_theoretical, 
-                                       mc->pulse_theo_min, mc->pulse_theo_max, 
-                                       mc->pulse_real_min, mc->pulse_real_max);
-
-    return (int)roundf(pulse_corrected);
-}
-
-/**
  * @brief Actuates the motor with the given control voltage.
  * 
  * @param mc Pointer to the MotorControl structure.
  * @param u_volt Control voltage to apply.
  * @return int The pulse value applied to the PWM.
  */
-int MotorControl_Actuate(MotorControl *mc, float u_volt)
-{
+int MotorControl_Actuate(MotorControl *mc, float u_volt){
   float duty = volt_to_duty_percent(mc, u_volt);
   int pulse = duty_percent_to_pulse(mc, duty);
 
