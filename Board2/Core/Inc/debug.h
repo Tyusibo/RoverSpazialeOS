@@ -100,14 +100,4 @@
  */
 #define VERBOSE_DEBUG_IT 1
 
-/** 
- * @brief CRC Debug Verbosity
- * 1 to enable prints, 0 to disable them 
- */
-#define VERBOSE_DEBUG_CRC 0
 
-/** 
- * @brief UART Debug Verbosity
- * 1 to enable prints, 0 to disable them 
- */
-#define VERBOSE_DEBUG_UART 0
