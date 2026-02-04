@@ -77,18 +77,6 @@ static const float DC_GAIN_MOT3 = 14.210f;
 /** Guadagno statico (RPM/V) - Motore 4 (Rear Left) */
 static const float DC_GAIN_MOT4 = 14.510f;
 
-/* -------------------------------------------------------------------------- */
-/*                               CALIBRAZIONE PULSE                           */
-/* -------------------------------------------------------------------------- */
-
-/** Pulse Teorico Minimo (corrispondente a 1.886V) */
-static const float PULSE_THEO_MIN = 568.0f;
-
-/** Pulse Reale Minimo (misurato col multimetro) */
-static const float PULSE_REAL_MIN = 545.0f;
-
-/** Pulse Teorico Massimo (corrispondente a 3.140V) */
-static const float PULSE_THEO_MAX = 946.0f;
 
 
 
