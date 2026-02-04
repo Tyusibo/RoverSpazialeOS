@@ -23,71 +23,93 @@ extern TIM_HandleTypeDef htim2;
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c3;
 
-void enterDegraded(){
-    // Abort transmit e receive eventualmente
-    // Board 1: Mortem
+static inline void terminateThreadIfAlive(osThreadId_t thread, osThreadId_t current)
+{
+    if ((thread != NULL) && (thread != current)) {
+        (void)osThreadTerminate(thread);
+    }
+}
 
-    // Board 2:
-    
-    // Chiusura task comunicazione
-    
-    // Avvio task single board
+static inline void killTasks(void)
+{
+    osThreadId_t current = osThreadGetId();
 
-    /*
-    // 1. Kill all tasks
-    osThreadTerminate(ReadControllerHandle);
-    osThreadTerminate(ReadGyroscopeHandle);
-    osThreadTerminate(SupervisorHandle);
-    osThreadTerminate(ReadSonarsHandle);
-    osThreadTerminate(StartSeggerHandle);
-    osThreadTerminate(SynchronizationHandle);
-    osThreadTerminate(PollingServerHandle);
+    terminateThreadIfAlive(ReadControllerHandle, current);
+    terminateThreadIfAlive(ReadGyroscopeHandle, current);
+    terminateThreadIfAlive(ReadSonarsHandle, current);
+    terminateThreadIfAlive(PollingServerHandle, current);
+}
 
-    // 2. Abort UART communications
+static inline void abortUartLinks(void)
+{
     UART_HandleTypeDef *comm_uart = getComunicationHandler();
     UART_HandleTypeDef *print_uart = getPrinterHandler();
-    
+
     if (comm_uart != NULL) {
-        HAL_UART_Abort(comm_uart);
-        HAL_UART_Abort_IT(comm_uart);
+        (void)HAL_UART_Abort(comm_uart);
+        (void)HAL_UART_Abort_IT(comm_uart);
     }
+
     if (print_uart != NULL) {
-        HAL_UART_Abort(print_uart);
-        HAL_UART_Abort_IT(print_uart);
+        (void)HAL_UART_Abort(print_uart);
+        (void)HAL_UART_Abort_IT(print_uart);
     }
+}
 
-    // 3. Stop Timers
-    // Stop PWMs for Motors (TIM1) and Sonars (TIM2)
-    HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_ALL);
-    HAL_TIM_Base_Stop_IT(&htim1);
-    
-    HAL_TIM_IC_Stop_IT(&htim2, TIM_CHANNEL_ALL);
-    HAL_TIM_Base_Stop_IT(&htim2);
-    
+static inline void stopTimers(void)
+{
+    (void)HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_ALL);
+    (void)HAL_TIM_Base_Stop_IT(&htim1);
 
+    (void)HAL_TIM_IC_Stop_IT(&htim2, TIM_CHANNEL_ALL);
+    (void)HAL_TIM_Base_Stop_IT(&htim2);
+}
 
-    // 4. Stop I2C Communications
-    HAL_I2C_Master_Abort_IT(&hi2c1); // Controller
-    HAL_I2C_Master_Abort_IT(&hi2c3); // Gyroscope
+static inline void stopI2cBuses(void)
+{
+    (void)HAL_I2C_DeInit(&hi2c1);
+    (void)HAL_I2C_DeInit(&hi2c3);
+}
 
-    // 5. Reset GPIOs
-    HAL_GPIO_WritePin(SonarLeftTrig_GPIO_Port, SonarLeftTrig_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(SonarRightTrig_GPIO_Port, SonarRightTrig_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(SonarFrontTrig_GPIO_Port, SonarFrontTrig_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
-    */
+static inline void resetOutputs(void)
+{
+    (void)HAL_GPIO_WritePin(SonarLeftTrig_GPIO_Port, SonarLeftTrig_Pin, GPIO_PIN_RESET);
+    (void)HAL_GPIO_WritePin(SonarRightTrig_GPIO_Port, SonarRightTrig_Pin, GPIO_PIN_RESET);
+    (void)HAL_GPIO_WritePin(SonarFrontTrig_GPIO_Port, SonarFrontTrig_Pin, GPIO_PIN_RESET);
 
-	HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET); // Reset Ready To Receive
-	osThreadTerminate(osThreadGetId());
+#if LED_DEBUG
+    (void)HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_RESET);
+#endif
 
+    (void)HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
+}
+
+static inline void killPeripherals(void)
+{
+    abortUartLinks();
+    stopTimers();
+    stopI2cBuses();
+    resetOutputs();
 }
 
 #include "Board2.h"
 
+void enterDegraded(){
+    Board2_Y.supervision_ended = 1;
+    killTasks();
+    killPeripherals();
+    (void)osThreadTerminate(osThreadGetId());
+}
+
+
 void enterEmergency(){
 	Board2_Y.supervision_ended = 1;
+    killTasks();
+    killPeripherals();
 }
 
 void enterFaulty(){
 	Board2_Y.supervision_ended = 1;
+    killTasks();
+    killPeripherals();
 }
