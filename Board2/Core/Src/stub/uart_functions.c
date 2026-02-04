@@ -19,8 +19,8 @@ volatile uint8_t receivedFlag = 0;  				// Avvenuta ricezione frame
 volatile uint8_t errorReceiveFlag = 0; 			 // Avvenuto errore di ricezione
 volatile uint8_t trasmissionStatus;
 
-static const uint8_t ack = 1;					// Ack
-static const uint8_t nack = 0; 					// Nack
+static const uint8_t ack =  0x00;					// Ack
+static const uint8_t nack = 0xFF; 					// Nack
 
 static uint8_t received_ack; 	  			// variabile di ricezione per l'ack
 
@@ -111,7 +111,13 @@ void UART_ReceiveAckIT(void) {
 }
 
 uint8_t UART_CheckAck(void) {
-	return received_ack;
+	if (received_ack == ack) {
+		return 1;
+	} else if (received_ack == nack) {
+		return 0;
+	} else {
+		return 0;
+	}
 }
 
 void UART_SendAckIT(void) {

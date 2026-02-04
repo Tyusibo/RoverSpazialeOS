@@ -414,10 +414,10 @@ void StartSupervisor(void *argument)
 
 		//printMotorSpeeds(&Board1_U.speed);
 
-		if (cycle_count >= 100) {
+		if (cycle_count >= 1) {
 			cycle_count = 0;
-//			printGlobalState(&Board1_Y.board1GlobalState);
-//			printDecision(&Board1_Y.board1Decision);
+			printGlobalState(&Board1_Y.board1GlobalState);
+			printDecision(&Board1_Y.board1Decision);
 		}
 
 

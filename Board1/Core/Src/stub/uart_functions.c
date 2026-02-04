@@ -1,19 +1,5 @@
 #include "uart_functions.h"
-
-/* INCLUDE INUTILI SOLO PER DEBUGGING */
-#include "print.h"
-/*************************************/
-
-/* --- CONFIGURAZIONE DEBUG --- */
-// 1 per abilitare le stampe, 0 per disabilitarle
-#define VERBOSE_DEBUG 0
-
-#if VERBOSE_DEBUG == 1
-    #define PRINT_DBG(msg) printMsg(msg)
-#else
-#define PRINT_DBG(msg) ((void)0)
-#endif
-/* ---------------------------- */
+#include "main.h" // per i pin
 
 volatile uint8_t flagRTR = 0; 					    // Flag RTR
 
@@ -21,8 +7,8 @@ volatile uint8_t receivedFlag = 0;  				// Avvenuta ricezione frame
 volatile uint8_t errorReceiveFlag = 0;  		 // Avvenuto errore di ricezione
 volatile uint8_t trasmissionStatus;
 
-static const uint8_t ack = 1;					// Ack
-static const uint8_t nack = 0; 					// Nack
+static const uint8_t ack =  0x00;					// Ack
+static const uint8_t nack = 0xFF; 					// Nack
 
 static uint8_t received_ack; 	  			// variabile di ricezione per l'ack
 
@@ -58,10 +44,8 @@ uint8_t checkRTR(void) {
 	// se rtr è 1 torna 1 ma prima metti flag a 0
 	if (flagRTR == 1) {
 		flagRTR = 0;
-		PRINT_DBG("CHECK RTR: 1\n\r\r\n");
 		return 1;
 	} else {
-		PRINT_DBG("CHECK RTR: 0\n\r\r\n");
 		return 0;
 	}
 }
@@ -92,13 +76,11 @@ void UART_TransmitIT(uint8_t *pData, size_t size) {
 //	}
 	//HAL_UART_Transmit(&current_handler, pData, size, HAL_MAX_DELAY);
 	HAL_UART_Transmit_IT(current_handler, pData, size);
-	PRINT_DBG("B1 Transmitted\n\r\r\n");
 }
 
 /* Ricezione */
 
 void setRTR(void) {
-	PRINT_DBG("SET RTR\n\r\r\n");
 	HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_SET);
 }
 
@@ -111,13 +93,11 @@ uint8_t UART_ReceiveIT(uint8_t *pData, size_t size) {
 	receivedFlag = 0;
 	errorReceiveFlag = 0;
 
-	PRINT_DBG("B1 Wait receive\n\r");
 
 	HAL_StatusTypeDef status_receive = HAL_UART_Receive_IT(current_handler,
 			pData, size);
 	if (status_receive != HAL_OK) {
 		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
-		PRINT_DBG("B1 RECEVE_INIT_ERR\n\r");
 		return 0; // errore
 	}
 	return 1; // ok
@@ -131,7 +111,7 @@ uint8_t hasReceived(void) {
 uint8_t errorReceived(void) {
 	// Test function
 
-//	// Upon receiving data, alternate between ack and nack
+	// Upon receiving data, alternate between ack and nack
 //	static uint32_t count = 0;
 //
 //	if (receivedFlag == 1) {
@@ -156,7 +136,13 @@ void UART_ReceiveAckIT(void) {
 }
 
 uint8_t UART_CheckAck(void) {
-	return received_ack;
+	if (received_ack == ack) {
+		return 1;
+	} else if (received_ack == nack) {
+		return 0;
+	} else {
+		return 0;
+	}
 }
 
 //void UART_SendAckIT(void) {

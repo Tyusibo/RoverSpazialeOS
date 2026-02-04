@@ -706,9 +706,9 @@ void StartPollingServer(void *argument)
 #endif
 
 #else
-        Board2_U.remoteController = (BUS_RemoteController){ 512, 0, 0 };
+        Board2_U.remoteController = (BUS_RemoteController){ 0, 0, 0 };
         Board2_U.gyroscope = 32;
-        Board2_U.sonar = (BUS_Sonar){ 100, 400, 200 };
+        Board2_U.sonar = (BUS_Sonar){ 380, 400, 380 };
 
         HAL_Delay(WCET_POLLING_SERVER);
 #endif
