@@ -202,14 +202,7 @@ void MotorControl_OpenLoopActuate(MotorControl *mc){
     // Usa il guadagno specifico del motore salvato nella struct
     // u_volt = ref_rpm / k_gain
     if (mc->dc_gain > 0.001f) { // Evita divisione per zero
-        float ref_adj = mc->reference_rpm;
-        if (ref_adj >= 0.0f) {
-            ref_adj -= 0.0f;
-        } else {
-            ref_adj += 0.0f;
-        }
-
-        float u_volt = ref_adj / mc->dc_gain;
+        float u_volt = mc->reference_rpm / mc->dc_gain;
         MotorControl_Actuate(mc, u_volt);
     } else {
         MotorControl_Actuate(mc, 0.0f);
