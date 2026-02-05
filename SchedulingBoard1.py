@@ -19,7 +19,7 @@ DEFAULT_TIME_QUANTUM_US = 100
 # Task set: (name, C, T)  [tutti in microsecondi]
 tasks = [
     ("PID",             1_000, 20_000),
-    ("Supervisor",     12_000, 50_000),
+    ("Supervisor",     15_000, 50_000),
     ("ReadBattery",     1_000, 200_000),
     ("ReadTemperature", 1_000, 200_000),
 ]
@@ -229,9 +229,9 @@ for t_last_tick, name in finish_caps:
 ax.set_xlim(0, H)
 ax.set_xlabel("Time [ms]")
 ax.set_title(
-    f"Rate Monotonic Scheduling for Board1\n"
-    f"U={U*100:.1f}% | U_LL={U_ll*100:.1f}%",
+    "Rate Monotonic Scheduling for Board1",
     pad=14,
+    fontweight="bold",
 )
 
 ax.set_yticks([y_line[n] for n in task_names])
