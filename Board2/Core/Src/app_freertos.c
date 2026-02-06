@@ -534,8 +534,10 @@ void StartReadSonars(void *argument)
 		hcsr04_trigger(&sonarRight);
 
 		/* Safe stop and start timer */
+#if SEGGER_BUILD == 0 //pezzotto per evitare conflitti con SysView
 		osTimerStop(SonarMonitoringHandle);
 		osTimerStart(SonarMonitoringHandle, TIMEOUT_TICKS);
+#endif
 
 #else
 		HAL_Delay(WCET_SONAR);
