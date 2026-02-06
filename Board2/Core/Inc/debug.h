@@ -29,21 +29,21 @@
  * 1: Enables debug LED
  * 0: Disables debug LED
  */
-#define LED_DEBUG 0
+#define LED_DEBUG 1
 
 /**
  * @brief Task Execution Mode
  * 1: Executes real code
  * 0: Simulates load with HAL_Delay
  */
-#define REAL_TASK 0
+#define REAL_TASK 1
 
 /**
  * @brief Global Debug Print Enable
  * 1: Enables debug prints
  * 0: Disables debug prints
  */
-#define PRINT_TASK 0
+#define PRINT_TASK 1
 
 /**
  * @brief Enable ReadController Task
