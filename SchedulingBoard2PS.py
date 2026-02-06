@@ -67,7 +67,7 @@ SONAR_TRIPLE_CALLBACKS = True   # False => una sola callback "Sonar"
 # Callback singole (delay_min, delay_max, C_callback)
 SENSOR_CALLBACKS_SINGLE = {
     "ReadController": (2_000, 2_000, 200),
-    "ReadGyroscope":  (4_000, 4_000, 200),
+    "ReadGyroscope":  (4_000, 2_000, 200),
     "ReadSonar":      (2_000, 25_000, 600),
 }
 
