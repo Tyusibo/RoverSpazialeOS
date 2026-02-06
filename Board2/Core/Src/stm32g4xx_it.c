@@ -36,6 +36,8 @@
 
 #include "cmsis_os2.h"
 #include "event_flags_constant.h"
+
+#include "SEGGER_SYSVIEW.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
