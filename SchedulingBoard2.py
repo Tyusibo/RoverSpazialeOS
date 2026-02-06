@@ -24,7 +24,7 @@ DEFAULT_TIME_QUANTUM_US = 100
 # - ReadSonar:      25ms,  periodo 100ms
 tasks = [
     ("ReadController",  2_000,  20_000),
-    ("ReadGyroscope",   4_000,  40_000),
+    ("ReadGyroscope",   2_000,  40_000),
     ("Supervisor",     15_000,  50_000),
     ("ReadSonar",      25_000, 100_000),
 ]
