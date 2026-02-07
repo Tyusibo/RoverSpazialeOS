@@ -81,6 +81,9 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
+/* Global start tick (set after synchronization) */
+volatile uint32_t start_tick = 0;
+
 /* MISS COUNTERS */
 volatile uint32_t MissPID = 0;
 volatile uint32_t MissSupervisor = 0;
@@ -303,7 +306,7 @@ void StartPID(void *argument)
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_PID);
-	uint32_t next = osKernelGetTickCount();
+	uint32_t next = start_tick;
 
 	float current_speed[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
@@ -363,7 +366,7 @@ void StartSupervisor(void *argument)
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
-	uint32_t next = osKernelGetTickCount();
+	uint32_t next = start_tick;
 
 	periodic_wait(&next, T, &MissSupervisor);  // Skip first communication
 
@@ -428,13 +431,6 @@ void StartSupervisor(void *argument)
 			break;
 		}
 
-
-#if LED_DEBUG
-
-		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
-
-#endif
-
 		periodic_wait(&next, T, &MissSupervisor);
 
 
@@ -462,7 +458,7 @@ void StartReadTemperature(void *argument)
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_TEMPERATURE);
-	uint32_t next = osKernelGetTickCount();
+	uint32_t next = start_tick;
 
 	/* Infinite loop */
 	for (;;) {
@@ -512,7 +508,7 @@ void StartReadBattery(void *argument)
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_BATTERY);
-	uint32_t next = osKernelGetTickCount();
+	uint32_t next = start_tick;
 
 	/* Infinite loop */
 	for (;;) {
@@ -589,9 +585,16 @@ void StartSynchronization(void *argument)
 
 	SyncThread();
 
+	/* Synchronization completed: define common time-base for periodic tasks */
+	start_tick = osKernelGetTickCount();
+
 	system_phase = WORKING_PHASE;
 
 	HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
+
+	#if LED_DEBUG
+	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+	#endif
 
 #endif
 

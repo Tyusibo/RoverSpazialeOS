@@ -83,6 +83,9 @@ typedef StaticEventGroup_t osStaticEventGroupDef_t;
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
+/* Global start tick (set after synchronization) */
+volatile uint32_t start_tick = 0;
+
 /* MISS COUNTERS */
 volatile uint32_t MissReadController = 0;
 volatile uint32_t MissReadGyroscope = 0;
@@ -332,7 +335,7 @@ void StartReadController(void *argument)
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_REMOTE_CONTROLLER);
-	uint32_t next = osKernelGetTickCount();
+	uint32_t next = start_tick;
 
 	/* Return code of the last I2C request:
 	 * PAD_OK  -> request started successfully (asynchronous reception in progress)
@@ -392,7 +395,7 @@ void StartReadGyroscope(void *argument)
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_GYROSCOPE);
-	uint32_t next = osKernelGetTickCount();
+	uint32_t next = start_tick;
 
 	/* Return code of the last gyroscope read request:
 	 * MPU_OK  -> request started successfully (asynchronous I2C reception in progress)
@@ -452,7 +455,7 @@ void StartSupervisor(void *argument)
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_SUPERVISOR);
-	uint32_t next = osKernelGetTickCount();
+	uint32_t next = start_tick;
 
 	periodic_wait(&next, T, &MissSupervisor);  // Skip first communication
 
@@ -506,13 +509,6 @@ void StartSupervisor(void *argument)
 				Board2_Y.board1Decision.roverState == FAULTY_B1_DEGRADED_B2){
 			break;
 		}
-
-
-#if LED_DEBUG
-
-		HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
-
-#endif
 		periodic_wait(&next, T, &MissSupervisor);
 	}
 #endif
@@ -537,7 +533,7 @@ void StartReadSonars(void *argument)
 	Sync_WaitStart();
 
 	const uint32_t T = ms_to_ticks(T_SONAR);
-	uint32_t next = osKernelGetTickCount();
+	uint32_t next = start_tick;
 
 	const uint32_t TIMEOUT_TICKS = ms_to_ticks(MAX_WAIT_SONAR);
 	/* Infinite loop */
@@ -612,9 +608,16 @@ void StartSynchronization(void *argument)
 
 	SyncThread();
 
+	/* Synchronization completed: define common time-base for periodic tasks */
+	start_tick = osKernelGetTickCount();
+
 	system_phase = WORKING_PHASE;
 
 	HAL_GPIO_WritePin(RTR_OUT_GPIO_Port, RTR_OUT_Pin, GPIO_PIN_RESET);
+
+	#if LED_DEBUG
+	HAL_GPIO_WritePin(LedDebug_GPIO_Port, LedDebug_Pin, GPIO_PIN_SET);
+	#endif
 
 #endif
 
@@ -640,7 +643,7 @@ void StartPollingServer(void *argument)
     Sync_WaitStart();
 
     const uint32_t T = ms_to_ticks(T_POLLING_SERVER);
-    uint32_t next = osKernelGetTickCount();
+	uint32_t next = start_tick;
 
     /* Infinite loop */
     for (;;) {
