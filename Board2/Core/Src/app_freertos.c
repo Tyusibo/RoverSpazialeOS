@@ -104,7 +104,7 @@ extern timer_t timerSupervisor;
 /* USER CODE END Variables */
 /* Definitions for ReadController */
 osThreadId_t ReadControllerHandle;
-uint32_t ReadControllerBuffer[ 2048 ];
+uint32_t ReadControllerBuffer[ 1024 ];
 osStaticThreadDef_t ReadControllerControlBlock;
 const osThreadAttr_t ReadController_attributes = {
   .name = "ReadController",
@@ -116,7 +116,7 @@ const osThreadAttr_t ReadController_attributes = {
 };
 /* Definitions for ReadGyroscope */
 osThreadId_t ReadGyroscopeHandle;
-uint32_t ReadGyroscopeBuffer[ 2048 ];
+uint32_t ReadGyroscopeBuffer[ 1024 ];
 osStaticThreadDef_t ReadGyroscopeControlBlock;
 const osThreadAttr_t ReadGyroscope_attributes = {
   .name = "ReadGyroscope",
@@ -140,7 +140,7 @@ const osThreadAttr_t Supervisor_attributes = {
 };
 /* Definitions for ReadSonars */
 osThreadId_t ReadSonarsHandle;
-uint32_t ReadSonarsBuffer[ 2048 ];
+uint32_t ReadSonarsBuffer[ 1024 ];
 osStaticThreadDef_t ReadSonarsControlBlock;
 const osThreadAttr_t ReadSonars_attributes = {
   .name = "ReadSonars",
@@ -186,6 +186,18 @@ const osThreadAttr_t PollingServer_attributes = {
   .cb_size = sizeof(PollingServerControlBlock),
   .priority = (osPriority_t) osPriorityHigh5,
 };
+/* Definitions for SupervisorDeg */
+osThreadId_t SupervisorDegHandle;
+uint32_t SupervisorDegBuffer[ 2048 ];
+osStaticThreadDef_t SupervisorDegControlBlock;
+const osThreadAttr_t SupervisorDeg_attributes = {
+  .name = "SupervisorDeg",
+  .stack_mem = &SupervisorDegBuffer[0],
+  .stack_size = sizeof(SupervisorDegBuffer),
+  .cb_mem = &SupervisorDegControlBlock,
+  .cb_size = sizeof(SupervisorDegControlBlock),
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* Definitions for SonarMonitoring */
 osTimerId_t SonarMonitoringHandle;
 osStaticTimerDef_t SonarMonitoringControlBlock;
@@ -228,6 +240,7 @@ void StartReadSonars(void *argument);
 void StartSeggerTask(void *argument);
 void StartSynchronization(void *argument);
 void StartPollingServer(void *argument);
+void StartSupervisorDeg(void *argument);
 void SonarTimeout(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
@@ -283,6 +296,9 @@ void MX_FREERTOS_Init(void) {
 
   /* creation of PollingServer */
   PollingServerHandle = osThreadNew(StartPollingServer, NULL, &PollingServer_attributes);
+
+  /* creation of SupervisorDeg */
+  SupervisorDegHandle = osThreadNew(StartSupervisorDeg, NULL, &SupervisorDeg_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 	/* add threads, ... */
@@ -724,6 +740,26 @@ void StartPollingServer(void *argument)
     osThreadTerminate(osThreadGetId());
 
   /* USER CODE END StartPollingServer */
+}
+
+/* USER CODE BEGIN Header_StartSupervisorDeg */
+/**
+* @brief Function implementing the SupervisorDeg thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartSupervisorDeg */
+void StartSupervisorDeg(void *argument)
+{
+  /* USER CODE BEGIN StartSupervisorDeg */
+  /* Infinite loop */
+  for(;;)
+  {
+    break;
+  }
+
+  osThreadTerminate(osThreadGetId());
+  /* USER CODE END StartSupervisorDeg */
 }
 
 /* SonarTimeout function */

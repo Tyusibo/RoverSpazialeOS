@@ -98,7 +98,7 @@ extern timer_t timerSupervisor;
 /* USER CODE END Variables */
 /* Definitions for PID */
 osThreadId_t PIDHandle;
-uint32_t PIDBuffer[ 2048 ];
+uint32_t PIDBuffer[ 1024 ];
 osStaticThreadDef_t PIDControlBlock;
 const osThreadAttr_t PID_attributes = {
   .name = "PID",
@@ -122,7 +122,7 @@ const osThreadAttr_t Supervisor_attributes = {
 };
 /* Definitions for ReadTemperature */
 osThreadId_t ReadTemperatureHandle;
-uint32_t ReadTemperatureBuffer[ 2048 ];
+uint32_t ReadTemperatureBuffer[ 1024 ];
 osStaticThreadDef_t ReadTemperatureControlBlock;
 const osThreadAttr_t ReadTemperature_attributes = {
   .name = "ReadTemperature",
@@ -134,7 +134,7 @@ const osThreadAttr_t ReadTemperature_attributes = {
 };
 /* Definitions for ReadBattery */
 osThreadId_t ReadBatteryHandle;
-uint32_t ReadBatteryBuffer[ 2048 ];
+uint32_t ReadBatteryBuffer[ 1024 ];
 osStaticThreadDef_t ReadBatteryControlBlock;
 const osThreadAttr_t ReadBattery_attributes = {
   .name = "ReadBattery",
